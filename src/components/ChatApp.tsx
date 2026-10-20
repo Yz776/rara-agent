@@ -286,14 +286,37 @@ export function ChatApp({ me, onLogout }: Props) {
   }, []);
 
   // ── Conversation actions (depend on DOM helpers above) ────────────────────────
+  // IMPORTANT: threadRef holds ONLY imperative DOM nodes (created via
+  // document.createElement + appendChild). React never renders children into
+  // threadRef — so wiping it via replaceChildren() can never collide with
+  // React's reconciliation. The welcome + loading screens are rendered as
+  // SIBLINGS of threadRef in JSX, so React owns them independently.
+  const clearThread = useCallback(() => {
+    const el = threadRef.current;
+    if (!el) return;
+    // replaceChildren() is the safe way to nuke imperative children. It does
+    // NOT touch React-managed siblings.
+    try { el.replaceChildren(); }
+    catch {
+      // Fallback for very old browsers — should never execute on Next.js 16.
+      while (el.firstChild) el.removeChild(el.firstChild);
+    }
+  }, []);
+
   const selectConversation = useCallback(async (id: string) => {
     if (streaming) abortRef.current?.abort();
     setCurrentConvId(id);
     setSidebarOpen(false);
     setLoadingConv(true);
+    // Clear BEFORE awaiting so the welcome overlay (driven by history.length===0)
+    // is hidden by the loadingConv flag, not by wiping imperative children mid-flight.
+    clearThread();
+    renderRef.current = { curMsg: null, processEl: null, processBody: null, thinkingEl: null, thinkingBody: null, textEl: null, textRaw: "", toolCards: [], toolCount: 0 };
     try {
       const conv = await getConversation(id);
-      if (threadRef.current) threadRef.current.innerHTML = "";
+      // After async gap, clear again (in case a stale stream appended during the wait).
+      clearThread();
+      renderRef.current = { curMsg: null, processEl: null, processBody: null, thinkingEl: null, thinkingBody: null, textEl: null, textRaw: "", toolCards: [], toolCount: 0 };
       const msgs: HistoryMsg[] = [];
       for (const m of conv.messages) {
         if (m.role === 'user') {
@@ -310,16 +333,16 @@ export function ChatApp({ me, onLogout }: Props) {
     } finally {
       setLoadingConv(false);
     }
-  }, [streaming, appendUser, appendAssistantStatic, appendError]);
+  }, [streaming, clearThread, appendUser, appendAssistantStatic, appendError]);
 
   const newChat = useCallback(() => {
     if (streaming) abortRef.current?.abort();
-    if (threadRef.current) threadRef.current.innerHTML = "";
+    clearThread();
     setHistory([]);
     setCurrentConvId(null);
     renderRef.current = { curMsg: null, processEl: null, processBody: null, thinkingEl: null, thinkingBody: null, textEl: null, textRaw: "", toolCards: [], toolCount: 0 };
     setSidebarOpen(false);
-  }, [streaming]);
+  }, [streaming, clearThread]);
 
   const deleteConv = useCallback(async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -676,7 +699,20 @@ export function ChatApp({ me, onLogout }: Props) {
             </div>
           </header>
 
-          <div className="kfai-thread" ref={threadRef} aria-live="polite">
+          <div className="kfai-thread" aria-live="polite">
+            {/* Imperative-only stream container. React NEVER adds children
+                here — the only mutations are via document.createElement +
+                appendChild + clearThread()/replaceChildren(). This isolation
+                prevents the "removeChild: not a child of this node" error
+                that happens when React tries to reconcile DOM it doesn't own. */}
+            <div className="kfai-thread-stream" ref={threadRef} />
+
+            {/* React-managed overlay siblings — React owns these exclusively.
+                Note: we do NOT inspect threadRef.current here — refs are not
+                reactive and would not trigger a re-render. The state below
+                (history.length, streaming, loadingConv) covers all the cases
+                where the welcome overlay should hide: after sending (streaming
+                flips true) or after a conversation is loaded (history grows). */}
             {history.length === 0 && !streaming && !loadingConv && (
               <div className="kfai-welcome rara-welcome">
                 <div className="rara-welcome-stage">

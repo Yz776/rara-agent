@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Rara Agent — production docker-compose
+# Rara Agent — production docker-compose (self-contained, no zrouter)
 #
 # Default: pulls pre-built image from GitHub Container Registry.
 #   docker compose up -d
@@ -19,54 +19,47 @@
 services:
   rara:
     # Pre-built image — auto-built by GitHub Actions on every push to main.
-    # See .github/workflows/docker-publish.yml
     image: ghcr.io/yz776/rara-agent:latest
     container_name: rara
     restart: unless-stopped
     pull_policy: always
     ports:
-      # Expose Next.js on port 8080 (port 3000 is taken by bot-amd64 on this host).
-      # Override at deploy time: PORT=8080 by default, or set PORT=3000 if free.
-      # Map host:container — host port is configurable via env.
       - "${RARA_HOST_PORT:-8080}:3000"
     environment:
       # Required secrets (generate with openssl rand).
-      # Values must be QUOTED in YAML because ${VAR:?error message} contains colons
-      # which YAML would otherwise parse as nested mapping separators.
-      KROUTER_INTERNAL_TOKEN: "${KROUTER_INTERNAL_TOKEN:?KROUTER_INTERNAL_TOKEN must be set}"
       KFAI_AUTH_SECRET: "${KFAI_AUTH_SECRET:?KFAI_AUTH_SECRET must be set}"
-
-      # zrouter dashboard login (for ops who want to manage pool keys).
-      KROUTER_ADMIN_USERNAME: "${KROUTER_ADMIN_USERNAME:-admin}"
       KROUTER_ADMIN_PASSWORD: "${KROUTER_ADMIN_PASSWORD:?KROUTER_ADMIN_PASSWORD must be set}"
 
-      # Internal routing.
-      KROUTER_BASE: "http://127.0.0.1:3001"
-      MCP_ENDPOINT: "http://127.0.0.1:3001/mcp"
-      RARA_BASE_URL: "http://127.0.0.1:3000"
+      # Admin panel login (for ops who want to manage users / view logs).
+      KROUTER_ADMIN_USERNAME: "${KROUTER_ADMIN_USERNAME:-admin}"
+
+      # Optional: real opencode.ai account Bearer. Defaults to free-tier "public".
+      OPENCODE_API_KEY: "${OPENCODE_API_KEY:-}"
 
       # Next.js.
       DATABASE_URL: "file:/app/db/rara.db"
       NODE_ENV: "production"
-
-      # zrouter.
-      HOST: "0.0.0.0"
+      HOSTNAME: "0.0.0.0"
       PORT: "3000"
-      KROUTER_DATA_DIR: "/app/data/mini-services/zrouter/data"
+      RARA_BASE_URL: "http://127.0.0.1:3000"
+
+      # Legacy env kept for backward-compat — no longer used to reach an
+      # external zrouter. All AI calls go directly to https://opencode.ai.
+      KROUTER_BASE: ""
+      KROUTER_INTERNAL_TOKEN: ""
+      MCP_ENDPOINT: ""
 
       # Rate limits (per IP / hour) — override via env.
       RATE_LIMIT_LOGIN_PER_HOUR: "${RATE_LIMIT_LOGIN_PER_HOUR:-30}"
       RATE_LIMIT_CHAT_PER_HOUR: "${RATE_LIMIT_CHAT_PER_HOUR:-120}"
-      RATE_LIMIT_CAPTCHA_PER_HOUR: "${RATE_LIMIT_CAPTCHA_PER_HOUR:-30}"
-      RATE_LIMIT_DEVICE_PER_HOUR: "${RATE_LIMIT_DEVICE_PER_HOUR:-200}"
       RATE_LIMIT_ADMIN_PER_HOUR: "${RATE_LIMIT_ADMIN_PER_HOUR:-300}"
     volumes:
-      # Persistent Prisma DB (users, conversations, sessions).
+      # Persistent Prisma DB (users, conversations, sessions, sandbox files).
       - rara_db:/app/db
-      # Persistent zrouter state (config.json + krouter.db + auth.db + proxies.db + key_pool).
+      # Persistent sandbox file storage (per-user files saved by tools).
       - rara_data:/app/data
     healthcheck:
-      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/"]
       interval: 30s
       timeout: 10s
       start_period: 30s

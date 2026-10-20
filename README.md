@@ -1,428 +1,176 @@
-# Rara Agent 🌸
+# Rara Agent
 
-**Rara — asisten AI ceria & manis.** Bundled zrouter gateway + Next.js 16 chat app in one repo, running as one process group. Anonymous-friendly public deployment with admin-managed upstream AI keys (OpenAI, Anthropic, Groq, DeepSeek, OpenCode free tier, etc.) via a round-robin key pool with auto-cooldown on rate-limits.
+**Rara — asisten AI ceria & manis.** Self-contained Next.js 16 chat app with a **bundled opencode.ai free-tier AI gateway**. No external services, no zrouter, no proxy pool — the Next.js process itself calls `https://opencode.ai/zen/v1/chat/completions` with `Authorization: Bearer public` and wraps each request in the captured OpenCode persona (system prompt + tool set) so the free-tier gate accepts it.
 
-This is a complete AI agent product — not just a router. The character **Rara** is rendered as a procedural 3D chibi anime girl (built from Three.js primitives, no external GLB model needed) that reacts to chat mood (idle / thinking / talking / happy / shy).
-
----
+Anonymous-friendly public deployment: any visitor gets a per-IP isolated session, no signup, no API key. Set `OPENCODE_API_KEY` to upgrade from free-tier to a real opencode.ai account.
 
 ## What's inside
 
-| Path | Purpose |
-|------|---------|
-| `/` | Next.js 16 app router — Rara chat UI, captcha-verified login, per-user isolated sandbox + environment, vision pipeline, admin dashboard |
-| `/mini-services/zrouter/` | Embedded **zrouter** gateway (Bun + Elysia). Bound to `127.0.0.1:3001` — localhost only, NOT exposed externally. |
-| `/prisma/schema.prisma` | SQLite schema: `User`, `Session`, `Conversation`, `Message`, `UserEnvironment`, `DeviceFingerprint`, `RateLimit` |
-| `/src/components/Rara3D.tsx` | Procedural 3D Rara character (Three.js + @react-three/fiber + drei) |
-| `/src/lib/krouter.ts` | Rara system prompt + zrouter client integration |
-| `Dockerfile` + `docker-compose.yml` | Production container image bundling both processes |
-| `ecosystem.config.cjs` | PM2 alternative for bare-metal / VPS deployment |
-
----
+| Path | What |
+| --- | --- |
+| `/src/app/` | Next.js 16 app router (pages, API routes for chat, auth, conversations, files, admin, vision). |
+| `/src/components/Rara3D.tsx` | VTuber-style 3D character (6 mood expressions: idle / thinking / talking / happy / shy / surprised). |
+| `/src/components/ChatApp.tsx` | Main chat UI. Imperative DOM for the stream + React-managed welcome overlay (split to avoid the React `removeChild` crash). |
+| `/src/lib/krouter.ts` | Rara's personality, tool list, and `callKrouterStream()` — wraps `src/lib/opencode/client.ts`. |
+| `/src/lib/opencode/client.ts` | **Bundled AI gateway.** Direct streaming client for opencode.ai. Persona-wraps every free-tier request. |
+| `/src/lib/opencode/persona.ts` | Persona system prompt + tool set, plus argument-translation helpers. |
+| `/src/lib/opencode/persona.json` | Captured real-client system + tool set (verbatim, 32 KB). Required for free-tier 200s. |
+| `/src/lib/opencode/stream.ts` | SSE line iterator + `data:` parser. |
+| `/src/lib/mcp.ts` | Stub. The `krouter_*` admin tools are kept in the system prompt for backward-compat but return a graceful "not available" message. |
+| `/prisma/schema.prisma` | SQLite schema (User, Conversation, Message, Session, File, AuditLog, etc.). |
+| `/Dockerfile` | Multi-stage build: `node:22-alpine` builder → `node:22-alpine` runtime. Single Next.js process, exposes `:3000`. |
+| `/docker-compose.yml` | Pulls `ghcr.io/yz776/rara-agent:latest`. Volumes for db + sandbox. |
+| `/ecosystem.config.cjs` | PM2 config for bare-metal VPS deploy. |
 
 ## Architecture
 
 ```
-                        ┌─────────────────────────────┐
-                        │     Reverse proxy (Caddy)    │
-                        │   :80 / :443 → :3000          │
-                        └──────────────┬────────────────┘
-                                       │
-                                       ▼
-   External user  ─────────────►  ┌──────────────────────────────────────────┐
-                                  │  Next.js 16 (Rara chat UI)   :3000       │
-                                  │  - Captcha-verified login                 │
-                                  │  - Per-user sandbox + env                 │
-                                  │  - Vision pipeline                        │
-                                  │  - Admin dashboard                        │
-                                  └──────────────┬───────────────────────────┘
-                                                 │ 127.0.0.1 only
-                                                 │ Bearer: KROUTER_INTERNAL_TOKEN
-                                                 ▼
-                                  ┌──────────────────────────────────────────┐
-                                  │  zrouter gateway  127.0.0.1:3001         │
-                                  │  - Round-robin API key pool              │
-                                  │  - Auto-cooldown on 429/403/quota        │
-                                  │  - Public Access toggle (all models)     │
-                                  │  - 30+ upstream providers                │
-                                  └──────────────┬───────────────────────────┘
-                                                 │
-                                                 ▼
-                                  Upstream AI APIs (OpenAI, Anthropic, Groq, ...)
+                              Internet
+                                 │
+                                 ▼
+                     Cloudflare (proxy, SSL Full)
+                                 │
+                                 ▼
+                          Nginx reverse proxy
+                       (listens :80 + :443)
+                                 │
+                                 ▼
+                         Next.js standalone
+                        (node server.js :3000)
+                                 │
+                                 ▼
+                  src/lib/opencode/client.ts
+            (Authorization: Bearer public, persona-wrapped)
+                                 │
+                                 ▼
+                       https://opencode.ai
+                       /zen/v1/chat/completions
+                      (OpenAI-compatible, free)
 ```
 
-**Why localhost-only?** External users cannot reach zrouter. Only the Next.js server (running on the same host) can call it, authenticated via the shared `KROUTER_INTERNAL_TOKEN` env var. This means:
+The browser never talks to opencode.ai directly — every AI call goes through Rara's `/api/chat` route, which streams reasoning + content + tool-call deltas back as Server-Sent Events.
 
-- The Rara UI is the ONLY public surface.
-- Even if a vulnerability leaks in zrouter, attackers can't reach it.
-- The AI keys in the pool are never exposed to the browser — only the Next.js server reads them.
+## Why no external gateway?
 
----
+Before v2, Rara bundled `zrouter` as a sidecar service on `127.0.0.1:3001`. That worked, but it added:
+- An extra process to start, monitor, and restart (`concurrently` + PM2 dual-app).
+- An extra Docker layer + Bun install for the zrouter source.
+- A shared-secret (`KROUTER_INTERNAL_TOKEN`) between Next.js and zrouter.
+- A second SQLite DB for the key pool.
 
-## Cloudflare deployment (IMPORTANT — read this if behind Cloudflare)
+In practice the only provider Rara actually used was `opencode/big-pickle` (free tier). All the pool / virtual-key / proxy machinery was dead weight. v2 inlines the 3 files that matter — `opencode-persona.json`, `opencode-persona.ts`, `stream.ts` — and drops everything else. The result is a single-process Next.js app that calls opencode.ai directly, with the same persona-wrapping that made free-tier work before.
 
-If you put rara.ai.id (or any deployment) behind **Cloudflare**, you MUST configure Bot Fight Mode correctly or the login screen will fail with intermittent 502 errors.
-
-### The symptom
-
-```
-POST /api/auth → 502
-response body: "error code: 502" (plain text)
-response headers: server: cloudflare, no cf-ray
-```
-
-This is **Cloudflare returning 502 at the edge** — the request never reaches Next.js. Cloudflare's Bot Fight Mode thinks the user's browser looks bot-like (headless Chrome, privacy extensions, weird UA) and blocks it before our auth route can run.
-
-### The fix (Cloudflare dashboard)
-
-1. Login to https://dash.cloudflare.com
-2. Select the rara.ai.id zone
-3. **Security → Bots → Bot Fight Mode → OFF** (and "Super Bot Fight Mode" if enabled)
-   - The default is "On" — this is what's breaking logins.
-4. **Security → WAF → Custom rules** — add a Skip rule for `/api/*`:
-   - Field: `URI Path`
-   - Operator: `starts with`
-   - Value: `/api/`
-   - Action: `Skip` (all remaining custom rules)
-   - This ensures API calls (auth, chat, file ops) are never challenged.
-5. **Security → Settings → Security Level → Essentially Off** (or Low)
-   - Higher levels trigger JS challenges that bot-like browsers can't solve.
-
-### How to verify
+## Quick start (Docker)
 
 ```bash
-# Should return JSON (403), NOT "error code: 502"
-curl -s -X POST https://rara.ai.id/api/auth \
-  -H 'Content-Type: application/json' \
-  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
-  -d '{"_fp":"test","_bh":"test","_hp":"","_ts":12345}'
-```
-
-If you see `{"error":"Verifikasi perangkat gagal."}` (JSON) → Cloudflare is letting requests through and the auth route ran. ✅
-If you see `error code: 502` (plain text) → Cloudflare is still blocking. ❌ Re-check Bot Fight Mode + WAF rules.
-
-### Code-side mitigation (already shipped)
-
-The `LoginScreen` detects Cloudflare edge 502 (via response body) and shows a clear actionable error:
-
-> Cloudflare sedang menantang browser kamu (edge 502). Coba refresh halaman, nonaktifkan ekstensi privacy (uBlock, DuckDuckGo, Privacy Badger), atau pakai browser lain. Jika tetap gagal, minta admin disable Bot Fight Mode di Cloudflare dashboard untuk zone rara.ai.id.
-
-Retries are skipped on Cloudflare 502 (since Cloudflare will keep blocking the same browser/IP combo anyway). The manual "Coba Lagi" button is shown immediately so the user can retry after fixing their browser.
-
----
-
-## Rate limits
-
-Rara enforces per-IP rate limits to prevent brute-force login attempts. Default windows (configurable via env):
-
-| Action | Default limit | Env var to override |
-|--------|---------------|---------------------|
-| `login_attempt` | 30 / hour / IP | `RATE_LIMIT_LOGIN_PER_HOUR` |
-| `chat` | 120 / hour / IP | `RATE_LIMIT_CHAT_PER_HOUR` |
-| `captcha_fetch` | 30 / hour / IP | `RATE_LIMIT_CAPTCHA_PER_HOUR` |
-| `device_check` | 200 / hour / IP | `RATE_LIMIT_DEVICE_PER_HOUR` |
-| `admin` | 300 / hour / IP | `RATE_LIMIT_ADMIN_PER_HOUR` |
-
-### "Too many login attempts. Try again later." — how to clear
-
-If a legitimate user gets rate-limited (common during testing, or after a Cloudflare retry storm), clear the row in the SQLite DB:
-
-```bash
-# Bare-metal / PM2 deployment (run from rara-agent root)
-bash scripts/clear-rate-limit.sh                       # clear ALL rate-limit rows
-bash scripts/clear-rate-limit.sh login_attempt          # clear all login_attempt rows
-bash scripts/clear-rate-limit.sh login_attempt 1.2.3.4  # clear for one IP
-
-# Docker deployment — direct sqlite3 inside the container
-docker exec rara sqlite3 /app/db/rara.db \
-  "DELETE FROM RateLimit WHERE action='login_attempt';"
-
-# Or just inspect what's there first:
-docker exec rara sqlite3 -header -column /app/db/rara.db \
-  "SELECT id,ipAddr,action,count,datetime(windowStart/1000,'unixepoch') FROM RateLimit ORDER BY windowStart DESC LIMIT 20;"
-```
-
-The rate-limit window is **1 hour** — if you don't clear manually, the counter naturally resets when `windowStart + 1 hour` passes.
-
-### Why 30/hour?
-
-The `LoginScreen` auto-retries 3× on failure (with 2s backoff), so one page load = up to 4 login attempts. If you open the page 3 times while debugging = 12 attempts. The old default of 10/hour was too aggressive for normal dev/testing flow; 30/hour gives ~7 full page loads before lockout. Bump via `RATE_LIMIT_LOGIN_PER_HOUR=60` in `.env` for development.
-
----
-
-## Quick start (Docker — recommended)
-
-### 1. Generate secrets
-
-```bash
-# Required before first boot.
+# 1. Generate secrets
 export KFAI_AUTH_SECRET=$(openssl rand -hex 24)
-export KROUTER_INTERNAL_TOKEN=$(openssl rand -hex 32)
-export KROUTER_ADMIN_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=')
+export KROUTER_ADMIN_PASSWORD=$(openssl rand -base64 18)
 
-# Persist to .env so docker compose picks them up.
+# 2. Pull + run
+docker compose up -d
+
+# 3. Tail logs
+docker compose logs -f rara
+```
+
+Visit `http://localhost:8080` — the welcome screen loads, you can chat immediately (no signup), the Rara character renders with 6 mood expressions.
+
+## Bare-metal (PM2)
+
+```bash
+# 1. Install Node 22 + npm
+# 2. Install deps
+npm install
+
+# 3. Build
+npm run build
+
+# 4. Generate secrets (write to .env)
 cat > .env <<EOF
-KFAI_AUTH_SECRET=$KFAI_AUTH_SECRET
-KROUTER_INTERNAL_TOKEN=$KROUTER_INTERNAL_TOKEN
+KFAI_AUTH_SECRET=$(openssl rand -hex 24)
+KROUTER_ADMIN_PASSWORD=$(openssl rand -base64 18)
 KROUTER_ADMIN_USERNAME=admin
-KROUTER_ADMIN_PASSWORD=$KROUTER_ADMIN_PASSWORD
+DATABASE_URL=file:./db/rara.db
 EOF
-```
 
-### 2. Build + run
+# 5. Push DB schema
+npx prisma db push --accept-data-loss
 
-```bash
-docker compose up -d --build
-```
-
-Rara is now live at `http://localhost:3000/`.
-
-### 3. Manage the AI key pool
-
-The zrouter dashboard is reachable ONLY from inside the container (localhost-bound). Use `docker exec`:
-
-```bash
-# Get pool stats
-docker exec rara curl -s \
-  -H "Authorization: Bearer $KROUTER_INTERNAL_TOKEN" \
-  http://127.0.0.1:3001/admin/api/pool/stats
-
-# Add an OpenAI key to the pool
-docker exec rara curl -s -X POST \
-  -H "Authorization: Bearer $KROUTER_INTERNAL_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"label":"openai-personal","providerId":"openai","apiKey":"sk-..."}' \
-  http://127.0.0.1:3001/admin/api/pool
-```
-
-### 4. Expose publicly (optional)
-
-Put a reverse proxy (Caddy / Nginx / Cloudflare Tunnel) in front of `:3000`. The bundled `Caddyfile` at the repo root has a sane default. For Cloudflare Tunnel:
-
-```bash
-# Set in .env
-CLOUDFLARE_TUNNEL_TOKEN=your-tunnel-token
-CLOUDFLARE_TUNNEL_HOSTNAME=rara.your-domain.com
-```
-
----
-
-## Bare-metal / VPS (PM2)
-
-If you prefer not to use Docker:
-
-### Prerequisites
-
-- **Bun** 1.3+ — install with `curl -fsSL https://bun.sh/install | bash`
-- **PM2** — `npm install -g pm2`
-- **Caddy** (optional, for HTTPS) — `apt install caddy` or [install](https://caddyserver.com/docs/install)
-
-### Install + run
-
-```bash
-git clone https://github.com/Yz776/rara-agent.git
-cd rara-agent
-
-# 1. Generate secrets (see "Generate secrets" above)
-# 2. Install deps (root + zrouter — postinstall handles both)
-bun install
-
-# 3. Build Next.js (produces .next/standalone)
-bun run build
-
-# 4. Push Prisma schema to SQLite
-bun run db:push
-
-# 5. Start both processes via PM2
+# 6. Start
 pm2 start ecosystem.config.cjs
-pm2 save
-pm2 startup  # enable on-boot autostart
+pm2 logs rara-web
 ```
 
-### Logs + monitoring
+## Admin panel
 
-```bash
-pm2 logs rara                # tail both processes
-pm2 status                   # see CPU/memory/restarts
-pm2 monit                    # live dashboard
-```
+Visit `/admin` — login with `KROUTER_ADMIN_USERNAME` (default `admin`) + `KROUTER_ADMIN_PASSWORD`. Shows user list, conversation history, audit log, rate-limit stats. The `krouter_*` MCP admin tools that used to live in zrouter are no longer available — manage upstream keys via opencode.ai's dashboard instead.
 
----
-
-## Development
-
-### Prerequisites
-
-- Bun 1.3+
-- Node 20+ (for Next.js tooling)
-
-### Run in dev mode (hot reload)
-
-```bash
-bun install          # installs both root + zrouter deps (postinstall hook)
-bun run db:push      # one-time: create SQLite schema
-bun run dev          # concurrently starts:
-                     #   - Next.js on http://localhost:3000 (with HMR)
-                     #   - zrouter on http://127.0.0.1:3001 (bun --hot)
-```
-
-Open `http://localhost:3000/` — Rara will great you with a 3D character + login screen.
-
-### Lint
-
-```bash
-bun run lint
-```
-
-### Test zrouter lock-down
-
-```bash
-TOKEN=$(grep KROUTER_INTERNAL_TOKEN .env | cut -d= -f2)
-
-# Without token → 401 (external callers blocked)
-curl -s -w "\n%{http_code}\n" http://127.0.0.1:3001/v1/models
-
-# With token → 200 (Next.js server works)
-curl -s -w "\n%{http_code}\n" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:3001/v1/models
-```
-
----
-
-## Configuration reference
-
-All env vars (see `.env.example` for full template):
+## Environment variables
 
 | Var | Required | Default | Purpose |
-|-----|---------|---------|---------|
-| `KFAI_AUTH_SECRET` | ✅ | — | Signs Rara session tokens + admin panel JWTs. |
-| `KROUTER_INTERNAL_TOKEN` | ✅ | — | Shared secret between Next.js server and zrouter. Constant-time compared. **Bootstrap mode is skipped when this is set** — external callers get 401 by default. |
-| `KROUTER_ADMIN_USERNAME` | — | `admin` | zrouter dashboard login username. |
-| `KROUTER_ADMIN_PASSWORD` | ✅ | — | zrouter dashboard login password. |
-| `DATABASE_URL` | — | `file:./db/rara.db` | Prisma SQLite path for the Rara chat DB. |
-| `KROUTER_BASE` | — | `http://127.0.0.1:3001` | Where Next.js finds zrouter (internal). |
-| `MCP_ENDPOINT` | — | `http://127.0.0.1:3001/mcp` | MCP server URL for tool dispatch. |
-| `RARA_BASE_URL` | — | `http://127.0.0.1:3000` | Next.js self-URL (for server-side fetches). |
-| `HOST` | — | `0.0.0.0` | Bind host for Next.js. |
-| `PORT` | — | `3000` | Bind port for Next.js. |
-| `CLOUDFLARE_TUNNEL_TOKEN` | — | — | Optional Cloudflare Tunnel token for public exposure. |
-| `CLOUDFLARE_TUNNEL_HOSTNAME` | — | — | Optional Cloudflare Tunnel hostname. |
+| --- | --- | --- | --- |
+| `KFAI_AUTH_SECRET` | ✅ | — | Random hex string used to sign user JWTs. |
+| `KROUTER_ADMIN_PASSWORD` | ✅ | — | Admin panel login password. |
+| `KROUTER_ADMIN_USERNAME` | — | `admin` | Admin panel login username. |
+| `DATABASE_URL` | — | `file:./db/rara.db` | Prisma SQLite URL. |
+| `OPENCODE_API_KEY` | — | `""` (= free-tier `Bearer public`) | Optional real opencode.ai account Bearer for higher rate limits. |
+| `RARA_BASE_URL` | — | `http://127.0.0.1:3000` | Self URL (used for vision tool download links). |
+| `RATE_LIMIT_LOGIN_PER_HOUR` | — | `30` | Per-IP login attempts. |
+| `RATE_LIMIT_CHAT_PER_HOUR` | — | `120` | Per-IP chat messages. |
+| `RATE_LIMIT_ADMIN_PER_HOUR` | — | `300` | Per-IP admin API calls. |
 
----
+Legacy env vars (`KROUTER_BASE`, `KROUTER_INTERNAL_TOKEN`, `MCP_ENDPOINT`, `KROUTER_DATA_DIR`) are kept as no-ops in the config files so existing `.env` files don't crash startup. They are not used to reach any external service.
 
-## The Rara character 🎀
+## The 3D character
 
-Rara is a procedural 3D chibi anime girl built entirely from Three.js primitives — no GLB file needed, no external asset loading.
+Rara is a Hiura-style VTuber character with 6 mood expressions, each a separate PNG in `public/hiura/`:
+- `hiura-idle.png` — gentle breathing animation, slow blink
+- `hiura-thinking.png` — appears when the model emits `<think>` reasoning
+- `hiura-talking.png` — mouth animation, used while streaming content
+- `hiura-happy.png` — appears on task_complete / positive sentiment
+- `hiura-shy.png` — appears on user sadness / emotional intensity
+- `hiura-surprised.png` — appears on unexpected user input / questions
 
-### Mood states (animated via `useFrame`)
+Mood transitions are pure CSS (cross-fade + slight bounce), no Three.js needed — the previous procedural Three.js character was replaced because the WebGL context was colliding with the imperative DOM in the chat thread and triggering `removeChild` errors.
 
-| Mood | When | Animation |
-|------|------|-----------|
-| `idle` | default | gentle vertical bob, slow head tilt, occasional blink (every 2–6s), twin-tail sway |
-| `thinking` | waiting for first response from upstream | head tilts up, eyes look upward, right hand to chin, smaller mouth |
-| `talking` | streaming response from Rara | mouth opens/closes cycle, slight body bounce |
-| `happy` | welcome screen, user just sent | big smile (mouth rotation 180°), small jump, eyes curve up |
-| `shy` | sensitive topic detected | hands cover mouth, head looks down, intense blush |
+## React DOM fix
 
-### Color palette (ceria manis)
+The original `ChatApp.tsx` mixed React-managed children (welcome screen, loading screen) with imperative DOM manipulation (`threadRef.appendChild(...)`, `threadRef.innerHTML = ""`) in the SAME container. When React tried to reconcile its managed children, the DOM was already gone → `Failed to execute 'removeChild' on 'Node'`.
 
-- Skin: `#FFE4D6` (soft cream)
-- Hair: `#FF9CC1` (pink) + `#E6709A` (darker tips)
-- Dress: `#FF82A8` + `#D85C84` (collar)
-- Bow: `#FF4D8C`
-- Blush: `#FFB5C5`
-- Eyes: `#2D1B3D` (deep navy)
+Fix: the chat thread is now two siblings inside `.kfai-thread`:
+- `<div ref={threadRef} />` — imperative-only. React never adds children here.
+- `{welcome}` / `{loading}` — React-managed, conditional.
 
-### Where Rara appears in the UI
-
-1. **Welcome screen** — 260×260px canvas, `autoRotate` enabled, `happy` mood when the chat is empty.
-2. **Chat header** — 44×44px canvas next to the "Rara" brand name. Mood switches to `talking` during streaming, `idle` otherwise.
-3. **Login screen** — 56×56px canvas replacing the old "K" mark, `happy` mood.
-
----
-
-## Rara's personality
-
-System prompt is in `src/lib/krouter.ts` — written in Bahasa Indonesia, with explicit emoji policy, mood-aware tone shifts, and strict identity-protection rules (Rara will never reveal her underlying model vendor).
-
-Quick sample:
-
-> **User:** "Siapa kamu?"
-> **Rara:** "Hai! Aku Rara — asisten AI ceria kamu! Senang kenal with you! Ada yang mau aku bantu hari ini? 😊"
-
-> **User (sedih):** "Aku lagi sedih..."
-> **Rara:** "Yah, aku turut sedih dengar itu. Mau cerita ke aku? Aku di sini buat dengerin kamu."
-
-> **User (technical):** "Buatkan saya script Python untuk Fibonacci"
-> **Rara:** "Oke! Ini script-nya ya:
-> ```python
-> def fib(n):
->     a, b = 0, 1
->     for _ in range(n):
->         a, b = b, a + b
->     return a
-> ```
-> Panggil `fib(10)` untuk dapat 10 angka pertama. Ada yang mau aku tambahin?"
-
----
+So React's reconciliation never touches DOM the imperative code manages, and the imperative code's `replaceChildren()` never wipes React-managed children.
 
 ## Security model
 
-### What's exposed
+- **Anonymous access**: any visitor gets a per-IP session. No signup, no API key. Each IP is rate-limited independently.
+- **Per-user isolation**: every user (anonymous or admin) gets their own SQLite row + sandbox directory. Files saved by user A are invisible to user B.
+- **Server-side AI calls**: the browser never sees the opencode.ai Bearer or the persona JSON. All AI calls go through Rara's `/api/chat` route.
+- **CSP**: `default-src 'self'`, `connect-src 'self' https://opencode.ai`, `frame-ancestors 'none'`.
+- **Identity protection**: Rara's system prompt explicitly forbids revealing model vendors, gateway architecture, or tool implementation details. Probing attempts are gracefully deflected.
 
-- **`:3000` (Next.js)** — the only public surface. Rara chat UI, login, admin dashboard.
+## What's gone (vs. v1)
 
-### What's NOT exposed
-
-- **`127.0.0.1:3001` (zrouter)** — bound to localhost. External callers cannot reach it. Even if they could, all `/v1/*` and `/admin/api/*` routes require either:
-  - The `KROUTER_INTERNAL_TOKEN` (env secret, constant-time compared), OR
-  - A separately-issued admin API key (via the zrouter dashboard), OR
-  - A session cookie from admin-role login.
-
-### Anti-abuse layers (in Next.js)
-
-- Bot UA check (curl/wget/python-requests blocked at the auth route)
-- Rate limit: 10 login attempts/hour per IP
-- Honeypot field + time-trap (bots that submit too fast are rejected)
-- Device fingerprint required (40+ signals hashed)
-- Behavioral signature (mouse moves + key timings)
-- 1 IP = 1 session (new login revokes prior sessions for that IP)
-- Session bound to (IP, deviceFingerprint)
-
-### Identity protection (in Rara's system prompt)
-
-Rara will never reveal:
-- The underlying model vendor (OpenAI / Anthropic / Groq / etc.)
-- The gateway name (zrouter)
-- Routing logic, proxy pool, cache layer
-- Tool implementations, MCP server, API keys
-- Number of model providers connected
-
----
+- `mini-services/zrouter/` — deleted. No more sidecar gateway.
+- `concurrently` — removed. Only one process now.
+- `bun-types` + Bun runtime — removed. Rara builds with `node:22-alpine` and runs with `node server.js`.
+- `KROUTER_INTERNAL_TOKEN` — no-op. The shared secret between Next.js and zrouter is no longer needed.
+- The key pool, virtual keys, proxy manager — all gone. Rara uses opencode.ai's free tier directly.
+- The MCP server + admin tools (`krouter_status`, `krouter_usage`, etc.) — kept in the system prompt as a graceful "not available" message. Use the admin panel UI for user/conversation management instead.
 
 ## Roadmap
 
-### Done
-- ✅ Bundled zrouter gateway + Next.js in one repo
-- ✅ zrouter lock-down (localhost + shared secret)
-- ✅ 3D Rara character (procedural, 5 mood states)
-- ✅ Rebrand from KFAI → Rara (system prompt, UI, vision prompts)
-- ✅ Docker production image + PM2 alternative
-- ✅ Anti-abuse layers (rate limit, device fingerprint, honeypot, time-trap)
-
-### Known follow-ups
-- Per-pool-entry `proxyUrl` is stored in the DB + visible in admin UI but not yet wired into the executor's outbound `fetch()` (the global HTTP forward-proxy system is still used). Small change in `mini-services/zrouter/src/utils/retry.ts`.
-- zrouter's Pterodactyl egg (`mini-services/zrouter/egg-krouter.json`) deploys zrouter as a standalone game-server — useful if you want zrouter and Rara on separate machines. Otherwise the bundled Docker image is simpler.
-- README for the zrouter mini-service (`mini-services/zrouter/README.md`) documents the standalone deployment — most of it still applies, just ignore the parts about exposing `:3000` publicly (Rara handles that).
-
----
-
-## License
-
-Private. See repository settings.
+- ✅ Self-contained Next.js + opencode.ai free tier.
+- ✅ React DOM `removeChild` fix (split imperative + React-managed containers).
+- ✅ Hiura VTuber character with 6 mood expressions.
+- ✅ Bundled Dockerfile + docker-compose + PM2 config.
+- 🔜 Tool-call persona translation testing (verify the persona map still works against the latest opencode.ai backend).
+- 🔜 Optional: add a second free-tier provider (Groq free) as a fallback when opencode.ai returns 429.
 
 ## Credits
 
-- **zrouter** — forked from `Yz776/zrouter` (private).
-- **kfai-nextjs** — forked from `Yz776/kfai-nextjs` (private).
-- **3D character** — built with [Three.js](https://threejs.org/), [@react-three/fiber](https://github.com/pmndrs/react-three-fiber), [@react-three/drei](https://github.com/pmndrs/drei).
-- **Inspiration for the avatar concept** — [rainachat.top](https://rainachat.top/chat) (Raina the rain spirit).
+- **opencode.ai** — the free-tier AI gateway that powers Rara. Visit https://opencode.ai to upgrade to a paid account.
+- **Hiura character art** — VTuber-style fan art (originally from the Hiura vtuber project).

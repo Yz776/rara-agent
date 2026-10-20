@@ -185,6 +185,29 @@ body {
   overflow-y: auto;
   padding: 24px 20px 12px;
   scroll-behavior: smooth;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Inner imperative-only stream container — React never renders children here.
+   It must take all available space so the welcome overlay can sit on top when
+   the stream is empty, and the stream bubbles flow normally when populated. */
+.kfai-thread-stream {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Welcome overlay sits on top of the (empty) stream container. When the user
+   sends a message or loads a conversation, the parent .kfai-thread still has
+   the stream + (optional) welcome child, but the welcome is unmounted by
+   React state, so it disappears cleanly without any DOM-fight. */
+.kfai-thread > .kfai-welcome {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
 }
 
 .kfai-thread::-webkit-scrollbar {

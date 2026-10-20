@@ -469,10 +469,9 @@ export async function POST(req: NextRequest): Promise<Response> {
                 'word_count, json_format, base64, color_convert, ' +
                 'env_get, env_set, env_delete, env_list, notes_save, notes_load, ' +
                 'file_save, file_load, file_append, file_list, file_tree, file_copy, file_move, ' +
-                'file_delete, diff_files, code_format, file_download_link, vision_analyze, ' +
-                'krouter_fetch, krouter_status, krouter_usage, krouter_recent_logs, ' +
-                'krouter_list_models, krouter_list_providers, krouter_list_virtual_keys, ' +
-                'krouter_list_prompts, krouter_model_health, krouter_cache, krouter_system, krouter_proxy_pool. ' +
+                'file_delete, diff_files, code_format, file_download_link, vision_analyze. ' +
+                'The krouter_* admin tools have been removed (zrouter is no longer bundled). ' +
+                'For URL fetching use http_fetch; for searches use google_search or web_search. ' +
                 'DO NOT call write, read, edit, glob, grep, ls, webfetch, websearch, skill, task, todowrite — they do NOT work. ' +
                 'Use file_save instead of write, file_load instead of read, file_list instead of glob/ls, ' +
                 'google_search instead of websearch, http_fetch instead of webfetch. ' +

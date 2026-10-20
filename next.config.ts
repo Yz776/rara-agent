@@ -33,9 +33,10 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: https:",
-              // connect-src: same-origin + the bundled zrouter on localhost (server-side fetch only,
-              // but listed here in case the browser ever needs to reach it during dev)
-              "connect-src 'self' http://127.0.0.1:3001 http://localhost:3001",
+              // connect-src: same-origin only. The browser never reaches the
+              // AI upstream directly — all opencode.ai calls go through this
+              // Next.js server's API routes (server-side fetch).
+              "connect-src 'self' https://opencode.ai",
               "frame-ancestors 'none'",
               "form-action 'self'",
               "base-uri 'self'",

@@ -1,21 +1,19 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Rara Agent — Production Dockerfile
+# Rara Agent — Production Dockerfile (self-contained, no zrouter)
 #
-# Single image bundling:
+# Single image running:
 #   - Next.js 16 (standalone output) on :3000
-#   - zrouter gateway (Bun + Elysia) on 127.0.0.1:3001
+#   - Bundled opencode.ai free-tier gateway inside Next.js (server-side)
 #
-# Entrypoint runs both processes via `concurrently`. The Caddyfile at the
-# project root or any reverse-proxy in front of :3000 forwards traffic —
-# zrouter is bound to 127.0.0.1 inside the container so it is unreachable
-# from outside.
+# No external services needed. All AI calls go directly to https://opencode.ai
+# from inside the Next.js process. The free-tier "Bearer public" credential is
+# hardcoded; set OPENCODE_API_KEY env to upgrade to a real opencode.ai account.
 #
 # Build:
 #   docker build -t rara-agent:latest .
 #
 # Run:
 #   docker run -d --name rara -p 3000:3000 \
-#     -e KROUTER_INTERNAL_TOKEN=$(openssl rand -hex 32) \
 #     -e KFAI_AUTH_SECRET=$(openssl rand -hex 24) \
 #     -e KROUTER_ADMIN_PASSWORD=$(openssl rand -base64 18) \
 #     -v rara_data:/app/data \
@@ -24,85 +22,76 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Stage 1: build Next.js ──────────────────────────────────────────────────
-FROM oven/bun:1.3 AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 # Build-time env. DATABASE_URL must be set so Prisma validate + generate
-# succeed during `next build` (the standalone server.ts imports db.ts
-# which calls new PrismaClient({ datasourceUrl: process.env.DATABASE_URL })).
-# This /tmp DB is never actually used — at runtime the operator sets
-# DATABASE_URL=file:/app/db/rara.db via docker-compose env.
+# succeed during `next build`.
 ENV DATABASE_URL=file:/tmp/rara-build-validate.db \
     NEXT_TELEMETRY_DISABLED=1 \
     CI=true
 
-# Copy root package.json + lockfile + zrouter package.json first for cache.
-COPY package.json bun.lock ./
-COPY mini-services/zrouter/package.json mini-services/zrouter/bun.lock ./mini-services/zrouter/
+# Copy package.json + lockfile first for cache.
+COPY package.json bun.lock* package-lock.json* ./
 
-# Install root deps (postinstall hook installs zrouter deps too).
-RUN bun install --frozen-lockfile
+# Install deps (use npm — bun is not strictly needed for a Next.js-only build).
+RUN if [ -f bun.lock ]; then \
+      npm install --no-audit --no-fund --omit=optional || npm install --no-audit --no-fund; \
+    else \
+      npm install --no-audit --no-fund; \
+    fi
 
 # Copy the rest of the source.
 COPY . .
 
-# Generate Prisma client (validation only — /tmp DB never written to).
-RUN bunx prisma generate || true
+# Generate Prisma client.
+RUN npx prisma generate || true
 
 # Build Next.js (produces .next/standalone + .next/static).
-# `next build` will try to evaluate API routes that import db.ts — the
-# DATABASE_URL=/tmp/... env above makes this safe.
-RUN bun run build
+RUN npm run build
 
 # ── Stage 2: production runtime ─────────────────────────────────────────────
-FROM oven/bun:1.3 AS runtime
+FROM node:22-alpine AS runtime
 
 WORKDIR /app
 
-# Copy standalone Next.js output (preserves the .next/standalone/ directory
-# structure so the start script `bun .next/standalone/server.js` works as-is).
-COPY --from=builder /app/.next/standalone ./.next/standalone
-COPY --from=builder /app/.next/static ./.next/standalone/.next/static
-COPY --from=builder /app/public ./.next/standalone/public
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/bun.lock ./bun.lock
-# node_modules: contains concurrently + Prisma client + everything else
-COPY --from=builder /app/node_modules ./node_modules
+ENV NODE_ENV=production
 
-# Copy zrouter source + its deps.
-COPY --from=builder /app/mini-services/zrouter ./mini-services/zrouter
+# Copy standalone Next.js output (preserves the .next/standalone/ directory
+# structure so `node .next/standalone/server.js` works as-is).
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy prisma schema + migrations (so we can push at runtime).
 COPY --from=builder /app/prisma ./prisma
 
-# Copy Caddyfile (used if the operator wants to run Caddy in the same image).
-COPY Caddyfile ./Caddyfile
-
 # Default env. Override at runtime via -e flags.
 ENV NODE_ENV=production \
-    HOST=0.0.0.0 \
+    HOSTNAME=0.0.0.0 \
     PORT=3000 \
-    KROUTER_BASE=http://127.0.0.1:3001 \
-    KROUTER_DATA_DIR=/app/data/mini-services/zrouter/data \
     DATABASE_URL=file:/app/db/rara.db \
     NEXT_TELEMETRY_DISABLED=1
 
-# Create writable dirs at runtime + install minimal process-control deps
-# (concurrently → tree-kill needs `ps` to kill process trees)
-RUN apt-get update -qq && apt-get install -y --no-install-recommends procps ca-certificates && rm -rf /var/lib/apt/lists/*
-RUN mkdir -p /app/data/mini-services/zrouter/data /app/db
+# Minimal runtime deps.
+RUN apk add --no-cache ca-certificates tini \
+    && mkdir -p /app/data /app/db
 
-# Expose ONLY the Next.js port. zrouter binds to 127.0.0.1:3001 internally
-# and is never reachable from outside the container.
+# Expose ONLY the Next.js port.
 EXPOSE 3000
 
-# Healthcheck: hit Next.js root. zrouter health is internal-only.
+# Healthcheck: hit Next.js root.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD bun -e "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+  CMD wget -q -O - http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1
 
-# Volume for persistent state (zrouter data + prisma db).
+# Volume for persistent state (Prisma SQLite db + per-user sandbox files).
 VOLUME ["/app/data", "/app/db"]
 
-# Start both processes. The shell form ensures env vars are expanded.
-CMD ["sh", "-c", "bun run db:push --accept-data-loss 2>/dev/null || true; exec bun run start"]
+# Use tini as PID 1 to handle SIGTERM cleanly.
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Push prisma schema (creates DB if missing), then start the Next.js server.
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss 2>/dev/null || true; exec node server.js"]
