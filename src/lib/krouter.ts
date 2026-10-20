@@ -42,7 +42,7 @@ export type ToolCall = {
 // "Bearer public" free-tier to a real opencode.ai account.
 const KROUTER_BASE = process.env.KROUTER_BASE || 'http://127.0.0.1:3001';
 const KROUTER_KEY = process.env.KROUTER_INTERNAL_TOKEN || process.env.KROUTER_KEY || '';
-export const DEFAULT_MODEL = 'opencode/glm-5.3-flash-free';
+export const DEFAULT_MODEL = 'opencode/deepseek-v4.1-flash-free';
 
 // Models actually available on opencode.ai's free tier (verified 2026-10-20
 // via GET https://opencode.ai/zen/v1/models). The free-tier catalog rotates
