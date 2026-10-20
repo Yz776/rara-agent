@@ -191,25 +191,6 @@ export function wrapWithPersona(req: ChatCompletionRequest): { body: ChatComplet
         "emit your final answer as `content` — never produce a response that " +
         "lives only in `reasoning_content`.",
     });
-    // ── ASSISTANT PRIMING ────────────────────────────────────────────────
-    // Pre-fill an assistant acknowledgment. This primes the model to continue
-    // the conversation naturally — instead of emitting reasoning about how
-    // it "should respond as Rara", it has already committed to responding as
-    // Rara, and the next user message (the actual question) gets a direct
-    // content response.
-    //
-    // Without this priming, opencode.ai free-tier models emit ALL output as
-    // `reasoning_content` and then `finish_reason: stop` — never producing
-    // `content` deltas. The model reasons about what to do but doesn't do it.
-    // The primed assistant message breaks this pattern by establishing that
-    // the model HAS already adopted the persona.
-    injected.push({
-      role: "assistant",
-      content:
-        "Siap! Aku paham. Aku akan jawab sebagai Rara — " +
-        "ceria, manis, dan ramah, dalam Bahasa Indonesia. " +
-        "Aku siap bantu kamu. Ada yang mau aku bantu?",
-    });
   }
 
   return {
