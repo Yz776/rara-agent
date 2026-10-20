@@ -490,25 +490,18 @@ export async function listOpencodeModels(cfg: OpencodeConfig = {}): Promise<stri
 }
 
 /** Static fallback list — mirrors rara-agent's MODELS_WHITELIST. */
+// Static fallback list — mirrors the live opencode.ai free-tier catalog
+// (verified 2026-10-20 via GET /zen/v1/models). The live probe at runtime
+// takes precedence; this is only used when the upstream is unreachable.
+// Ordered: recommended chat models first, agentic big-pickle last.
 export const STATIC_MODELS = [
-  "opencode/big-pickle",
-  "opencode/claude-sonnet-4",
-  "opencode/claude-haiku-4-5",
-  "opencode/claude-opus-4",
-  "opencode/gpt-5.4",
-  "opencode/gpt-5.4-mini",
-  "opencode/gpt-5.1-codex",
-  "opencode/gemini-3.5-flash",
-  "opencode/gemini-3.6-flash",
-  "opencode/glm-5.3-flash",
-  "opencode/deepseek-v4-flash",
-  "opencode/qwen3.8-flash",
-  "opencode/kimi-k3",
-  "opencode/mistral-large-4",
-  "opencode/grok-4.7",
-  "opencode/muse-spark-1.3",
-  "opencode/jev-1.13-free",
-  "opencode/exo-free",
+  "opencode/glm-5.3-flash-free",
+  "opencode/deepseek-v4.1-flash-free",
   "opencode/mimo-v2.6-flash-free",
-  "opencode/space-bunny-free",
+  "opencode/nemotron-3.5-lightning-free",
+  "opencode/nemotron-3.5-super-vl-free",
+  "opencode/longcat-2.5-preview-free",
+  "opencode/jev-1.13-free",
+  "opencode/beam-free",
+  "opencode/big-pickle",
 ];

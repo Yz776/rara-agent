@@ -42,10 +42,32 @@ export type ToolCall = {
 // "Bearer public" free-tier to a real opencode.ai account.
 const KROUTER_BASE = process.env.KROUTER_BASE || 'http://127.0.0.1:3001';
 const KROUTER_KEY = process.env.KROUTER_INTERNAL_TOKEN || process.env.KROUTER_KEY || '';
-export const DEFAULT_MODEL = 'opencode/big-pickle';
+export const DEFAULT_MODEL = 'opencode/glm-5.3-flash-free';
 
+// Models actually available on opencode.ai's free tier (verified 2026-10-20
+// via GET https://opencode.ai/zen/v1/models). The free-tier catalog rotates
+// occasionally — `listKrouterModels()` does a live probe at runtime and
+// falls back to this list when the upstream is unreachable.
+//
+// The old list (claude-sonnet-4, gpt-5.4, etc.) was aspirational — those
+// models aren't actually available on the free tier without a paid
+// opencode.ai account. The list below reflects what's ACTUALLY callable
+// with `Authorization: Bearer public`.
 export const MODELS_WHITELIST = [
+  // Normal chat models (recommended — these emit content, not just reasoning)
+  'opencode/glm-5.3-flash-free',          // GLM flash — DEFAULT_MODEL
+  'opencode/deepseek-v4.1-flash-free',     // DeepSeek flash
+  'opencode/mimo-v2.6-flash-free',         // mimo flash
+  'opencode/nemotron-3.5-lightning-free',  // Nemotron lightning
+  'opencode/nemotron-3.5-super-vl-free',   // Nemotron super (vision-capable)
+  'opencode/longcat-2.5-preview-free',    // longcat preview
+  'opencode/jev-1.13-free',                // jev
+  'opencode/beam-free',                    // beam
+  // Agentic coding model (emits only reasoning_content in chat context —
+  // use only when the user explicitly wants an agentic coding task)
   'opencode/big-pickle',
+  // Legacy entries (kept for backward-compat — these were aspirational
+  // names from the old whitelist; opencode.ai may or may not have them)
   'opencode/claude-sonnet-4',
   'opencode/claude-haiku-4-5',
   'opencode/claude-opus-4',
@@ -61,9 +83,7 @@ export const MODELS_WHITELIST = [
   'opencode/mistral-large-4',
   'opencode/grok-4.7',
   'opencode/muse-spark-1.3',
-  'opencode/jev-1.13-free',
   'opencode/exo-free',
-  'opencode/mimo-v2.6-flash-free',
   'opencode/space-bunny-free',
 ];
 
