@@ -1,8 +1,14 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Rara Agent — production docker-compose
 #
-# Run:
-#   docker compose up -d --build
+# Default: pulls pre-built image from GitHub Container Registry.
+#   docker compose up -d
+#
+# To build locally instead (e.g. for testing uncommitted changes):
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+#
+# To update to the latest pushed image:
+#   docker compose pull && docker compose up -d
 #
 # Logs:
 #   docker compose logs -f rara
@@ -12,12 +18,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 services:
   rara:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: rara-agent:latest
+    # Pre-built multi-arch image (amd64 + arm64) — auto-built by GitHub Actions
+    # on every push to main. See .github/workflows/docker-publish.yml
+    image: ghcr.io/yz776/rara-agent:latest
     container_name: rara
     restart: unless-stopped
+    pull_policy: always   # always pull the latest at container start
     ports:
       # Expose ONLY the Next.js port. zrouter stays on 127.0.0.1:3001 inside the container.
       - "3000:3000"
@@ -49,6 +55,13 @@ services:
       HOST: 0.0.0.0
       PORT: 3000
       KROUTER_DATA_DIR: /app/data/mini-services/zrouter/data
+
+      # ── Rate limits (per IP / hour) — override defaults via env ──────────
+      RATE_LIMIT_LOGIN_PER_HOUR: ${RATE_LIMIT_LOGIN_PER_HOUR:-30}
+      RATE_LIMIT_CHAT_PER_HOUR: ${RATE_LIMIT_CHAT_PER_HOUR:-120}
+      RATE_LIMIT_CAPTCHA_PER_HOUR: ${RATE_LIMIT_CAPTCHA_PER_HOUR:-30}
+      RATE_LIMIT_DEVICE_PER_HOUR: ${RATE_LIMIT_DEVICE_PER_HOUR:-200}
+      RATE_LIMIT_ADMIN_PER_HOUR: ${RATE_LIMIT_ADMIN_PER_HOUR:-300}
     volumes:
       # Persistent Prisma DB (users, conversations, sessions)
       - rara_db:/app/db
