@@ -1,2 +1,41 @@
-skills/
+# deps
 node_modules/
+**/node_modules/
+
+# build artifacts
+.next/
+**/.next/
+out/
+dist/
+
+# logs
+*.log
+dev.log
+server.log
+zrouter.log
+tool-results/
+
+# env / secrets (DO NOT COMMIT)
+.env
+.env.local
+.env.*.local
+
+# db
+db/*.db
+db/*.db-journal
+prisma/*.db
+prisma/migrations/dev/
+
+# mini-service data dirs
+mini-services/*/data/
+mini-services/zrouter/data/
+
+# system
+.zscripts/
+skills/
+download/
+
+# misc
+.DS_Store
+.idea/
+.vscode/
