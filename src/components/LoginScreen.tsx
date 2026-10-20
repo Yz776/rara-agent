@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { login, setToken, collectDeviceFingerprint, startBehavioralTracking } from "@/lib/api-client";
+import { useEffect, useState } from "react";
+import { login, setToken } from "@/lib/api-client";
 import { Rara3D } from "@/components/Rara3D";
 
 type Props = {
@@ -9,175 +9,41 @@ type Props = {
 };
 
 export function LoginScreen({ onLoggedIn }: Props) {
-  const [progress, setProgress] = useState(0);
-  const [stage, setStage] = useState("Memulai verifikasi...");
   const [error, setError] = useState<string | null>(null);
-  const renderTsRef = useRef<number>(0);
-  const loginAttemptedRef = useRef(false);
-  const retryCountRef = useRef(0);
-  const onLoggedInRef = useRef(onLoggedIn);
-  onLoggedInRef.current = onLoggedIn;
-
-  // ── Collect fingerprint + auto-login (no button click needed) ───────────────
-  const runAutoLogin = useCallback(async () => {
-    setError(null);
-    retryCountRef.current++;
-
-    // Collect fingerprint in background while showing progress
-    setStage("Memindai canvas + GPU");
-    setProgress(10);
-    const fpPromise = collectDeviceFingerprint();
-
-    // Animate progress while fingerprint collects
-    const stages: [string, number][] = [
-      ["Menganalisis WebGL + shader", 25],
-      ["Memeriksa audio + codec", 40],
-      ["Mendeteksi font + media", 55],
-      ["Memverifikasi hardware + sensors", 70],
-      ["Mengukur presisi CPU", 82],
-      ["Memverifikasi jaringan + perilaku", 92],
-    ];
-    for (const [label, pct] of stages) {
-      setStage(label);
-      setProgress(pct);
-      await new Promise((r) => setTimeout(r, 100));
-    }
-
-    // Wait for fingerprint (10s timeout)
-    try {
-      await Promise.race([
-        fpPromise,
-        new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000)),
-      ]);
-      setProgress(100);
-      setStage("Perangkat terverifikasi");
-
-      if (loginAttemptedRef.current) return;
-      loginAttemptedRef.current = true;
-
-      // Wait for time-trap minimum (1.5s)
-      const elapsed = Date.now() - renderTsRef.current;
-      if (elapsed < 1500) {
-        await new Promise((r) => setTimeout(r, 1500 - elapsed));
-      }
-
-      setStage("Masuk...");
-      const r = await login(renderTsRef.current);
-      setToken(r.token);
-      onLoggedInRef.current();
-    } catch (e: any) {
-      const msg = e?.message || "Gagal verifikasi perangkat";
-      setError(msg);
-
-      // Cloudflare edge blocks (Bot Fight Mode) don't improve with retries —
-      // Cloudflare just keeps returning 502 for the same browser/IP combo.
-      // Skip the retry loop entirely and surface actionable guidance.
-      if (e?.isCloudflare) {
-        setStage("Diblokir Cloudflare");
-        return;
-      }
-
-      // Other errors (403 integrity, 429 rate-limit, transient network) →
-      // retry up to 3 times with 2s backoff, then show manual retry button.
-      if (retryCountRef.current < 3) {
-        setStage("Mencoba lagi...");
-        loginAttemptedRef.current = false;
-        setTimeout(() => runAutoLogin(), 2000);
-      } else {
-        setStage("Gagal — klik untuk coba lagi");
-      }
-    }
-  }, []);
 
   useEffect(() => {
-    startBehavioralTracking();
-    renderTsRef.current = Date.now();
-    runAutoLogin();
-  }, [runAutoLogin]);
+    // Skip ALL fingerprint/captcha — just POST to /api/auth immediately
+    login(Date.now())
+      .then((r) => {
+        setToken(r.token);
+        onLoggedIn();
+      })
+      .catch((e) => {
+        setError(e?.message || "Login gagal");
+      });
+  }, [onLoggedIn]);
 
-  const manualRetry = () => {
-    retryCountRef.current = 0;
-    loginAttemptedRef.current = false;
-    runAutoLogin();
-  };
-
-  return (
-    <div className="kfai-login">
-      <div className="kfai-login-card" style={{ textAlign: "center" }}>
-        <div className="kfai-login-brand" style={{ justifyContent: "center", marginBottom: 28 }}>
-          <div className="rara-mark-3d" aria-hidden style={{ width: 56, height: 56 }}>
-            <Rara3D mood="happy" size={56} showPlatform={false} />
-          </div>
-          <div>
-            <div className="kfai-login-title">Rara</div>
-            <div className="kfai-login-sub">{"// asisten AI ceria & manis"}</div>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="kfai-fp-progress">
-          <div className="kfai-fp-bar" style={{ width: `${progress}%` }} />
-        </div>
-
-        {/* Stage indicator */}
-        <div className="kfai-fp-stage" style={{ justifyContent: "center" }}>
-          {progress < 100 && !error && <span className="kfai-fp-spinner" />}
-          {progress === 100 && !error && <span style={{ color: "#10b981" }}>✓</span>}
-          {error && retryCountRef.current >= 3 && <span style={{ color: "#f59e0b" }}>⚠</span>}
-          <span>{stage}</span>
-        </div>
-
-        {/* Signal chips */}
-        <div className="kfai-fp-signals" style={{ justifyContent: "center" }}>
-          <span>Canvas</span>
-          <span>WebGL</span>
-          <span>Audio</span>
-          <span>Fonts</span>
-          <span>Screen</span>
-          <span>Media</span>
-          <span>WebRTC</span>
-          <span>Behavior</span>
-        </div>
-
-        {/* Manual retry button — appears after 3 failed attempts OR on Cloudflare block */}
-        {error && (retryCountRef.current >= 3 || stage === "Diblokir Cloudflare") && (
-          <button
-            onClick={manualRetry}
-            style={{
-              marginTop: 16,
-              background: "#f59e0b",
-              color: "#0a0a0b",
-              border: "none",
-              borderRadius: 6,
-              padding: "10px 24px",
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
-              fontFamily: "monospace",
-              textTransform: "uppercase",
-            }}
-          >
+  if (error) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0b", color: "#71717a", fontFamily: "monospace" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ margin: "0 auto 16px", width: 56, height: 56 }}><Rara3D mood="shy" size={56} showPlatform={false} /></div>
+          <p style={{ fontSize: 14, color: "#f59e0b" }}>{error}</p>
+          <button onClick={() => location.reload()} style={{ marginTop: 16, background: "#f59e0b", color: "#0a0a0b", border: 0, borderRadius: 6, padding: "10px 24px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             Coba Lagi
           </button>
-        )}
-
-        {error && retryCountRef.current < 3 && stage !== "Diblokir Cloudflare" && (
-          <div className="kfai-login-error" style={{ marginTop: 12 }}>
-            {error}
-          </div>
-        )}
-
-        {error && stage === "Diblokir Cloudflare" && (
-          <div className="kfai-login-error" style={{ marginTop: 12, fontSize: 12, lineHeight: 1.5 }}>
-            {error}
-          </div>
-        )}
-
-        <div className="kfai-login-hint" style={{ marginTop: 20 }}>
-          <b>Verifikasi otomatis · 1 IP = 1 session</b>
-          <br />
-          Tidak perlu klik — verifikasi perangkat berjalan otomatis.
         </div>
+      </div>
+    );
+  }
+
+  // Loading screen while token is being issued
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0b", color: "#71717a", fontFamily: "monospace" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ margin: "0 auto 16px", width: 56, height: 56 }}><Rara3D mood="happy" size={56} showPlatform={false} /></div>
+        <div style={{ fontSize: 28, fontWeight: 700, color: "#FF9CC1", marginBottom: 8 }}>Rara</div>
+        <div style={{ fontSize: 12 }}>memuat Rara...</div>
       </div>
     </div>
   );

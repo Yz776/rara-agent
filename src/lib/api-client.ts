@@ -316,10 +316,8 @@ export function getBehavioralSignature(): string {
 // The device fingerprint is computed once and cached.
 export async function authHeaders(extra?: HeadersInit): Promise<HeadersInit> {
   const token = getToken();
-  const { hash } = await collectDeviceFingerprint();
   const h: Record<string, string> = { ...(extra as Record<string, string> || {}) };
   if (token) h['Authorization'] = `Bearer ${token}`;
-  h['X-KFAI-Device'] = hash;
   return h;
 }
 
@@ -328,7 +326,6 @@ export function authHeadersSync(extra?: HeadersInit): HeadersInit {
   const token = getToken();
   const h: Record<string, string> = { ...(extra as Record<string, string> || {}) };
   if (token) h['Authorization'] = `Bearer ${token}`;
-  if (cachedFingerprint) h['X-KFAI-Device'] = cachedFingerprint;
   return h;
 }
 
@@ -434,12 +431,8 @@ export async function login(renderTimestamp: number): Promise<LoginResponse> {
 export async function fetchMe(): Promise<AuthMe | null> {
   const token = getToken();
   if (!token) return null;
-  const res = await fetch('/api/auth', { headers: await authHeaders() });
-  if (res.status === 401) {
-    clearToken();
-    return null;
-  }
-  if (!res.ok) return null;
+  const res = await fetch('/api/auth', { headers: { 'Authorization': `Bearer ${token}` } });
+  if (!res.ok) { return null; }
   return res.json();
 }
 

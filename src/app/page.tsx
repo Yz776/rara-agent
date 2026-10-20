@@ -1,76 +1,55 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { LoginScreen } from "@/components/LoginScreen";
 import { ChatApp } from "@/components/ChatApp";
-import { fetchMe, logout as apiLogout, type AuthMe } from "@/lib/api-client";
-
-// ── Loading state ──────────────────────────────────────────────────────────────
-function FullScreenLoader() {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#0a0a0b",
-        color: "#71717a",
-        fontFamily: "var(--font-mono), monospace",
-        fontSize: "12px",
-      }}
-    >
-      <div style={{ textAlign: "center" }}>
-        <div style={{ margin: "0 auto 12px", fontSize: 28, fontWeight: 700, color: "#FF9CC1" }}>Rara</div>
-        memuat Rara…
-      </div>
-    </div>
-  );
-}
+import { logout as apiLogout, setToken, type AuthMe } from "@/lib/api-client";
 
 export default function Page() {
-  const [bootState, setBootState] = useState<"loading" | "anonymous" | "authed">("loading");
+  const [bootState, setBootState] = useState<"loading" | "authed">("loading");
   const [me, setMe] = useState<AuthMe | null>(null);
 
-  // ── Bootstrap: check if we have a valid token ──────────────────────────────
   useEffect(() => {
-    let cancelled = false;
     (async () => {
       try {
-        const user = await fetchMe();
-        if (cancelled) return;
-        if (user) {
-          setMe(user);
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ _ts: Date.now(), _fp: 'skip', _bh: 'skip', _hp: '' }),
+        });
+        const data = await res.json();
+        if (data.token) {
+          setToken(data.token);
+          setMe({
+            userId: data.userId,
+            authId: data.authId,
+            displayName: data.displayName || null,
+            createdAt: data.createdAt || new Date().toISOString(),
+            lastSeenAt: new Date().toISOString(),
+          });
           setBootState("authed");
-        } else {
-          setBootState("anonymous");
         }
-      } catch {
-        if (!cancelled) setBootState("anonymous");
+      } catch (e) {
+        console.error('Auto-login failed:', e);
       }
     })();
-    return () => { cancelled = true; };
   }, []);
 
-  // ── Login success handler ──────────────────────────────────────────────────
-  const onLoggedIn = useCallback(async () => {
-    const user = await fetchMe();
-    if (user) {
-      setMe(user);
-      setBootState("authed");
-    } else {
-      setBootState("anonymous");
-    }
-  }, []);
-
-  // ── Logout handler ──────────────────────────────────────────────────────────
   const onLogout = useCallback(async () => {
     await apiLogout();
-    setMe(null);
-    setBootState("anonymous");
+    location.reload();
   }, []);
 
-  if (bootState === "loading") return <FullScreenLoader />;
-  if (bootState === "anonymous" || !me) return <LoginScreen onLoggedIn={onLoggedIn} />;
+  if (bootState === "loading") {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0b", color: "#71717a", fontFamily: "monospace" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "#FF9CC1" }}>Rara</div>
+          <div style={{ fontSize: 12, marginTop: 4 }}>memuat Rara...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!me) return null;
   return <ChatApp me={me} onLogout={onLogout} />;
 }
