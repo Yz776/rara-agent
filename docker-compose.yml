@@ -18,54 +18,50 @@
 # ─────────────────────────────────────────────────────────────────────────────
 services:
   rara:
-    # Pre-built multi-arch image (amd64 + arm64) — auto-built by GitHub Actions
-    # on every push to main. See .github/workflows/docker-publish.yml
+    # Pre-built image — auto-built by GitHub Actions on every push to main.
+    # See .github/workflows/docker-publish.yml
     image: ghcr.io/yz776/rara-agent:latest
     container_name: rara
     restart: unless-stopped
-    pull_policy: always   # always pull the latest at container start
+    pull_policy: always
     ports:
       # Expose ONLY the Next.js port. zrouter stays on 127.0.0.1:3001 inside the container.
       - "3000:3000"
     environment:
-      # ── Required secrets (generate with openssl rand) ────────────────────
-      # These MUST be set before first boot. Bootstrap mode is disabled when
-      # KROUTER_INTERNAL_TOKEN is set, so without it zrouter refuses ALL
-      # unauthenticated calls (including from Next.js — which would break).
-      KROUTER_INTERNAL_TOKEN: ${KROUTER_INTERNAL_TOKEN:?must be set — generate with: openssl rand -hex 32}
-      KFAI_AUTH_SECRET: ${KFAI_AUTH_SECRET:?must be set — generate with: openssl rand -hex 24}
+      # Required secrets (generate with openssl rand).
+      # Values must be QUOTED in YAML because ${VAR:?error message} contains colons
+      # which YAML would otherwise parse as nested mapping separators.
+      KROUTER_INTERNAL_TOKEN: "${KROUTER_INTERNAL_TOKEN:?KROUTER_INTERNAL_TOKEN must be set}"
+      KFAI_AUTH_SECRET: "${KFAI_AUTH_SECRET:?KFAI_AUTH_SECRET must be set}"
 
-      # ── zrouter dashboard login (for ops who want to manage pool keys
-      # via the admin UI at http://<host>:3001 from inside the container —
-      # reachable via `docker exec -it rara curl http://127.0.0.1:3001/`)
-      KROUTER_ADMIN_USERNAME: ${KROUTER_ADMIN_USERNAME:-admin}
-      KROUTER_ADMIN_PASSWORD: ${KROUTER_ADMIN_PASSWORD:?must be set — generate with: openssl rand -base64 18}
+      # zrouter dashboard login (for ops who want to manage pool keys).
+      KROUTER_ADMIN_USERNAME: "${KROUTER_ADMIN_USERNAME:-admin}"
+      KROUTER_ADMIN_PASSWORD: "${KROUTER_ADMIN_PASSWORD:?KROUTER_ADMIN_PASSWORD must be set}"
 
-      # ── Internal routing ─────────────────────────────────────────────────
-      # Next.js server uses this to call the embedded zrouter over localhost.
-      KROUTER_BASE: http://127.0.0.1:3001
-      MCP_ENDPOINT: http://127.0.0.1:3001/mcp
-      RARA_BASE_URL: http://127.0.0.1:3000
+      # Internal routing.
+      KROUTER_BASE: "http://127.0.0.1:3001"
+      MCP_ENDPOINT: "http://127.0.0.1:3001/mcp"
+      RARA_BASE_URL: "http://127.0.0.1:3000"
 
-      # ── Next.js ──────────────────────────────────────────────────────────
-      DATABASE_URL: file:/app/db/rara.db
-      NODE_ENV: production
+      # Next.js.
+      DATABASE_URL: "file:/app/db/rara.db"
+      NODE_ENV: "production"
 
-      # ── zrouter ──────────────────────────────────────────────────────────
-      HOST: 0.0.0.0
-      PORT: 3000
-      KROUTER_DATA_DIR: /app/data/mini-services/zrouter/data
+      # zrouter.
+      HOST: "0.0.0.0"
+      PORT: "3000"
+      KROUTER_DATA_DIR: "/app/data/mini-services/zrouter/data"
 
-      # ── Rate limits (per IP / hour) — override defaults via env ──────────
-      RATE_LIMIT_LOGIN_PER_HOUR: ${RATE_LIMIT_LOGIN_PER_HOUR:-30}
-      RATE_LIMIT_CHAT_PER_HOUR: ${RATE_LIMIT_CHAT_PER_HOUR:-120}
-      RATE_LIMIT_CAPTCHA_PER_HOUR: ${RATE_LIMIT_CAPTCHA_PER_HOUR:-30}
-      RATE_LIMIT_DEVICE_PER_HOUR: ${RATE_LIMIT_DEVICE_PER_HOUR:-200}
-      RATE_LIMIT_ADMIN_PER_HOUR: ${RATE_LIMIT_ADMIN_PER_HOUR:-300}
+      # Rate limits (per IP / hour) — override via env.
+      RATE_LIMIT_LOGIN_PER_HOUR: "${RATE_LIMIT_LOGIN_PER_HOUR:-30}"
+      RATE_LIMIT_CHAT_PER_HOUR: "${RATE_LIMIT_CHAT_PER_HOUR:-120}"
+      RATE_LIMIT_CAPTCHA_PER_HOUR: "${RATE_LIMIT_CAPTCHA_PER_HOUR:-30}"
+      RATE_LIMIT_DEVICE_PER_HOUR: "${RATE_LIMIT_DEVICE_PER_HOUR:-200}"
+      RATE_LIMIT_ADMIN_PER_HOUR: "${RATE_LIMIT_ADMIN_PER_HOUR:-300}"
     volumes:
-      # Persistent Prisma DB (users, conversations, sessions)
+      # Persistent Prisma DB (users, conversations, sessions).
       - rara_db:/app/db
-      # Persistent zrouter state (config.json + krouter.db + auth.db + proxies.db + key_pool)
+      # Persistent zrouter state (config.json + krouter.db + auth.db + proxies.db + key_pool).
       - rara_data:/app/data
     healthcheck:
       test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
