@@ -195,26 +195,22 @@ export async function loginWithCaptcha(
   };
 }
 
-// ── Find or create a user from device fingerprint (no captcha) ────────────────
-// This is the new login flow — no captcha needed. Device fingerprint IS the
-// auth factor. The user identity is derived from the fingerprint hash:
-//   authId = sha256(fpHash + ':' + AUTH_SECRET)
+// ── Find or create a user from IP (no captcha, no device fingerprint) ─────────
+// This is the simplest login flow — user identity is derived from the IP.
+//   authId = sha256(ip + ':' + AUTH_SECRET)
 //
-// Same device → same authId → same user identity.
-// Different device → different authId → different user (sandbox isolation).
+// Same IP → same authId → same user (sandbox, conversations, env preserved).
+// Different IP → different authId → different user.
 //
-// STRICT: same as loginWithCaptcha — revoke prior sessions for same IP
-// before issuing new one.
-export async function loginWithDevice(
+// STRICT: revoke prior sessions for same IP before issuing new one (1 IP = 1
+// active session).
+export async function loginWithIp(
   meta: {
     userAgent?: string;
     ip: string;
-    deviceFingerprint: string;
-    behavioralSignature?: string;
-    rawSignals?: Record<string, unknown>;
   },
 ): Promise<AuthContext> {
-  const authId = deriveAuthIdFromFingerprint(meta.deviceFingerprint);
+  const authId = deriveAuthIdFromIp(meta.ip);
 
   // Upsert user
   let user;
@@ -248,13 +244,7 @@ export async function loginWithDevice(
   // ── ENFORCE 1 IP = 1 SESSION ────────────────────────────────────────────
   await revokeSessionsForIp(meta.ip, 'ip_replacement');
 
-  // ── Register device fingerprint ────────────────────────────────────────
-  await registerDeviceFingerprint(user.id, meta.deviceFingerprint, meta.ip, {
-    ...meta.rawSignals,
-    _behavioral: meta.behavioralSignature,
-  });
-
-  // ── Issue new session bound to (IP, deviceFingerprint) ───────────────────
+  // ── Issue new session bound to IP only (no device fingerprint) ─────────
   const token = randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
   let session;
@@ -265,7 +255,8 @@ export async function loginWithDevice(
         token,
         userAgent: meta.userAgent?.slice(0, 200),
         ipAddr: meta.ip.slice(0, 64),
-        deviceFingerprint: meta.deviceFingerprint,
+        // deviceFingerprint is now optional — leave empty for IP-only sessions.
+        deviceFingerprint: null,
         expiresAt,
       },
     });
@@ -284,13 +275,38 @@ export async function loginWithDevice(
   };
 }
 
+// ── Derive authId from IP (no captcha, no device fingerprint needed) ─────────
+// authId = sha256(ip + ':' + AUTH_SECRET)
+// Same IP → same authId → stable user identity across sessions.
+export function deriveAuthIdFromIp(ip: string): string {
+  return sha256('ip:' + ip + ':' + AUTH_SECRET);
+}
+
+// ── Find or create a user from device fingerprint (no captcha) ────────────────
+// LEGACY: kept for backward-compat with old clients that still send _fp.
+// Internally delegates to loginWithIp — device fingerprint is no longer used
+// as an auth factor (verification removed per user request).
+export async function loginWithDevice(
+  meta: {
+    userAgent?: string;
+    ip: string;
+    deviceFingerprint?: string;
+    behavioralSignature?: string;
+    rawSignals?: Record<string, unknown>;
+  },
+): Promise<AuthContext> {
+  return loginWithIp({
+    userAgent: meta.userAgent,
+    ip: meta.ip,
+  });
+}
+
 // ── Verify a bearer token ────────────────────────────────────────────────────
-// STRICT: also verifies that the requesting IP matches the IP bound to the
-// session, AND the device fingerprint matches. If either mismatch → 401.
-//
-// This is the single point of enforcement. Every API route that needs auth
-// calls verifyToken(token, currentIp, currentFingerprint) — if any check
-// fails, the user is logged out.
+// SIMPLIFIED: only verifies token validity + IP match (no device fingerprint
+// check — verification was removed per user request). If the session was bound
+// to a device fingerprint at creation time, we still accept the request even
+// when the current request doesn't provide a fingerprint (so old sessions
+// continue working until they expire).
 export async function verifyToken(
   token: string | null | undefined,
   currentIp?: string,
@@ -312,36 +328,27 @@ export async function verifyToken(
 
   // ── IP BINDING CHECK ──────────────────────────────────────────────────────
   // If the session was bound to an IP, the requesting IP MUST match.
-  // Bypass only for localhost (dev environment) — but in production behind
-  // Caddy, the IP comes from X-Forwarded-For and will always be set.
+  // Bypass only for localhost (dev environment).
   if (session.ipAddr && currentIp && currentIp !== 'unknown' && currentIp !== '127.0.0.1' && currentIp !== '::1') {
     if (session.ipAddr !== currentIp) {
       // IP mismatch — revoke the session, this is suspicious.
-      await db.session.update({
-        where: { id: session.id },
-        data: { revoked: true, revokeReason: `ip_mismatch:expected=${session.ipAddr},got=${currentIp}` },
-      });
+      try {
+        await db.session.update({
+          where: { id: session.id },
+          data: { revoked: true, revokeReason: `ip_mismatch:expected=${session.ipAddr},got=${currentIp}` },
+        });
+      } catch {}
       return null;
     }
   }
 
-  // ── DEVICE FINGERPRINT CHECK ─────────────────────────────────────────────
-  // If session has a device fingerprint bound, requesting fingerprint MUST match.
-  // Missing fingerprint on request = no JS = bot = reject.
-  if (session.deviceFingerprint) {
-    if (!currentFingerprint || currentFingerprint.length < 32) {
-      // No fingerprint provided — could be a replay attack from a non-browser client.
-      return null;
-    }
-    if (session.deviceFingerprint !== currentFingerprint) {
-      // Device mismatch — revoke.
-      await db.session.update({
-        where: { id: session.id },
-        data: { revoked: true, revokeReason: 'device_mismatch' },
-      });
-      return null;
-    }
-  }
+  // ── DEVICE FINGERPRINT CHECK — DISABLED ──────────────────────────────────
+  // Previously: if session.deviceFingerprint was set, current request had to
+  // provide a matching fingerprint. This was removed per user request — IP
+  // binding is the sole auth factor now. The `currentFingerprint` parameter
+  // is kept in the signature for backward-compat with callers that still pass
+  // a fingerprint header, but it's ignored.
+  void currentFingerprint;
 
   // Bump lastSeenAt (best-effort, non-blocking)
   db.session.update({ where: { id: session.id }, data: { lastSeenAt: new Date() } }).catch(() => {});

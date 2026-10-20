@@ -360,26 +360,21 @@ export async function fetchCaptcha(): Promise<{ challengeId: string; svg: string
   return res.json();
 }
 
-// ── Login (device-bound, no captcha) ──────────────────────────────────────────
+// ── Login (IP-based, no captcha, no device verification) ──────────────────────
 // User just clicks "Masuk" — server validates:
-//   1. Device fingerprint hash is present and well-formed
-//   2. Raw signals match the hash (server re-hashes to verify)
-//   3. Honeypot field is empty (bot check)
-//   4. Time-trap: form took at least 1.5s to submit (bot check)
-//   5. Behavioral signature present (mouse movements, key timings)
-//   6. Bot UA check
-//   7. Rate limit per IP (10 logins/hour)
-//   8. 1 IP = 1 session (revoke prior sessions for same IP)
-export async function login(renderTimestamp: number): Promise<LoginResponse> {
-  const { hash, raw } = await collectDeviceFingerprint();
-  const behavior = getBehavioralSignature();
-  const body: Record<string, unknown> = {
-    _ts: renderTimestamp,
-    _fp: hash,
-    _fs: raw,
-    _bh: behavior,
-    _hp: '',
-  };
+//   1. Bot UA check
+//   2. Rate limit per IP (30 logins/hour)
+//   3. 1 IP = 1 session (revoke prior sessions for same IP)
+//   4. Issue token bound to IP only
+//
+// Device fingerprint collection is no longer required (the server ignores
+// _fp / _bh / _ts / _hp fields). Body can be empty.
+export async function login(renderTimestamp?: number): Promise<LoginResponse> {
+  // Body is optional now — we send an empty object so the server can parse it.
+  // The renderTimestamp is ignored on the server side (kept in signature for
+  // backward-compat with callers that still pass it).
+  void renderTimestamp;
+  const body: Record<string, unknown> = {};
   // Timeout: 15s — if Cloudflare/network is slow, abort and retry
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);

@@ -46,6 +46,12 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('stats');
   const [error, setError] = useState<string | null>(null);
 
+  // Login form state (username + password — replaced the old "Admin Key" gate)
+  const [loginU, setLoginU] = useState("");
+  const [loginP, setLoginP] = useState("");
+  const [loginErr, setLoginErr] = useState<string | null>(null);
+  const [loginBusy, setLoginBusy] = useState(false);
+
   // Data states
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -53,7 +59,8 @@ export default function AdminPage() {
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Check for stored key
+  // Check for stored key (saved by the login form after a successful
+  // username+password validation against /api/admin/login)
   useEffect(() => {
     const stored = localStorage.getItem('kfai_admin_key');
     if (stored) {
@@ -107,10 +114,36 @@ export default function AdminPage() {
     if (authed) loadData(tab);
   }, [authed, tab, loadData]);
 
-  const onLogin = () => {
-    if (!adminKey.trim()) return;
-    localStorage.setItem('kfai_admin_key', adminKey.trim());
-    setAuthed(true);
+  const onLogin = async () => {
+    if (!loginU.trim() || !loginP) return;
+    setLoginBusy(true);
+    setLoginErr(null);
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Rara-Admin-UI' },
+        body: JSON.stringify({ username: loginU.trim(), password: loginP }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setLoginErr(j.error || `Login gagal (HTTP ${res.status})`);
+        return;
+      }
+      if (!j.adminKey) {
+        setLoginErr('Server tidak mengembalikan admin key. Cek KF_AI_ADMIN_KEY di .env.');
+        return;
+      }
+      // Success — store admin key, switch to dashboard
+      localStorage.setItem('kfai_admin_key', j.adminKey);
+      setAdminKey(j.adminKey);
+      setAuthed(true);
+      setLoginU("");
+      setLoginP("");
+    } catch (e: any) {
+      setLoginErr(e?.message || 'Network error saat login');
+    } finally {
+      setLoginBusy(false);
+    }
   };
 
   const onLogout = () => {
@@ -143,28 +176,67 @@ export default function AdminPage() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0b', color: '#e4e4e7', fontFamily: 'system-ui, sans-serif' }}>
         <div style={{ width: '100%', maxWidth: 400, background: '#0d0d0f', border: '1px solid #1f1f23', borderRadius: 10, padding: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 6, background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#0a0a0b', fontSize: 16 }}>K</div>
+            <div style={{ width: 32, height: 32, borderRadius: 6, background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#0a0a0b', fontSize: 16 }}>R</div>
             <div>
               <div style={{ fontSize: 17, fontWeight: 600 }}>Rara Admin</div>
-              <div style={{ fontSize: 11, color: '#52525b', fontFamily: 'monospace' }}>{"// admin panel"}</div>
+              <div style={{ fontSize: 11, color: '#52525b', fontFamily: 'monospace' }}>{"// admin panel · login"}</div>
             </div>
           </div>
-          <label style={{ display: 'block', fontSize: 11, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontFamily: 'monospace' }}>Admin Key</label>
+
+          <label style={{ display: 'block', fontSize: 11, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontFamily: 'monospace' }}>Username</label>
           <input
-            type="password"
-            value={adminKey}
-            onChange={(e) => setAdminKey(e.target.value)}
+            type="text"
+            value={loginU}
+            onChange={(e) => setLoginU(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onLogin()}
-            placeholder="64-char hex key"
+            placeholder="admin"
+            autoComplete="username"
             style={{ width: '100%', boxSizing: 'border-box', background: '#111113', border: '1px solid #1f1f23', borderRadius: 6, color: '#e4e4e7', padding: '10px 12px', fontFamily: 'monospace', fontSize: 13, outline: 'none', marginBottom: 16 }}
             autoFocus
           />
-          <button onClick={onLogin} disabled={!adminKey.trim()} style={{ width: '100%', background: '#f59e0b', color: '#0a0a0b', border: 'none', borderRadius: 6, padding: '11px', fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.04em', opacity: adminKey.trim() ? 1 : 0.5 }}>
-            Masuk Admin
+
+          <label style={{ display: 'block', fontSize: 11, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontFamily: 'monospace' }}>Password</label>
+          <input
+            type="password"
+            value={loginP}
+            onChange={(e) => setLoginP(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onLogin()}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            style={{ width: '100%', boxSizing: 'border-box', background: '#111113', border: '1px solid #1f1f23', borderRadius: 6, color: '#e4e4e7', padding: '10px 12px', fontFamily: 'monospace', fontSize: 13, outline: 'none', marginBottom: 16 }}
+          />
+
+          {loginErr && (
+            <div style={{ background: '#2a0d0d', border: '1px solid #4b1a1a', borderRadius: 6, padding: '8px 12px', marginBottom: 16, fontSize: 12, color: '#f87171', fontFamily: 'monospace' }}>
+              ⚠ {loginErr}
+            </div>
+          )}
+
+          <button
+            onClick={onLogin}
+            disabled={!loginU.trim() || !loginP || loginBusy}
+            style={{
+              width: '100%',
+              background: '#f59e0b',
+              color: '#0a0a0b',
+              border: 'none',
+              borderRadius: 6,
+              padding: '11px',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: loginBusy ? 'wait' : 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              opacity: (!loginU.trim() || !loginP || loginBusy) ? 0.5 : 1,
+            }}
+          >
+            {loginBusy ? 'Memverifikasi…' : 'Masuk Admin'}
           </button>
+
           <div style={{ marginTop: 16, fontSize: 10, color: '#52525b', textAlign: 'center', lineHeight: 1.6, borderTop: '1px solid #1f1f23', paddingTop: 14 }}>
-            Key disimpan di <code style={{ color: '#71717a' }}>/root/kfai-nextjs/.env</code><br />
-            Lihat dengan: <code style={{ color: '#71717a' }}>grep KF_AI_ADMIN_KEY .env</code>
+            Username + password divalidasi via <code style={{ color: '#71717a' }}>KROUTER_ADMIN_USERNAME</code> + <code style={{ color: '#71717a' }}>KROUTER_ADMIN_PASSWORD</code>.
+            <br />
+            Set di <code style={{ color: '#71717a' }}>/opt/rara-agent/.env</code> di server.
           </div>
         </div>
       </div>

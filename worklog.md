@@ -290,3 +290,58 @@ Stage Summary:
   * GitHub push pending (user must revoke leaked PAT + create a fresh one).
   * The kali-linux image at ghcr.io/yz776/kali-linux:main still has the OLD rara-agent baked in (without opencode client, with zrouter). Next kali-linux rebuild will pick up these changes once the rara-agent repo is pushed + the Dockerfile references the new tag.
   * The catur PM2 process restarted 18 times — may indicate it's also unstable, but out of scope for this task.
+
+---
+Task ID: 5-admin-login + device-verification-removal
+Agent: main
+Task: Replace "Admin Key" gate on /admin with username+password login + remove device verification (_fp, _bh, _ts, _hp) from /api/auth
+
+Work Log:
+- Created `src/app/api/admin/login/route.ts` — POST endpoint that validates `username` + `password` body against env vars `KROUTER_ADMIN_USERNAME` + `KROUTER_ADMIN_PASSWORD` (constant-time comparison), and returns the `KF_AI_ADMIN_KEY` on success. The browser then stores that key in localStorage and uses it as `X-Admin-Key` header for all subsequent /api/admin/* calls (same trust model as before, but retrieval is now gated by a username+password check).
+- Updated `src/app/admin/page.tsx`:
+  * Added login form state (`loginU`, `loginP`, `loginErr`, `loginBusy`) replacing the old single `adminKey` field.
+  * New `onLogin()` is async — POSTs to `/api/admin/login`, parses `{adminKey}`, stores in localStorage, flips to dashboard.
+  * New login screen JSX: two input fields (Username + Password) with proper labels, error box for failures, "Masuk Admin" button that shows "Memverifikasi…" while submitting. Replaced the old "Admin Key" label + "64-char hex key" placeholder.
+- Rewrote `src/app/api/auth/route.ts`:
+  * Removed the `validateLoginIntegrity` call (was checking `_hp` honeypot + `_ts` time-trap + `_fp` device fingerprint presence).
+  * Removed the `_bh` behavioral signature check (was requiring ≥10 chars).
+  * Removed `fingerprintFromHeaders` usage from GET + PATCH.
+  * Body is now optional — empty `{}` is accepted. Soft honeypot check kept (if `_hp` is filled, treat as bot — but only if client sends it).
+  * Calls new `loginWithIp()` instead of `loginWithDevice()`.
+- Updated `src/lib/auth.ts`:
+  * Added `deriveAuthIdFromIp(ip)` — `sha256('ip:' + ip + ':' + AUTH_SECRET)`. Same IP → same authId → same user (stable identity).
+  * Added `loginWithIp(meta)` — creates user + session bound to IP only (no device fingerprint). Uses `deviceFingerprint: null` in the session row (Prisma schema is `String?` so this is fine).
+  * Made `loginWithDevice(meta)` a thin wrapper that delegates to `loginWithIp` — backward-compat with old callers that still pass `_fp`.
+  * Updated `verifyToken(token, ip, fingerprint)` — IP check still enforced, but **device fingerprint check is now DISABLED** (the `currentFingerprint` parameter is kept in the signature for backward-compat with callers that still pass the X-KFAI-Device header, but it's ignored). Old sessions with a bound fingerprint continue to work — the fingerprint column just stays populated but isn't re-verified.
+- Updated `src/lib/api-client.ts`:
+  * `login()` body is now `{}` (empty object). The `renderTimestamp` parameter is still accepted but ignored — backward-compat with old callers.
+  * The `authHeaders()` helper still calls `collectDeviceFingerprint()` and sends `X-KFAI-Device` header — but the server now IGNORES this header (it's harmless to keep sending; old sessions with a bound fingerprint continue to work).
+  * Kept `collectDeviceFingerprint`, `startBehavioralTracking`, `getBehavioralSignature` functions defined (no longer called from `login()`, but exported for backward-compat with old code that imports them).
+- Simplified `src/components/LoginScreen.tsx`:
+  * Removed the fake "Memindai canvas + GPU / Menganalisis WebGL + shader / Memeriksa audio + codec" progress bar theater (the stages were just for show — fingerprint collection is no longer needed).
+  * Removed the signal chips (Canvas / WebGL / Audio / Fonts / Screen / Media / WebRTC / Behavior).
+  * Removed `startBehavioralTracking()` call.
+  * Removed the 1.5s time-trap wait (`elapsed < 1500 → sleep`).
+  * Removed `collectDeviceFingerprint()` call before `login()`.
+  * New flow: just `await login()` immediately on mount → get token → done. Stage indicator shows "Memulai session..." → "Menghubungi server..." → "Berhasil!".
+- Deployed via paramiko SSH (re-used `rara-deploy-self-contained.py` + `rara-redeploy.py`):
+  * Tarballed + SFTP'd + extracted over `/opt/rara-agent`.
+  * `bun install` (no dep changes).
+  * `NODE_OPTIONS=--max-old-space-size=2048 bun run build` — build produced `.next/standalone/server.js` in ~5s, no OOM.
+  * `pm2 delete rara-web && cd /opt/rara-agent && set -a && . ./.env && set +a && pm2 start ecosystem.config.cjs`.
+  * `pm2 save`.
+- Verified end-to-end via a probe bash script inside the kali container:
+  1. POST `/api/auth` (empty body, browser UA) → returns `{token, authId, userId, displayName, createdAt, expiresInDays: 30}`. ✓ Device verification is GONE — empty body works.
+  2. GET `/api/auth` with `Authorization: Bearer <token>` → returns user info. ✓ IP-bound session validates.
+  3. POST `/api/admin/login` with `{"username":"admin","password":"wrong-password"}` → 401 `{"error":"Username atau password salah."}`. ✓ Wrong creds rejected.
+  4. POST `/api/admin/login` with `{"username":"admin","password":"zHTQTNNh8sso9Fo/Pq+h1Xma"}` → 200 `{"ok":true,"adminKey":"azcfHYix18vMzFxYzlbhbPcAmCNkCQ4qgVCD9NfVqW8Ti_5rP2WJlgZm5hAZz5yH","username":"admin","message":"Login berhasil..."}`. ✓ Correct creds return admin key.
+  5. GET `/api/admin/users` with `X-Admin-Key: <adminKey from step 4>` → 200 `{"users":[{"id":"cmvh4jmnz0001cp75h21d6g8x",...,"sessionCount":1}],"total":1,"limit":50,"offset":0}`. ✓ Admin key from login works for subsequent calls.
+  6. GET `/admin` HTML — grep shows `Username` field label present, the old `placeholder="64-char hex key"` placeholder is gone, `Masuk Admin` button present. ✓ Login form updated.
+  7. PM2 status: rara-web online, uptime stable, 0 restarts, fork mode, port 3002 bound by `next-server`.
+  8. External probe: `curl -sk https://rara.ai.id/` returns 200 with 7386 bytes (real Rara HTML).
+
+Stage Summary:
+- /admin login flow: **username + password** (validated against `KROUTER_ADMIN_USERNAME` + `KROUTER_ADMIN_PASSWORD` env). The "Admin Key" gate is gone. The admin key is returned by `/api/admin/login` only after username+password check — stored in browser localStorage, used as X-Admin-Key for /api/admin/* calls.
+- /api/auth flow: **IP-only login** (no captcha, no device fingerprint, no behavioral signature, no time-trap). Empty `{}` body is accepted. User identity derived from `sha256(ip + AUTH_SECRET)`.
+- Old sessions with a bound device fingerprint still work — the fingerprint column stays populated, but `verifyToken` no longer re-verifies it.
+- All changes deployed to server 209.50.50.121 (kali container, port 3002). NOT pushed to GitHub (PAT was leaked in chat earlier; user must revoke + create a fresh one to push).
