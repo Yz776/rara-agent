@@ -362,14 +362,13 @@ export async function POST(req: NextRequest): Promise<Response> {
           // sets `result.content_from_reasoning_fallback = true` (the reasoning
           // was copied to content as a last resort).
           //
-          // When this happens, the "content" is meta-monologue like "The user
-          // is greeting me… I should respond with the specified greeting."
-          // — not useful as a final answer. Inject a "please respond with the
-          // actual answer now" nudge and retry, up to 2 times.
-          if (result.content_from_reasoning_fallback && iter < MAX_ITERS - 2) {
+          // Strategy: inject a "please respond with actual content" nudge and
+          // retry up to 2 times. If the model STILL emits reasoning-only after
+          // 2 nudges, accept the meta-monologue as the answer (it's not great,
+          // but it's better than the generic "Saya tidak bisa..." fallback).
+          if (result.content_from_reasoning_fallback && iter < 3) {
             // Strip the meta-monologue from history so the model doesn't
-            // keep building on it. Replace with a placeholder so the
-            // next model call knows what happened.
+            // keep building on it. Replace with a placeholder.
             const lastMsg = allMessages[allMessages.length - 1];
             if (lastMsg && lastMsg.role === 'assistant') {
               lastMsg.content = '(reasoning only — no actual content produced)';
