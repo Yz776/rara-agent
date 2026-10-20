@@ -18,6 +18,13 @@ export type ChatMessage = {
     function: { name: string; arguments: string };
   }>;
   tool_call_id?: string;
+  // For thinking/reasoning models (DeepSeek, big-pickle, etc.), opencode.ai
+  // requires the `reasoning_content` field to be passed back when sending an
+  // assistant message in subsequent iterations. Otherwise the API returns
+  // 400: "The `reasoning_content` in the thinking mode must be passed back
+  // to the API." When the model emits reasoning_content in iter N, we MUST
+  // include it in the assistant message that's sent back in iter N+1.
+  reasoning_content?: string;
 };
 
 export type ToolDef = {

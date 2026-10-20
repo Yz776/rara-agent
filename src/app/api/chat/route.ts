@@ -251,7 +251,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   // The model is still called for any non-trivial question (general
   // knowledge, tool use, coding tasks).
   const IDENTITY_PATTERNS = [
-    /^(hi|halo|hai|hello|hey|p)\b/i,
+    /^(hi|halo|hallo|hai|hello|hey|hallo|p)\b/i,
     /\b(siapa|who|what)\b.*\b(kamu|you|anda|anda|kau)\b/i,
     /\b(kamu|you|anda)\b.*\b(siapa|who|what)\b/i,
     /^(siapa|who|what)\s+(kamu|you|anda|are you|kau)\??$/i,
@@ -374,6 +374,22 @@ export async function POST(req: NextRequest): Promise<Response> {
             type: 'function',
             function: { name: tc.name, arguments: JSON.stringify(tc.args) },
           }));
+        }
+        // ── Preserve reasoning_content for thinking-mode APIs ─────────────
+        // opencode.ai (and DeepSeek-style APIs) require the `reasoning_content`
+        // field to be passed back when sending an assistant message in
+        // subsequent iterations. Without it, the API returns 400:
+        //   "The `reasoning_content` in the thinking mode must be passed back
+        //    to the API."
+        // callKrouterStream preserves state.reasoning when extractQuotedAnswer
+        // found a quoted answer (it doesn't clear it). When the fallback just
+        // copies reasoning to content (no extracted answer), state.reasoning
+        // is cleared — but result.content has the reasoning text, so we set
+        // reasoning_content to result.content in that case.
+        if (result.reasoning) {
+          assistantMsg.reasoning_content = result.reasoning;
+        } else if (result.content_from_reasoning_fallback && result.content) {
+          assistantMsg.reasoning_content = result.content;
         }
         allMessages.push(assistantMsg);
 
