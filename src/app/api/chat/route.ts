@@ -235,6 +235,68 @@ export async function POST(req: NextRequest): Promise<Response> {
   // Always use the default model — the client does not get to choose.
   const model = DEFAULT_MODEL;
 
+  // ── SSE stream ──────────────────────────────────────────────────────────────
+  const encoder = new TextEncoder();
+  const abortCtrl = new AbortController();
+  const closeStream = () => abortCtrl.abort();
+  req.signal.addEventListener('abort', closeStream);
+
+  // ── FAST PATH for common identity / greeting questions ─────────────────────
+  // opencode.ai free-tier models emit ALL output as `reasoning_content` and
+  // never produce `content` deltas — so for simple identity questions the
+  // chat would return the model's meta-monologue ("User asks who I am.
+  // Per persona, respond as Rara...") instead of an actual greeting.
+  //
+  // Short-circuit these common patterns with a pre-written Rara response.
+  // The model is still called for any non-trivial question (general
+  // knowledge, tool use, coding tasks).
+  const IDENTITY_PATTERNS = [
+    /^(hi|halo|hai|hello|hey|p)\b/i,
+    /\b(siapa|who|what)\b.*\b(kamu|you|anda|anda|kau)\b/i,
+    /\b(kamu|you|anda)\b.*\b(siapa|who|what)\b/i,
+    /^(siapa|who|what)\s+(kamu|you|anda|are you|kau)\??$/i,
+    /^(assalamualaikum|salam|good (morning|afternoon|evening))/i,
+  ];
+  const isIdentityQuestion = IDENTITY_PATTERNS.some(p => p.test(userMessageContent.trim()));
+  if (isIdentityQuestion) {
+    const raraGreeting =
+      "Hai! Aku Rara — asisten AI ceria kamu! ✨😊\n\n" +
+      "Senang kenal dengan kamu! Aku di sini buat bantu apa aja — " +
+      "tanya hal umum, bantu coding, hitung matematika, sampai " +
+      "reminder sama notes-private. Ada yang mau aku bantu hari ini? 🌸";
+    // Stream the fast-path response
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (obj: Record<string, unknown>) => {
+          try { controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`)); } catch {}
+        };
+        send({ type: 'start', iter: 0, conversationId: conversation!.id });
+        send({ type: 'iter_start', iter: 1 });
+        // Emit the greeting as a content event so the UI renders it as the assistant bubble
+        send({ type: 'content', text: raraGreeting, iter: 1 });
+        // Persist the assistant message to DB
+        try {
+          await db.message.create({
+            data: {
+              conversationId: conversation!.id,
+              userId: auth.userId,
+              role: 'assistant',
+              content: raraGreeting,
+              toolCalls: null,
+            },
+          });
+          await db.conversation.update({ where: { id: conversation!.id }, data: { updatedAt: new Date() } });
+        } catch (e: any) {
+          console.error('[chat] fast-path persist failed:', e?.message);
+        }
+        send({ type: 'done', iter: 1, reason: 'fast_path_identity' });
+        send({ type: 'end', conversationId: conversation!.id, final_text: raraGreeting, objective_complete: true, reached_max_iters: false });
+        try { controller.close(); } catch {}
+      },
+    });
+    return new Response(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' } });
+  }
+
   // Build the full message array with system prompt prepended
   const allMessages: ChatMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
@@ -250,12 +312,6 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   // ── SSE stream ──────────────────────────────────────────────────────────────
-  const encoder = new TextEncoder();
-  const abortCtrl = new AbortController();
-  const closeStream = () => abortCtrl.abort();
-  req.signal.addEventListener('abort', closeStream);
-
-  // Send conversationId as the very first event so the client can update its URL
   const stream = new ReadableStream({
     async start(controller) {
       const send = (obj: Record<string, unknown>) => {
