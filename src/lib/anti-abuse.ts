@@ -13,14 +13,25 @@
 import { db } from './db';
 
 // ── Rate limit config ────────────────────────────────────────────────────────
+// All limits are tunable via env vars (defaults shown). Override per-deployment
+// without code changes — useful for high-traffic prod or paranoid security profiles.
+
+function envInt(name: string, fallback: number): number {
+  const v = process.env[name];
+  if (!v) return fallback;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+const HOUR = 60 * 60 * 1000;
 type LimitSpec = { maxCount: number; windowMs: number };
 
 const LIMITS: Record<string, LimitSpec> = {
-  captcha_fetch:  { maxCount: 15, windowMs: 60 * 60 * 1000 },   // 15/hour
-  login_attempt:  { maxCount: 10, windowMs: 60 * 60 * 1000 },   // 10/hour
-  chat:           { maxCount: 60, windowMs: 60 * 60 * 1000 },   // 60/hour
-  device_check:   { maxCount: 100, windowMs: 60 * 60 * 1000 },  // 100/hour
-  admin:          { maxCount: 200, windowMs: 60 * 60 * 1000 },  // 200/hour
+  captcha_fetch:  { maxCount: envInt('RATE_LIMIT_CAPTCHA_PER_HOUR', 30),  windowMs: HOUR },
+  login_attempt:  { maxCount: envInt('RATE_LIMIT_LOGIN_PER_HOUR',  30),  windowMs: HOUR },
+  chat:           { maxCount: envInt('RATE_LIMIT_CHAT_PER_HOUR',   120), windowMs: HOUR },
+  device_check:   { maxCount: envInt('RATE_LIMIT_DEVICE_PER_HOUR', 200), windowMs: HOUR },
+  admin:          { maxCount: envInt('RATE_LIMIT_ADMIN_PER_HOUR',   300), windowMs: HOUR },
 };
 
 export type RateLimitResult =

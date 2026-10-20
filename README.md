@@ -111,6 +111,45 @@ Retries are skipped on Cloudflare 502 (since Cloudflare will keep blocking the s
 
 ---
 
+## Rate limits
+
+Rara enforces per-IP rate limits to prevent brute-force login attempts. Default windows (configurable via env):
+
+| Action | Default limit | Env var to override |
+|--------|---------------|---------------------|
+| `login_attempt` | 30 / hour / IP | `RATE_LIMIT_LOGIN_PER_HOUR` |
+| `chat` | 120 / hour / IP | `RATE_LIMIT_CHAT_PER_HOUR` |
+| `captcha_fetch` | 30 / hour / IP | `RATE_LIMIT_CAPTCHA_PER_HOUR` |
+| `device_check` | 200 / hour / IP | `RATE_LIMIT_DEVICE_PER_HOUR` |
+| `admin` | 300 / hour / IP | `RATE_LIMIT_ADMIN_PER_HOUR` |
+
+### "Too many login attempts. Try again later." — how to clear
+
+If a legitimate user gets rate-limited (common during testing, or after a Cloudflare retry storm), clear the row in the SQLite DB:
+
+```bash
+# Bare-metal / PM2 deployment (run from rara-agent root)
+bash scripts/clear-rate-limit.sh                       # clear ALL rate-limit rows
+bash scripts/clear-rate-limit.sh login_attempt          # clear all login_attempt rows
+bash scripts/clear-rate-limit.sh login_attempt 1.2.3.4  # clear for one IP
+
+# Docker deployment — direct sqlite3 inside the container
+docker exec rara sqlite3 /app/db/rara.db \
+  "DELETE FROM RateLimit WHERE action='login_attempt';"
+
+# Or just inspect what's there first:
+docker exec rara sqlite3 -header -column /app/db/rara.db \
+  "SELECT id,ipAddr,action,count,datetime(windowStart/1000,'unixepoch') FROM RateLimit ORDER BY windowStart DESC LIMIT 20;"
+```
+
+The rate-limit window is **1 hour** — if you don't clear manually, the counter naturally resets when `windowStart + 1 hour` passes.
+
+### Why 30/hour?
+
+The `LoginScreen` auto-retries 3× on failure (with 2s backoff), so one page load = up to 4 login attempts. If you open the page 3 times while debugging = 12 attempts. The old default of 10/hour was too aggressive for normal dev/testing flow; 30/hour gives ~7 full page loads before lockout. Bump via `RATE_LIMIT_LOGIN_PER_HOUR=60` in `.env` for development.
+
+---
+
 ## Quick start (Docker — recommended)
 
 ### 1. Generate secrets
