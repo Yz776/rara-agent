@@ -355,6 +355,34 @@ export async function POST(req: NextRequest): Promise<Response> {
             continue;
           }
           // No tool calls in text → natural stop (model produced final text)
+          // ── REASONING-ONLY RECOVERY ──────────────────────────────────────────
+          // Some opencode.ai free-tier models (esp. big-pickle) emit ALL their
+          // output as `reasoning_content` and then `finish_reason: stop` WITHOUT
+          // producing any `content` delta. callKrouterStream detects this and
+          // sets `result.content_from_reasoning_fallback = true` (the reasoning
+          // was copied to content as a last resort).
+          //
+          // When this happens, the "content" is meta-monologue like "The user
+          // is greeting me… I should respond with the specified greeting."
+          // — not useful as a final answer. Inject a "please respond with the
+          // actual answer now" nudge and retry, up to 2 times.
+          if (result.content_from_reasoning_fallback && iter < MAX_ITERS - 2) {
+            // Strip the meta-monologue from history so the model doesn't
+            // keep building on it. Replace with a placeholder so the
+            // next model call knows what happened.
+            const lastMsg = allMessages[allMessages.length - 1];
+            if (lastMsg && lastMsg.role === 'assistant') {
+              lastMsg.content = '(reasoning only — no actual content produced)';
+            }
+            allMessages.push({
+              role: 'user',
+              content:
+                'You only produced reasoning, not a final answer. ' +
+                'Please respond NOW with your actual answer in the content field. ' +
+                'Aim for 1-3 sentences. Do not call any tools. Just answer directly.',
+            });
+            continue;  // retry
+          }
           finalText = result.content;
           send({ type: 'done', iter, reason: 'natural_stop' });
           break;

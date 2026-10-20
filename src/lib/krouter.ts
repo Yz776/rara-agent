@@ -1446,6 +1446,10 @@ export type StreamResult = {
   finish: string | null;
   http: number;
   error: string | null;
+  // True if state.content was populated from state.reasoning (the reasoning-only
+  // fallback). The agentic loop can use this to inject a "please respond with
+  // actual content" nudge instead of accepting meta-monologue as the answer.
+  content_from_reasoning_fallback?: boolean;
 };
 
 export async function callKrouterStream(
@@ -1644,6 +1648,7 @@ export async function callKrouterStream(
   if (!state.content && state.reasoning) {
     state.content = state.reasoning;
     state.reasoning = '';
+    state.content_from_reasoning_fallback = true;
   }
 
   return state;
