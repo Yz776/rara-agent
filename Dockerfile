@@ -87,7 +87,9 @@ ENV NODE_ENV=production \
     DATABASE_URL=file:/app/db/rara.db \
     NEXT_TELEMETRY_DISABLED=1
 
-# Create writable dirs at runtime.
+# Create writable dirs at runtime + install minimal process-control deps
+# (concurrently → tree-kill needs `ps` to kill process trees)
+RUN apt-get update -qq && apt-get install -y --no-install-recommends procps ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /app/data/mini-services/zrouter/data /app/db
 
 # Expose ONLY the Next.js port. zrouter binds to 127.0.0.1:3001 internally
