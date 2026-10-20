@@ -1680,23 +1680,6 @@ export async function callKrouterStream(
     }
   }
 
-  // ── Diagnostic logging (for debugging reasoning-only issue) ─────────────
-  // Log to stderr so it shows up in PM2 error logs but doesn't pollute the
-  // SSE response. Helpful for understanding what the upstream model is
-  // actually returning.
-  if (process.env.RARA_DEBUG === '1' || !state.content) {
-    console.error('[rara] callKrouterStream done:', JSON.stringify({
-      http: state.http,
-      finish: state.finish,
-      content_len: state.content.length,
-      content_preview: state.content.slice(0, 200),
-      reasoning_len: state.reasoning.length,
-      reasoning_preview: state.reasoning.slice(0, 200),
-      tool_calls: state.tool_calls.length,
-      content_from_reasoning_fallback: state.content_from_reasoning_fallback,
-    }));
-  }
-
   return state;
 }
 
