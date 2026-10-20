@@ -107,3 +107,70 @@ User leaked GitHub PAT in chat (`ghp_F6m1...`). Used once for cloning (their exp
 
 ## Status
 COMPLETE — all 9 user-confirmed requirements delivered and tested end-to-end.
+
+---
+Task ID: 2-rara-agent
+Agent: main
+Task: Build rara-agent — merge kfai-nextjs + zrouter into one repo, lock zrouter to kfai-nextjs only, rebrand AI to 'Rara' (cheerful sweet girl), add 3D character like rainachat.top
+
+Work Log:
+- Cloned Yz776/kfai-nextjs.git (private, used PAT once for clone)
+- Fetched rainachat.top — confirmed it's a "Raina, rain spirit" chat with mood-based face. No specific tech stack visible from public docs; chose procedural Three.js approach for portability.
+- Initialized fullstack-dev skill at /home/z/my-project (Next.js 16 scaffold)
+- Copied kfai-nextjs src/ + prisma/ + public/ + examples/ into /home/z/my-project root
+- Moved modified zrouter from previous task into mini-services/zrouter/ (mini-service pattern per fullstack-dev skill)
+- Installed new deps: concurrently, three@0.169, @react-three/fiber@9, @react-three/drei@10, @types/three (React 19 compatible)
+- Created src/components/Rara3D.tsx — procedural chibi 3D anime girl (no GLB needed)
+  - Body parts: head sphere, pink twin-tail cones, hair top, bangs, bow, eyes with highlight, mouth, blush, dress cone, arms, legs, shoes
+  - Mood states: idle (gentle sway + blink), thinking (head tilt up + finger-on-chin), talking (mouth open/close cycle), happy (bounce + smile), shy (hands cover mouth + head down)
+  - Animations via useFrame: blink cycle every 2-6s, talk cycle, twin-tail sway, head tilt smoothing, blush opacity by mood
+  - Float wrapper from drei for subtle floating; ContactShadows for disc under character
+  - Standard lights (ambient + directional + pink point light)
+- Wired Rara3D into ChatApp.tsx + LoginScreen.tsx:
+  - Welcome screen: 260x260 Rara3D with autoRotate + happy mood
+  - Header brand: 44x44 Rara3D mark next to "Rara" name, mood="talking" when streaming, "idle" otherwise
+  - LoginScreen brand: 56x56 Rara3D replaces old "K" mark
+- Rebranded SYSTEM_PROMPT in src/lib/krouter.ts from KFAI/Mohammad Ahsan Al Ghoni → Rara/cheerful sweet girl:
+  - Identity: "Kamu Rara — asisten AI ceria, manis, ramah"
+  - Personality: ceria (maks 1-2 ekspresi/balasan), manis (kamu, lembut), playful, helpful dulu
+  - Emoji policy: ✨😊🌸💕🤔👍 boleh, jangan berlebihan, jangan di code/heading/tool output
+  - Tone: ceria balik saat user ceria, lembut saat user sedih, tenang saat user marah, minim emoji saat user serius
+  - Identity protection: tetap pertahan (jangan reveal model vendor)
+- Bulk-replaced KFAI branding across src/:
+  - Layout metadata, loading screen, ChatApp brand-name + tag + welcome + examples + placeholder
+  - LoginScreen title + sub
+  - Vision prompts in src/lib/tools.ts + src/app/api/vision/route.ts
+  - User-Agent strings from 'KFAI/1.0' → 'Rara/1.0'
+  - Admin UI title KFAI Admin → Rara Admin
+  - Admin chat prompt: removed "Mohammad Ahsan Al Ghoni" mention
+  - Internal env names (KFAI_AUTH_SECRET) + header names (X-KFAI-Device) kept for backward compat
+- Locked down zrouter middleware (src/middleware/auth.ts):
+  - Added KROUTER_INTERNAL_TOKEN env support with constant-time compare
+  - Bootstrap mode ONLY when no admin keys AND no env token — so when env token is set, anonymous callers get 401 (not 200)
+- Updated next.config.ts:
+  - transpilePackages: ['three', '@react-three/fiber', '@react-three/drei']
+  - Removed experimental.esmExternals (Turbopack doesn't support)
+  - CSP connect-src: same-origin + http://127.0.0.1:3001 (server-side fetch only)
+- Created .env with random secrets (openssl rand -hex 32 for KROUTER_INTERNAL_TOKEN, hex 24 for KFAI_AUTH_SECRET, base64 18 for KROUTER_ADMIN_PASSWORD)
+- Updated package.json scripts:
+  - dev: 'concurrently -k -n rara,zrouter ...' — runs Next.js (:3000) + zrouter (:3001) in parallel
+  - dev:rara + dev:zrouter for individual run
+  - postinstall hook: cd mini-services/zrouter && bun install
+- Removed the original kfai-nextjs clone (no longer needed)
+- Created new GitHub repo Yz776/rara-agent (private) via API
+- Pushed all 110 files to main branch
+
+Stage Summary:
+- Repo: https://github.com/Yz776/rara-agent (private, branch: main)
+- Files tracked: 110
+- zrouter lock-down VERIFIED end-to-end:
+  * /health → 200 (public)
+  * /v1/models without token → 401 ✓
+  * /v1/models with Bearer KROUTER_INTERNAL_TOKEN → 200 ✓
+  * /admin/api/keys without token → 403 ✓
+  * /admin/api/keys with Bearer token → 200 ✓
+  * /admin/api/pool without token → 403 ✓
+  * /admin/api/pool with Bearer token → 200 ✓
+- Next.js loads correctly: GET / → 200, VLM-verified the login screen renders with the 3D Rara character (pink, round, cute — match for 'ceria manis' vibe)
+- ESLint clean
+- Followups (documented): per-pool-entry proxyUrl not yet wired into outbound fetch; README not updated; the system's auto-run dev.sh is still running the old Next.js-only dev script (manual start of zrouter via bun run dev:zrouter works) — operator should restart the system to pick up the new concurrently-based dev script.
