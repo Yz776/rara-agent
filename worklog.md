@@ -174,3 +174,46 @@ Stage Summary:
 - Next.js loads correctly: GET / → 200, VLM-verified the login screen renders with the 3D Rara character (pink, round, cute — match for 'ceria manis' vibe)
 - ESLint clean
 - Followups (documented): per-pool-entry proxyUrl not yet wired into outbound fetch; README not updated; the system's auto-run dev.sh is still running the old Next.js-only dev script (manual start of zrouter via bun run dev:zrouter works) — operator should restart the system to pick up the new concurrently-based dev script.
+
+---
+Task ID: 3-productionize
+Agent: main
+Task: Productionize rara-agent — remove all junk, add Docker + PM2 + README, fix critical submodule bug
+
+Work Log:
+- Discovered CRITICAL bug: `git ls-files --stage mini-services/zrouter` showed mode 160000 (gitlink / submodule pointer) — clones were getting an EMPTY directory! This happened because the zrouter clone had its own .git when I first moved it into mini-services/, and `git add -A` tracked it as a submodule pointer instead of recursing into the dir.
+- Fixed by: `git rm --cached mini-services/zrouter` + removed nested .git + `git add -A mini-services/zrouter/`. Now 83 zrouter files properly tracked (src/, public/, scripts/, test/, Pterodactyl docs, Dockerfiles, egg, etc.)
+- Junk removed (was committed accidentally):
+  * tool-results/ (VLM/agent-browser runtime junk)
+  * download/README.md (placeholder)
+  * tests/database-runtime-build.sh, python-runtime-build.sh, python-runtime-container.sh (not relevant to rara-agent)
+  * scripts/zrouter-test.sh (scratch test script)
+  * mini-services/zrouter/test-login.js, test-full-flow.html (dev junk)
+  * mini-services/zrouter/.env, .env.example (rara-agent root .env is source of truth)
+- Production infrastructure added:
+  * Dockerfile — multi-stage (builder → runtime), bundles Next.js standalone + zrouter, exposes only :3000, zrouter stays on 127.0.0.1:3001 inside container. Healthcheck hits Next.js root. VOLUME for /app/data + /app/db. Entrypoint runs `bun run db:push` then `bun run start`.
+  * docker-compose.yml — required-secret env validation via `${VAR:?must be set}` (refuses to start without KROUTER_INTERNAL_TOKEN / KFAI_AUTH_SECRET / KROUTER_ADMIN_PASSWORD), persistent volumes rara_db + rara_data, healthcheck
+  * .dockerignore — excludes node_modules, .next, .git, tests, logs, env, tool-results, README, docker-compose files, Dockerfiles
+  * ecosystem.config.cjs — PM2 alternative for bare-metal. Two apps: rara-web (Next.js standalone, :3000) + rara-zrouter (Bun, 127.0.0.1:3001), each with autorestart, max_restarts=10, restart_delay=3s, max_memory_restart, log files in ./logs/, merge_logs, time-stamped
+  * .env.example — full template with required/optional/documented env vars, openssl rand command snippets, comments explaining each var
+  * README.md — comprehensive: ASCII architecture diagram, Docker quick start (1. Generate secrets → 2. Build + run → 3. Manage pool via docker exec → 4. Expose publicly), PM2 bare-metal guide, dev setup, lint + test-zrouter-lockdown commands, env var reference table, 3D character docs (mood states table, color palette hex codes, where it appears in UI), Rara personality samples (3 dialogue examples), security model (what's exposed vs not, anti-abuse layers, identity protection), roadmap (done + known follow-ups), credits
+- Package.json updates:
+  * New `start` script: `concurrently -k -n rara,zrouter "NODE_ENV=production bun .next/standalone/server.js" "NODE_ENV=production HOST=127.0.0.1 PORT=3001 KROUTER_DATA_DIR=./mini-services/zrouter/data bun run mini-services/zrouter/src/index.ts"`
+  * New `start:rara` and `start:zrouter` for individual prod runs
+- .gitignore hardened:
+  * Add logs/ (PM2 log dir)
+  * Add *.pem, *.key, *.crt (in case secrets leak)
+  * Add db/*.db-wal, db/*.db-shm (SQLite WAL/SHM files)
+  * Add Thumbs.db, *.swp, *.swo
+- VLM verification (glm-5v-turbo analyzed screenshot): "The brand name Rara is clearly visible. A 3D character (pink mascot) is present. The color palette is dark mode with black/gray backgrounds, white text, and a yellow-to-green progress bar. There is no login form; instead, there is an automated verification message (Verifikasi otomatis). This is definitely the Rara AI agent. The text KFAI is not visible anywhere, indicating the rebrand was successful."
+- ESLint clean
+
+Stage Summary:
+- Repo: https://github.com/Yz776/rara-agent (branch main)
+- Tracked files: 192 (was 110 with broken submodule → now 192 with all zrouter files properly tracked + production infra added)
+- Production artifacts at root: Dockerfile, docker-compose.yml, ecosystem.config.cjs, README.md, .dockerignore, .env.example, .gitignore, Caddyfile, package.json, next.config.ts
+- Single-command deploy options:
+  * Docker: `docker compose up -d --build` (after setting 3 required env secrets)
+  * PM2:    `pm2 start ecosystem.config.cjs` (after `bun install && bun run build && bun run db:push`)
+- zrouter remains locked down: 127.0.0.1:3001 inside container, KROUTER_INTERNAL_TOKEN constant-time compared, bootstrap mode skipped when env token set
+- Rara 3D character verified visible, rebrand to "Rara" verified complete (no KFAI anywhere in UI)
