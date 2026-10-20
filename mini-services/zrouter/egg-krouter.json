@@ -1,0 +1,136 @@
+{
+    "_comment": "KRouter AI Gateway — Pterodactyl Egg (PTDL_v2). Import this file into the Pterodactyl panel via Nests → Eggs → Import.",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "name": "KRouter AI Gateway",
+    "author": "Yz776",
+    "description": "Bun + ElysiaJS AI Gateway — multi-provider router with OpenAI/Anthropic-compatible API, OAuth support, streaming, tool calling, failover routing, combos, token saver, observability, and a dashboard.\n\nThe install script automatically installs Bun, clones the repo, and installs dependencies. Persistent data (SQLite DBs + config) lives under \/home\/container\/data.\n\nDefault login: admin \/ password123 (change it immediately after first boot).",
+    "features": null,
+    "docker_images": {
+        "KRouter": "ghcr.io/pterodactyl/yolks:nodejs_22"
+    },
+    "file_denylist": [],
+    "startup": "export PATH=\"/home/container/.bun/bin:$PATH\" && cd /home/container/zrouter && exec bun run src/index.ts",
+    "config": {
+        "files": "{}",
+        "startup": {
+            "done": "Listening on"
+        },
+        "logs": {
+            "custom": false,
+            "location": "logs/latest.log"
+        },
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# KRouter Pterodactyl install script\n# Runs inside a node:20-bookworm container; /home/container is mounted as persistent storage.\nset -e\n\ncd /home/container\n\necho \"[install] === KRouter Pterodactyl installer ===\"\n\n# --- 1. Install Bun to the persistent volume so it survives restarts ----------\nif [ -x \"/home/container/.bun/bin/bun\" ]; then\n    echo \"[install] Bun already installed at /home/container/.bun — skipping.\"\nelse\n    echo \"[install] Installing Bun to /home/container/.bun ...\"\n    export BUN_INSTALL=\"/home/container/.bun\"\n    curl -fsSL https://bun.sh/install | bash\nfi\nexport BUN_INSTALL=\"/home/container/.bun\"\nexport PATH=\"/home/container/.bun/bin:$PATH\"\nbun --version\n\n# --- 2. Clone or update the KRouter repository ------------------------------\nREPO_URL=\"${GIT_REPO_URL:-https://github.com/Yz776/zrouter.git}\"\nREPO_BRANCH=\"${GIT_REPO_BRANCH:-main}\"\n\nif [ -d \"/home/container/zrouter/.git\" ]; then\n    echo \"[install] Updating existing repository ...\"\n    cd /home/container/zrouter\n    git remote set-url origin \"$REPO_URL\"\n    git fetch --all --prune\n    git reset --hard \"origin/$REPO_BRANCH\"\n    git pull origin \"$REPO_BRANCH\" || true\nelse\n    echo \"[install] Cloning $REPO_URL (branch: $REPO_BRANCH) ...\"\n    rm -rf /home/container/zrouter\n    git clone --depth 1 -b \"$REPO_BRANCH\" \"$REPO_URL\" /home/container/zrouter\n    cd /home/container/zrouter\nfi\n\n# --- 3. Prepare the persistent data directory ------------------------------\nmkdir -p /home/container/data /home/container/logs\necho \"[install] Data directory: /home/container/data\"\n\n# --- 4. Install dependencies (skip Puppeteer's Chromium download) -----------\nexport PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true\nexport PUPPETEER_SKIP_DOWNLOAD=true\nexport BUN_ENV=production\nexport NODE_ENV=production\n\necho \"[install] Running bun install ...\"\nbun install --production\n\necho \"[install] === Installation complete ===\"\necho \"[install] KRouter is ready. Start the server from the panel.\"\necho \"[install] Default login: admin / password123 (change it after first boot)\"",
+            "container": "node:20-bookworm",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Port",
+            "description": "The port KRouter listens on. Auto-assigned by Pterodactyl from the server's primary allocation.",
+            "env_variable": "SERVER_PORT",
+            "default_value": "3000",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|integer|between:1024,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Bind Host",
+            "description": "Network interface to bind to. Use 0.0.0.0 to listen on all interfaces (required for Pterodactyl).",
+            "env_variable": "HOST",
+            "default_value": "0.0.0.0",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Data Directory",
+            "description": "Where KRouter stores its SQLite databases and config.json. Leave as default to keep data persistent across restarts.",
+            "env_variable": "KROUTER_DATA_DIR",
+            "default_value": "/home/container/data",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Repository URL",
+            "description": "The Git repository to clone during installation. Change this to use a fork or private repo (the install script will use it on reinstall).",
+            "env_variable": "GIT_REPO_URL",
+            "default_value": "https://github.com/Yz776/zrouter.git",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Branch",
+            "description": "Branch to clone from the repository.",
+            "env_variable": "GIT_REPO_BRANCH",
+            "default_value": "main",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "JWT Secret",
+            "description": "Secret used to sign session cookies. Generate a strong random string (min 32 chars). Changing this will invalidate all existing sessions.",
+            "env_variable": "JWT_SECRET",
+            "default_value": "change-me-to-a-random-32-char-secret-string",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|min:16",
+            "field_type": "text"
+        },
+        {
+            "name": "Environment",
+            "description": "Node/Bun environment mode.",
+            "env_variable": "NODE_ENV",
+            "default_value": "production",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|in:production,development",
+            "field_type": "text"
+        },
+        {
+            "name": "Rate Limit (req/min)",
+            "description": "Maximum requests per minute per API key. Set 0 for unlimited.",
+            "env_variable": "RATE_LIMIT_MAX_REQUESTS",
+            "default_value": "100",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:0",
+            "field_type": "text"
+        },
+        {
+            "name": "Admin Username",
+            "description": "Optional. If set together with ADMIN_PASSWORD, the default admin user is created with these credentials instead of admin/password123. Only applies on a fresh database.",
+            "env_variable": "KROUTER_ADMIN_USERNAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Admin Password",
+            "description": "Optional. Password for the admin user created on a fresh database. If empty, the default admin/password123 is used. MUST be changed after first login.",
+            "env_variable": "KROUTER_ADMIN_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        }
+    ]
+}

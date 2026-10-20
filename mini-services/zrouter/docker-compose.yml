@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  krouter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: krouter-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+      - KROUTER_DB_PATH=/app/data/krouter.db
+      - JWT_SECRET=${JWT_SECRET:-default-secret-change-in-production}
+    volumes:
+      # Persistent storage for database and logs
+      - krouter_data:/app/data
+      - krouter_logs:/app/logs
+      - krouter_backups:/app/backups
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - krouter-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  krouter_data:
+    driver: local
+  krouter_logs:
+    driver: local
+  krouter_backups:
+    driver: local
+
+networks:
+  krouter-network:
+    driver: bridge

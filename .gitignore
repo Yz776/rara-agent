@@ -7,9 +7,11 @@ node_modules/
 **/.next/
 out/
 dist/
+build/
 
-# logs
+# logs (PM2 + dev.log + zrouter.log + server.log)
 *.log
+logs/
 dev.log
 server.log
 zrouter.log
@@ -19,23 +21,31 @@ tool-results/
 .env
 .env.local
 .env.*.local
+*.pem
+*.key
+*.crt
 
-# db
+# db (SQLite runtime files)
 db/*.db
 db/*.db-journal
+db/*.db-wal
+db/*.db-shm
 prisma/*.db
 prisma/migrations/dev/
 
-# mini-service data dirs
+# mini-service data dirs (zrouter state)
 mini-services/*/data/
 mini-services/zrouter/data/
 
-# system
+# system (sandbox-managed)
 .zscripts/
 skills/
 download/
 
 # misc
 .DS_Store
+Thumbs.db
 .idea/
 .vscode/
+*.swp
+*.swo

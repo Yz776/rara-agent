@@ -1,0 +1,67 @@
+# ── .dockerignore — keep Docker context lean ────────────────────────────────
+# Anything ignored here is excluded from the build context → faster builds,
+# smaller image, no leaked secrets.
+
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Deps (re-installed inside the builder stage)
+node_modules
+**/node_modules
+
+# Build artifacts (re-built inside builder)
+.next
+out
+dist
+build
+
+# Logs + temp
+*.log
+*.tmp
+dev.log
+server.log
+zrouter.log
+.next/cache
+**/.turbo
+**/.cache
+
+# Local DBs + runtime data (volumes mounted at runtime instead)
+db/*.db
+db/*.db-journal
+mini-services/zrouter/data/
+prisma/migrations/dev/
+
+# Secrets — NEVER include in image
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+
+# Editor + OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Sandbox / scratch
+download
+tool-results
+.zscripts
+skills
+scripts
+
+# Tests (not needed at runtime)
+**/test
+**/tests
+**/*.spec.ts
+**/*.test.ts
+
+# Misc
+README.md
+**/README.md
+docker-compose*.yml
+Dockerfile*
