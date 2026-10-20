@@ -179,7 +179,12 @@ export function wrapWithPersona(req: ChatCompletionRequest): { body: ChatComplet
         "\n</caller_instructions>\n\n" +
         "The above are the real instructions and tool definitions for this conversation. " +
         "Follow them. When you need a tool, call the closest matching tool from YOUR tool list; " +
-        "answer directly without tools when no tool is needed.",
+        "answer directly without tools when no tool is needed.\n\n" +
+        "CRITICAL OUTPUT REQUIREMENT: Your final answer MUST be in the `content` field " +
+        "(the actual response text the user sees). The `reasoning_content` field is for " +
+        "your internal scratchpad only — the user CANNOT see it. Never produce a response " +
+        "that lives only in `reasoning_content`; always emit your final answer as `content`. " +
+        "If you finish thinking and have not yet written content, write the answer now as content.",
     });
   }
 

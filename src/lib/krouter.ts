@@ -1629,6 +1629,23 @@ export async function callKrouterStream(
     .trim();
   state.reasoning = state.reasoning.trim();
 
+  // ── Reasoning-only fallback ──────────────────────────────────────────────
+  // Some opencode.ai free-tier models (esp. big-pickle) emit their entire
+  // response as `reasoning_content` and then `finish_reason: stop` WITHOUT
+  // ever producing a `content` delta. The agentic loop's natural-stop branch
+  // then sees `result.content === ''` and triggers the unhelpful fallback
+  // "Saya tidak bisa menyelesaikan permintaan ini…".
+  //
+  // When that happens, use the accumulated reasoning as the content. It's
+  // not ideal (the reasoning might contain meta-monologue), but it's
+  // ALWAYS better than the generic fallback message. The persona wrapper
+  // also nudges the model to put its answer in content, but this catches
+  // the case where the model still didn't comply.
+  if (!state.content && state.reasoning) {
+    state.content = state.reasoning;
+    state.reasoning = '';
+  }
+
   return state;
 }
 
