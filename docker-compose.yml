@@ -25,8 +25,10 @@ services:
     restart: unless-stopped
     pull_policy: always
     ports:
-      # Expose ONLY the Next.js port. zrouter stays on 127.0.0.1:3001 inside the container.
-      - "3000:3000"
+      # Expose Next.js on port 8080 (port 3000 is taken by bot-amd64 on this host).
+      # Override at deploy time: PORT=8080 by default, or set PORT=3000 if free.
+      # Map host:container — host port is configurable via env.
+      - "${RARA_HOST_PORT:-8080}:3000"
     environment:
       # Required secrets (generate with openssl rand).
       # Values must be QUOTED in YAML because ${VAR:?error message} contains colons
