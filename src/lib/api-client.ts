@@ -394,11 +394,31 @@ export async function login(renderTimestamp: number): Promise<LoginResponse> {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
+
+    // ── Distinguish Cloudflare edge 502 from Next.js origin 502 ────────────
+    // Cloudflare Bot Fight Mode / managed challenge returns a plain-text
+    // "error code: 502" body (with `server: cloudflare` header) BEFORE the
+    // request reaches our Next.js server. Next.js's own bot-UA check returns
+    // a "Bad Gateway" body. The two have identical status (502) but different
+    // bodies — we need to read the raw text to tell them apart.
+    if (res.status === 502) {
+      const rawBody = await res.text().catch(() => '');
+      if (rawBody.includes('error code') || rawBody.toLowerCase().includes('cloudflare')) {
+        // Cloudflare edge block (Bot Fight Mode, Under Attack, or managed challenge)
+        const err = new Error(
+          'Cloudflare sedang menantang browser kamu (edge 502). Coba refresh halaman, nonaktifkan ekstensi privacy (uBlock, DuckDuckGo, Privacy Badger), atau pakai browser lain. Jika tetap gagal, minta admin disable Bot Fight Mode di Cloudflare dashboard untuk zone rara.ai.id.'
+        );
+        (err as any).isCloudflare = true;
+        throw err;
+      }
+      // Next.js origin 502 (isBotUserAgent returned true)
+      throw new Error('Akses ditolak oleh server. Coba refresh halaman atau pakai browser lain.');
+    }
+
     const j = await res.json().catch(() => ({}));
     if (!res.ok) {
       if (res.status === 429) throw new Error(j.error || 'Terlalu banyak percobaan login. Coba lagi nanti.');
       if (res.status === 403) throw new Error(j.error || 'Verifikasi perangkat gagal.');
-      if (res.status === 502) throw new Error('Akses ditolak. Coba refresh halaman.');
       throw new Error(j.error || `Login gagal (${res.status})`);
     }
     return j as LoginResponse;

@@ -68,7 +68,17 @@ export function LoginScreen({ onLoggedIn }: Props) {
     } catch (e: any) {
       const msg = e?.message || "Gagal verifikasi perangkat";
       setError(msg);
-      // Retry up to 3 times, then show manual retry button
+
+      // Cloudflare edge blocks (Bot Fight Mode) don't improve with retries —
+      // Cloudflare just keeps returning 502 for the same browser/IP combo.
+      // Skip the retry loop entirely and surface actionable guidance.
+      if (e?.isCloudflare) {
+        setStage("Diblokir Cloudflare");
+        return;
+      }
+
+      // Other errors (403 integrity, 429 rate-limit, transient network) →
+      // retry up to 3 times with 2s backoff, then show manual retry button.
       if (retryCountRef.current < 3) {
         setStage("Mencoba lagi...");
         loginAttemptedRef.current = false;
@@ -129,8 +139,8 @@ export function LoginScreen({ onLoggedIn }: Props) {
           <span>Behavior</span>
         </div>
 
-        {/* Manual retry button — appears after 3 failed attempts */}
-        {error && retryCountRef.current >= 3 && (
+        {/* Manual retry button — appears after 3 failed attempts OR on Cloudflare block */}
+        {error && (retryCountRef.current >= 3 || stage === "Diblokir Cloudflare") && (
           <button
             onClick={manualRetry}
             style={{
@@ -151,8 +161,14 @@ export function LoginScreen({ onLoggedIn }: Props) {
           </button>
         )}
 
-        {error && retryCountRef.current < 3 && (
+        {error && retryCountRef.current < 3 && stage !== "Diblokir Cloudflare" && (
           <div className="kfai-login-error" style={{ marginTop: 12 }}>
+            {error}
+          </div>
+        )}
+
+        {error && stage === "Diblokir Cloudflare" && (
+          <div className="kfai-login-error" style={{ marginTop: 12, fontSize: 12, lineHeight: 1.5 }}>
             {error}
           </div>
         )}

@@ -59,6 +59,58 @@ This is a complete AI agent product — not just a router. The character **Rara*
 
 ---
 
+## Cloudflare deployment (IMPORTANT — read this if behind Cloudflare)
+
+If you put rara.ai.id (or any deployment) behind **Cloudflare**, you MUST configure Bot Fight Mode correctly or the login screen will fail with intermittent 502 errors.
+
+### The symptom
+
+```
+POST /api/auth → 502
+response body: "error code: 502" (plain text)
+response headers: server: cloudflare, no cf-ray
+```
+
+This is **Cloudflare returning 502 at the edge** — the request never reaches Next.js. Cloudflare's Bot Fight Mode thinks the user's browser looks bot-like (headless Chrome, privacy extensions, weird UA) and blocks it before our auth route can run.
+
+### The fix (Cloudflare dashboard)
+
+1. Login to https://dash.cloudflare.com
+2. Select the rara.ai.id zone
+3. **Security → Bots → Bot Fight Mode → OFF** (and "Super Bot Fight Mode" if enabled)
+   - The default is "On" — this is what's breaking logins.
+4. **Security → WAF → Custom rules** — add a Skip rule for `/api/*`:
+   - Field: `URI Path`
+   - Operator: `starts with`
+   - Value: `/api/`
+   - Action: `Skip` (all remaining custom rules)
+   - This ensures API calls (auth, chat, file ops) are never challenged.
+5. **Security → Settings → Security Level → Essentially Off** (or Low)
+   - Higher levels trigger JS challenges that bot-like browsers can't solve.
+
+### How to verify
+
+```bash
+# Should return JSON (403), NOT "error code: 502"
+curl -s -X POST https://rara.ai.id/api/auth \
+  -H 'Content-Type: application/json' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
+  -d '{"_fp":"test","_bh":"test","_hp":"","_ts":12345}'
+```
+
+If you see `{"error":"Verifikasi perangkat gagal."}` (JSON) → Cloudflare is letting requests through and the auth route ran. ✅
+If you see `error code: 502` (plain text) → Cloudflare is still blocking. ❌ Re-check Bot Fight Mode + WAF rules.
+
+### Code-side mitigation (already shipped)
+
+The `LoginScreen` detects Cloudflare edge 502 (via response body) and shows a clear actionable error:
+
+> Cloudflare sedang menantang browser kamu (edge 502). Coba refresh halaman, nonaktifkan ekstensi privacy (uBlock, DuckDuckGo, Privacy Badger), atau pakai browser lain. Jika tetap gagal, minta admin disable Bot Fight Mode di Cloudflare dashboard untuk zone rara.ai.id.
+
+Retries are skipped on Cloudflare 502 (since Cloudflare will keep blocking the same browser/IP combo anyway). The manual "Coba Lagi" button is shown immediately so the user can retry after fixing their browser.
+
+---
+
 ## Quick start (Docker — recommended)
 
 ### 1. Generate secrets
