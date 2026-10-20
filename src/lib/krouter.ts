@@ -1654,24 +1654,67 @@ export async function callKrouterStream(
   state.reasoning = state.reasoning.trim();
 
   // ── Reasoning-only fallback ──────────────────────────────────────────────
-  // Some opencode.ai free-tier models (esp. big-pickle) emit their entire
-  // response as `reasoning_content` and then `finish_reason: stop` WITHOUT
-  // ever producing a `content` delta. The agentic loop's natural-stop branch
-  // then sees `result.content === ''` and triggers the unhelpful fallback
-  // "Saya tidak bisa menyelesaikan permintaan ini…".
+  // Some opencode.ai free-tier models (esp. big-pickle, glm-5.3-flash-free,
+  // etc.) emit their entire response as `reasoning_content` and then
+  // `finish_reason: stop` WITHOUT ever producing a `content` delta. The
+  // agentic loop's natural-stop branch then sees `result.content === ''`
+  // and would trigger the unhelpful fallback "Saya tidak bisa...".
   //
-  // When that happens, use the accumulated reasoning as the content. It's
-  // not ideal (the reasoning might contain meta-monologue), but it's
-  // ALWAYS better than the generic fallback message. The persona wrapper
-  // also nudges the model to put its answer in content, but this catches
-  // the case where the model still didn't comply.
+  // When that happens, try two extraction strategies:
+  //   1. If the reasoning contains a quoted answer (text after phrases like
+  //      "answer:", "respond:", "respond with:", "say:"), extract the
+  //      quoted text — that's the actual answer the model formulated.
+  //   2. Otherwise, use the entire reasoning as the content. Not ideal
+  //      (might be meta-monologue), but always better than the generic
+  //      fallback.
   if (!state.content && state.reasoning) {
-    state.content = state.reasoning;
-    state.reasoning = '';
-    state.content_from_reasoning_fallback = true;
+    const extracted = extractQuotedAnswer(state.reasoning);
+    if (extracted) {
+      state.content = extracted;
+      // Keep the reasoning intact so the UI can still show it as "thinking"
+      // (don't clear it).
+    } else {
+      state.content = state.reasoning;
+      state.reasoning = '';
+      state.content_from_reasoning_fallback = true;
+    }
   }
 
   return state;
+}
+
+// ── Helper: extract the model's actual answer from reasoning ──────────────
+// Reasoning models on opencode.ai free-tier often formulate the answer
+// inside `reasoning_content` like:
+//   "The instructions say to answer: \"Hai! Aku Rara — asisten AI ceria
+//    kamu! Senang kenal with you! Ada yang mau aku bantu hari ini?\""
+// We extract the quoted text after a "answer:" / "respond:" / "say:" marker.
+function extractQuotedAnswer(reasoning: string): string | null {
+  // Match patterns like: respond: "..." or answer: "..." or say: "..." or
+  // respond with: "..." — capture the quoted text (handles ", ', «, », “, ”).
+  const quoteChars = '["\'«»“”‟‟]';
+  const patterns = [
+    new RegExp(`(?:answer|respond(?:\\s+with)?|say|greeting|reply(?:\\s+with)?)\\s*:?\\s*${quoteChars}([^${quoteChars}]{5,500})${quoteChars}`, 'gi'),
+  ];
+  let bestMatch: string | null = null;
+  for (const p of patterns) {
+    p.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = p.exec(reasoning)) !== null) {
+      const candidate = m[1].trim();
+      // Heuristic: prefer candidates that look like a real answer
+      // (contain at least one space + at least 10 chars + don't start with
+      // "I " or "The user")
+      if (candidate.length >= 10 && candidate.includes(' ') &&
+          !/^I\s|The user|^According/i.test(candidate)) {
+        // If we already had a match, pick the longer one (likely the actual answer)
+        if (!bestMatch || candidate.length > bestMatch.length) {
+          bestMatch = candidate;
+        }
+      }
+    }
+  }
+  return bestMatch;
 }
 
 // ── List models (for the list_models tool) ─────────────────────────────────────
