@@ -355,33 +355,20 @@ export async function POST(req: NextRequest): Promise<Response> {
             continue;
           }
           // No tool calls in text → natural stop (model produced final text)
-          // ── REASONING-ONLY RECOVERY ──────────────────────────────────────────
-          // Some opencode.ai free-tier models (esp. big-pickle) emit ALL their
-          // output as `reasoning_content` and then `finish_reason: stop` WITHOUT
-          // producing any `content` delta. callKrouterStream detects this and
-          // sets `result.content_from_reasoning_fallback = true` (the reasoning
-          // was copied to content as a last resort).
+          // ── REASONING-ONLY RECOVERY (simplified) ──────────────────────────────
+          // opencode.ai free-tier models (big-pickle, glm-5.3-flash-free, etc.)
+          // emit ALL their output as `reasoning_content` and then finish_reason:
+          // stop WITHOUT ever producing a `content` delta. callKrouterStream
+          // handles this by either (a) extracting a quoted answer from the
+          // reasoning, or (b) copying the entire reasoning to content as a
+          // last resort (with content_from_reasoning_fallback=true).
           //
-          // Strategy: inject a "please respond with actual content" nudge and
-          // retry up to 2 times. If the model STILL emits reasoning-only after
-          // 2 nudges, accept the meta-monologue as the answer (it's not great,
-          // but it's better than the generic "Saya tidak bisa..." fallback).
-          if (result.content_from_reasoning_fallback && iter < 3) {
-            // Strip the meta-monologue from history so the model doesn't
-            // keep building on it. Replace with a placeholder.
-            const lastMsg = allMessages[allMessages.length - 1];
-            if (lastMsg && lastMsg.role === 'assistant') {
-              lastMsg.content = '(reasoning only — no actual content produced)';
-            }
-            allMessages.push({
-              role: 'user',
-              content:
-                'You only produced reasoning, not a final answer. ' +
-                'Please respond NOW with your actual answer in the content field. ' +
-                'Aim for 1-3 sentences. Do not call any tools. Just answer directly.',
-            });
-            continue;  // retry
-          }
+          // Either way, we accept the result and break the loop. The previous
+          // version tried to nudge the model with a follow-up "please respond
+          // with content" message — but the model just keeps emitting
+          // reasoning-only responses, leading to MAX_ITERS=20 iterations + the
+          // generic fallback. Better to accept the meta-monologue than loop
+          // 20 times and return the fallback.
           finalText = result.content;
           send({ type: 'done', iter, reason: 'natural_stop' });
           break;
