@@ -1,0 +1,1122 @@
+     1→/**
+     2→ * Provider catalog — declares every provider the gateway knows about,
+     3→ * plus factory functions that build an executor instance on demand.
+     4→ *
+     5→ * Each provider definition is declarative so the dashboard and the router
+     6→ * share the same source of truth: base URL, default model list, auth mode,
+     7→ * whether it requires an API key, etc.
+     8→ */
+     9→
+    10→import type { ModelObject } from "../types";
+    11→import { OpenAIExecutor } from "../executors/openai";
+    12→import { DeepSeekScraperExecutor } from "../executors/deepseek-scraper";
+    13→import { OpenCodeExecutor } from "../executors/opencode";
+    14→import { GeminiScraperExecutor } from "../executors/gemini-scraper";
+    15→import { GroqExecutor } from "../executors/groq";
+    16→import { DeepSeekExecutor } from "../executors/deepseek";
+    17→import { FireworksExecutor } from "../executors/fireworks";
+    18→import { AnthropicExecutor } from "../executors/anthropic";
+    19→import * as store from "../services/config-store";
+    20→import type { CustomProviderDefinition } from "../services/config-store";
+    21→
+    22→// ── Types ────────────────────────────────────────────────────────────────────
+    23→
+    24→export type ProviderCategory =
+    25→  | "api_key"
+    26→  | "free_tier"
+    27→  | "oauth"
+    28→  | "self_hosted";
+    29→
+    30→export type ProviderProtocol = "openai" | "scrape";
+    31→
+    32→export interface ProviderStaticModels {
+    33→  id: string;
+    34→  object: "model";
+    35→  owned_by: string;
+    36→  capabilities?: ModelObject["capabilities"];
+    37→}
+    38→
+    39→export interface ProviderDefinition {
+    40→  id: string;
+    41→  name: string;
+    42→  category: ProviderCategory;
+    43→  protocol: ProviderProtocol;
+    44→  baseUrl: string;
+    45→  /** Sign-up URL shown in the dashboard. */
+    46→  webUrl?: string;
+    47→  /** Whether an API key / token is required at runtime. */
+    48→  requiresApiKey: boolean;
+    49→  /** Whether the dashboard allows overriding baseUrl. */
+    50→  supportsCustomUrl: boolean;
+    51→  /** Status message shown when no credential is configured. */
+    52→  statusMessage?: string;
+    53→  /** Static model list (used when /models isn't public). */
+    54→  models?: ProviderStaticModels[];
+    55→  /** Optional alias prefix (e.g. `ds` for DeepSeek). */
+    56→  alias?: string;
+    57→  /** Custom header builder for providers with non-Bearer auth. */
+    58→  buildHeaders?: (base: Record<string, string>) => Record<string, string>;
+    59→}
+    60→
+    61→// ── Static model lists ───────────────────────────────────────────────────────
+    62→//
+    63→// These come from each provider's public docs so `/v1/models` always returns
+    64→// something useful even when the upstream /models endpoint requires auth.
+    65→
+    66→const GROQ_MODELS: ProviderStaticModels[] = [
+    67→  { id: "llama-3.3-70b-versatile", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    68→  { id: "llama-3.1-8b-instant", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    69→  { id: "llama-3.1-70b-versatile", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    70→  { id: "mixtral-8x7b-32768", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    71→  { id: "gemma2-9b-it", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+    72→  { id: "deepseek-r1-distill-llama-70b", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+    73→  { id: "deepseek-r1-distill-qwen-32b", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+    74→  { id: "qwen-2.5-32b", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+    75→  { id: "qwen-2.5-coder-32b", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    76→  { id: "qwen2.5-coder-32b-instruct", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    77→  { id: "llama-3.3-70b-specdec", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    78→  { id: "llama-guard-3-8b", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+    79→  { id: "moonshotai/kimi-k2-instruct", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    80→  { id: "openai/gpt-oss-120b", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    81→  { id: "openai/gpt-oss-20b", object: "model", owned_by: "groq", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    82→];
+    83→
+    84→const OPENROUTER_MODELS: ProviderStaticModels[] = [
+    85→  { id: "openai/gpt-4o", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    86→  { id: "openai/gpt-4o-mini", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    87→  { id: "openai/gpt-4-turbo", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    88→  { id: "anthropic/claude-3.5-sonnet", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    89→  { id: "anthropic/claude-3.5-haiku", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    90→  { id: "anthropic/claude-3-opus", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    91→  { id: "google/gemini-pro-1.5", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    92→  { id: "google/gemini-flash-1.5", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+    93→  { id: "meta-llama/llama-3.3-70b-instruct", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    94→  { id: "meta-llama/llama-3.1-405b-instruct", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    95→  { id: "deepseek/deepseek-chat", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    96→  { id: "deepseek/deepseek-r1", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+    97→  { id: "qwen/qwen-2.5-72b-instruct", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    98→  { id: "qwen/qwen-2.5-coder-32b-instruct", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+    99→  { id: "mistralai/mistral-large", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   100→  { id: "x-ai/grok-2-1212", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   101→  { id: "free/deepseek-r1", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   102→  { id: "free/llama-3.3-70b", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   103→  { id: "free/qwen-2.5-coder-32b", object: "model", owned_by: "openrouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   104→];
+   105→
+   106→const TOGETHER_MODELS: ProviderStaticModels[] = [
+   107→  { id: "meta-llama/Llama-3.3-70B-Instruct-Turbo", object: "model", owned_by: "together", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   108→  { id: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", object: "model", owned_by: "together", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   109→  { id: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", object: "model", owned_by: "together", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   110→  { id: "Qwen/Qwen2.5-72B-Instruct-Turbo", object: "model", owned_by: "together", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   111→  { id: "Qwen/Qwen2.5-Coder-32B-Instruct", object: "model", owned_by: "together", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   112→  { id: "deepseek-ai/DeepSeek-V3", object: "model", owned_by: "together", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   113→  { id: "deepseek-ai/DeepSeek-R1", object: "model", owned_by: "together", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   114→];
+   115→
+   116→const CEREBRAS_MODELS: ProviderStaticModels[] = [
+   117→  { id: "llama-3.3-70b", object: "model", owned_by: "cerebras", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   118→  { id: "llama3.1-8b", object: "model", owned_by: "cerebras", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   119→  { id: "qwen-2.5-coder-32b", object: "model", owned_by: "cerebras", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   120→  { id: "deepseek-r1-distill-llama-70b", object: "model", owned_by: "cerebras", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   121→  { id: "deepseek-r1-distill-qwen-32b", object: "model", owned_by: "cerebras", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   122→];
+   123→
+   124→const FIREWORKS_MODELS: ProviderStaticModels[] = [
+   125→  { id: "accounts/fireworks/models/llama-v3p3-70b-instruct", object: "model", owned_by: "fireworks", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   126→  { id: "accounts/fireworks/models/qwen2p5-coder-32b-instruct", object: "model", owned_by: "fireworks", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   127→  { id: "accounts/fireworks/models/deepseek-v3", object: "model", owned_by: "fireworks", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   128→  { id: "accounts/fireworks/models/deepseek-r1", object: "model", owned_by: "fireworks", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   129→];
+   130→
+   131→const XAI_MODELS: ProviderStaticModels[] = [
+   132→  { id: "grok-2-1212", object: "model", owned_by: "xai", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   133→  { id: "grok-2-vision-1212", object: "model", owned_by: "xai", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   134→  { id: "grok-beta", object: "model", owned_by: "xai", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   135→  { id: "grok-vision-beta", object: "model", owned_by: "xai", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   136→];
+   137→
+   138→const MISTRAL_MODELS: ProviderStaticModels[] = [
+   139→  { id: "mistral-large-latest", object: "model", owned_by: "mistral", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   140→  { id: "mistral-small-latest", object: "model", owned_by: "mistral", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   141→  { id: "codestral-latest", object: "model", owned_by: "mistral", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   142→  { id: "open-mixtral-8x7b", object: "model", owned_by: "mistral", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   143→  { id: "open-mistral-7b", object: "model", owned_by: "mistral", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   144→  { id: "open-mistral-nemo", object: "model", owned_by: "mistral", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   145→];
+   146→
+   147→const OPENAI_MODELS: ProviderStaticModels[] = [
+   148→  { id: "gpt-4o", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   149→  { id: "gpt-4o-mini", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   150→  { id: "gpt-4-turbo", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   151→  { id: "gpt-4", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   152→  { id: "gpt-3.5-turbo", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   153→  { id: "o1", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   154→  { id: "o1-mini", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   155→  { id: "o1-preview", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   156→  { id: "o3-mini", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: false, reasoning: true } },
+   157→];
+   158→
+   159→const GEMINI_MODELS: ProviderStaticModels[] = [
+   160→  { id: "gemini-1.5-pro", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   161→  { id: "gemini-1.5-flash", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   162→  { id: "gemini-1.5-flash-8b", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   163→  { id: "gemini-2.0-flash", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   164→  { id: "gemini-2.0-flash-thinking-exp", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   165→];
+   166→
+   167→const COHERE_MODELS: ProviderStaticModels[] = [
+   168→  { id: "command-r-plus", object: "model", owned_by: "cohere", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   169→  { id: "command-r", object: "model", owned_by: "cohere", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   170→  { id: "command-r7b-12-2024", object: "model", owned_by: "cohere", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   171→];
+   172→
+   173→const PERPLEXITY_MODELS: ProviderStaticModels[] = [
+   174→  { id: "sonar-pro", object: "model", owned_by: "perplexity", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   175→  { id: "sonar-reasoning-pro", object: "model", owned_by: "perplexity", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   176→  { id: "sonar-reasoning", object: "model", owned_by: "perplexity", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   177→  { id: "sonar", object: "model", owned_by: "perplexity", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   178→];
+   179→
+   180→const SILICONFLOW_MODELS: ProviderStaticModels[] = [
+   181→  { id: "deepseek-ai/DeepSeek-V3", object: "model", owned_by: "siliconflow", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   182→  { id: "deepseek-ai/DeepSeek-R1", object: "model", owned_by: "siliconflow", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   183→  { id: "Qwen/Qwen2.5-72B-Instruct", object: "model", owned_by: "siliconflow", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   184→  { id: "Qwen/Qwen2.5-Coder-32B-Instruct", object: "model", owned_by: "siliconflow", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   185→];
+   186→
+   187→const NEBIUS_MODELS: ProviderStaticModels[] = [
+   188→  { id: "meta-llama/Meta-Llama-3.1-405B-Instruct", object: "model", owned_by: "nebius", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   189→  { id: "meta-llama/Llama-3.3-70B-Instruct", object: "model", owned_by: "nebius", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   190→  { id: "Qwen/Qwen2.5-32B-Instruct", object: "model", owned_by: "nebius", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   191→  { id: "deepseek-ai/DeepSeek-R1", object: "model", owned_by: "nebius", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   192→];
+   193→
+   194→const HYPERBOLIC_MODELS: ProviderStaticModels[] = [
+   195→  { id: "meta-llama/Meta-Llama-3.1-405B-Instruct", object: "model", owned_by: "hyperbolic", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   196→  { id: "Qwen/Qwen2.5-72B-Instruct", object: "model", owned_by: "hyperbolic", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   197→  { id: "deepseek-ai/DeepSeek-V3", object: "model", owned_by: "hyperbolic", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   198→];
+   199→
+   200→const CHUTES_MODELS: ProviderStaticModels[] = [
+   201→  { id: "deepseek-ai/DeepSeek-V3", object: "model", owned_by: "chutes", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   202→  { id: "deepseek-ai/DeepSeek-R1", object: "model", owned_by: "chutes", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   203→  { id: "Qwen/Qwen2.5-Coder-32B-Instruct", object: "model", owned_by: "chutes", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   204→];
+   205→
+   206→// ── Free-tier providers (require a free signup key) ──────────────────────────
+   207→
+   208→const BLUESMINDS_MODELS: ProviderStaticModels[] = [
+   209→  { id: "meta-llama/Llama-3.3-70B-Instruct", object: "model", owned_by: "bluesminds", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   210→  { id: "Qwen/Qwen2.5-72B-Instruct", object: "model", owned_by: "bluesminds", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   211→  { id: "deepseek-ai/DeepSeek-V3", object: "model", owned_by: "bluesminds", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   212→];
+   213→
+   214→const GOROUTER_MODELS: ProviderStaticModels[] = [
+   215→  { id: "gpt-4o", object: "model", owned_by: "gorouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   216→  { id: "gpt-4o-mini", object: "model", owned_by: "gorouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   217→  { id: "claude-3.5-sonnet", object: "model", owned_by: "gorouter", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   218→  { id: "deepseek-chat", object: "model", owned_by: "gorouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   219→  { id: "llama-3.3-70b", object: "model", owned_by: "gorouter", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   220→];
+   221→
+   222→const SEEKAI_MODELS: ProviderStaticModels[] = [
+   223→  { id: "deepseek-chat", object: "model", owned_by: "seekai", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   224→  { id: "deepseek-r1", object: "model", owned_by: "seekai", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   225→  { id: "llama-3.3-70b", object: "model", owned_by: "seekai", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   226→];
+   227→
+   228→// ── 9Router-ported providers ─────────────────────────────────────────────────
+   229→// Model lists mirror 9Router's registries (open-sse/providers/registry/*.js);
+   230→// opencode additionally discovers models live at runtime.
+   231→
+   232→const OPENCODE_MODELS: ProviderStaticModels[] = [
+   233→  // Free-tier models (no key) first — live /zen/v1/models overrides this list.
+   234→  { id: "deepseek-v4-flash-free", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   235→  { id: "muse-spark-1.3-contributor-free", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   236→  { id: "muse-spark-1.2-contributor-free", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   237→  { id: "mimo-v2.5-free", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   238→  { id: "nemotron-3-ultra-free", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   239→  { id: "nemotron-3.5-lightning-free", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   240→  { id: "ling-3.0-flash-fin-free", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   241→  { id: "glm-5.3", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   242→  { id: "kimi-k3", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   243→  { id: "deepseek-v4-pro", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   244→  { id: "gpt-5.5", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   245→  { id: "claude-sonnet-4-5", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   246→  { id: "gemini-3.5-flash", object: "model", owned_by: "opencode", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   247→];
+   248→
+   249→const LLM7_MODELS: ProviderStaticModels[] = [
+   250→  { id: "gpt-5.5", object: "model", owned_by: "llm7", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   251→  { id: "claude-opus-5", object: "model", owned_by: "llm7", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   252→  { id: "deepseek-v4-flash", object: "model", owned_by: "llm7", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   253→  { id: "grok-4.5", object: "model", owned_by: "llm7", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   254→  { id: "kimi-k3", object: "model", owned_by: "llm7", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   255→];
+   256→
+   257→const KILO_GATEWAY_MODELS: ProviderStaticModels[] = [
+   258→  { id: "kilo-auto/free", object: "model", owned_by: "kilo-gateway", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   259→  { id: "nvidia/nemotron-3-super-120b-a12b:free", object: "model", owned_by: "kilo-gateway", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   260→  { id: "nvidia/nemotron-3-ultra-550b-a55b:free", object: "model", owned_by: "kilo-gateway", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   261→  { id: "kwaipilot/kat-coder-pro-v2.5:free", object: "model", owned_by: "kilo-gateway", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   262→  { id: "kilo-auto/frontier", object: "model", owned_by: "kilo-gateway", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   263→  { id: "kilo-auto/balanced", object: "model", owned_by: "kilo-gateway", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   264→];
+   265→
+   266→const KIMCHI_MODELS: ProviderStaticModels[] = [
+   267→  { id: "minimax-m3", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   268→  { id: "kimi-k2.7", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   269→  { id: "kimi-k2.6", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   270→  { id: "kimi-k2.5", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   271→  { id: "nemotron-3-ultra-fp4", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   272→  { id: "minimax-m2.7", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   273→  { id: "claude-opus-4-6", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   274→  { id: "claude-sonnet-4-6", object: "model", owned_by: "kimchi", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   275→];
+   276→
+   277→const GLM_CN_MODELS: ProviderStaticModels[] = [
+   278→  { id: "glm-5.3", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: true } },
+   279→  { id: "glm-5.3-flash", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   280→  { id: "glm-5.2", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   281→  { id: "glm-5.1", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   282→  { id: "glm-5-turbo", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   283→  { id: "glm-5", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: true } },
+   284→  { id: "glm-4.7", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   285→  { id: "glm-4.6v", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   286→  { id: "glm-4.6", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   287→  { id: "glm-4.5-air", object: "model", owned_by: "glm-cn", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   288→];
+   289→
+   290→const OPENCODE_GO_MODELS: ProviderStaticModels[] = [
+   291→  { id: "deepseek-flash", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   292→  { id: "glm-5.3-flash", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   293→  { id: "glm-5.3", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   294→  { id: "glm-5.2", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   295→  { id: "glm-5.1", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   296→  { id: "kimi-k2.7-code", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   297→  { id: "kimi-k2.6", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   298→  { id: "kimi-k3", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   299→  { id: "deepseek-v4-pro", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   300→  { id: "deepseek-v4-flash", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   301→  { id: "deepseek-v4-flash-vision-exp", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: false, vision: true, reasoning: false } },
+   302→  { id: "longcat-2.0", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   303→  { id: "mimo-v2.5", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   304→  { id: "mimo-v2.5-pro", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   305→  { id: "minimax-m3", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   306→  { id: "minimax-m2.7", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   307→  { id: "minimax-m2.5", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   308→  { id: "qwen3.8-max", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   309→  { id: "qwen3.8-flash", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   310→  { id: "qwen3.7-max", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   311→  { id: "qwen3.7-plus", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   312→  { id: "qwen3.6-plus", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: true, vision: false, reasoning: false } },
+   313→  { id: "hy4-preview", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   314→  { id: "hy3", object: "model", owned_by: "opencode-go", capabilities: { streaming: true, tools: false, vision: false, reasoning: false } },
+   315→];
+   316→
+   317→const GEMINI_WEB_MODELS: ProviderStaticModels[] = [
+   318→  { id: "gemini-2.5-pro", object: "model", owned_by: "gemini", capabilities: { streaming: true, tools: false, vision: true, reasoning: true } },
+   319→  { id: "gemini-2.5-flash", object: "model", owned_by: "gemini", capabilities: { streaming: true, tools: false, vision: true, reasoning: true } },
+   320→  { id: "gemini-2.0-flash", object: "model", owned_by: "gemini", capabilities: { streaming: true, tools: false, vision: true, reasoning: false } },
+   321→  { id: "gemini-2.0-flash-thinking", object: "model", owned_by: "gemini", capabilities: { streaming: true, tools: false, vision: true, reasoning: true } },
+   322→  { id: "gemini-1.5-pro", object: "model", owned_by: "gemini", capabilities: { streaming: true, tools: false, vision: true, reasoning: false } },
+   323→  { id: "gemini-1.5-flash", object: "model", owned_by: "gemini", capabilities: { streaming: true, tools: false, vision: true, reasoning: false } },
+   324→];
+   325→
+   326→// ── Catalog ────────────────────────────────────────────────────────────────────
+   327→
+   328→export const PROVIDER_CATALOG: ProviderDefinition[] = [
+   329→  // ── Scraped (no API key required — uses browser bearer token) ────────────
+   330→  {
+   331→    id: "deepseek",
+   332→    name: "DeepSeek (Scraper)",
+   333→    category: "api_key",
+   334→    protocol: "scrape",
+   335→    baseUrl: "https://chat.deepseek.com",
+   336→    alias: "ds",
+   337→    webUrl: "https://deepseek.com",
+   338→    requiresApiKey: true,
+   339→    supportsCustomUrl: false,
+   340→    statusMessage: "DeepSeek bearer token missing — see docs",
+   341→  },
+   342→
+   343→  // ── OAuth providers (Claude Code, Codex, Antigravity, Gemini CLI) ────────
+   344→  {
+   345→    id: "claude",
+   346→    name: "Claude (Anthropic OAuth)",
+   347→    category: "oauth",
+   348→    protocol: "openai",
+   349→    baseUrl: "https://api.anthropic.com/v1",
+   350→    webUrl: "https://claude.ai",
+   351→    requiresApiKey: true,
+   352→    supportsCustomUrl: false,
+   353→    statusMessage: "Connect via OAuth at /admin (Claude Code subscription)",
+   354→    models: [
+   355→      { id: "claude-3-5-sonnet-20241022", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   356→      { id: "claude-3-5-haiku-20241022", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   357→      { id: "claude-3-opus-20240229", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   358→      { id: "claude-3-7-sonnet-20250219", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   359→      { id: "claude-sonnet-4-20250514", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   360→      { id: "claude-opus-4-20250514", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   361→    ],
+   362→  },
+   363→  {
+   364→    id: "codex",
+   365→    name: "Codex (OpenAI OAuth)",
+   366→    category: "oauth",
+   367→    protocol: "openai",
+   368→    baseUrl: "https://api.openai.com/v1",
+   369→    webUrl: "https://chat.openai.com",
+   370→    requiresApiKey: true,
+   371→    supportsCustomUrl: false,
+   372→    statusMessage: "Connect via OAuth at /admin (ChatGPT Plus / Pro)",
+   373→    models: [
+   374→      { id: "gpt-4o", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   375→      { id: "gpt-4o-mini", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   376→      { id: "o1", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: false, vision: false, reasoning: true } },
+   377→      { id: "o3", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: false, reasoning: true } },
+   378→      { id: "o3-mini", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: false, reasoning: true } },
+   379→      { id: "o4-mini", object: "model", owned_by: "openai", capabilities: { streaming: true, tools: true, vision: false, reasoning: true } },
+   380→    ],
+   381→  },
+   382→  {
+   383→    id: "antigravity",
+   384→    name: "Antigravity (Google OAuth)",
+   385→    category: "oauth",
+   386→    protocol: "openai",
+   387→    baseUrl: "https://cloudcode-pa.googleapis.com/v1beta",
+   388→    webUrl: "https://antigravity.google.com",
+   389→    requiresApiKey: true,
+   390→    supportsCustomUrl: false,
+   391→    statusMessage: "Connect via OAuth at /admin (Google Antigravity IDE)",
+   392→    models: [
+   393→      { id: "gemini-2.5-pro", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   394→      { id: "gemini-2.5-flash", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   395→      { id: "gemini-2.0-flash", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   396→      { id: "claude-sonnet-4-20250514", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   397→      { id: "claude-3-5-sonnet-20241022", object: "model", owned_by: "anthropic", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   398→    ],
+   399→  },
+   400→  {
+   401→    id: "gemini-cli",
+   402→    name: "Gemini CLI (Google OAuth)",
+   403→    category: "oauth",
+   404→    protocol: "openai",
+   405→    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+   406→    webUrl: "https://gemini.google.com",
+   407→    requiresApiKey: true,
+   408→    supportsCustomUrl: false,
+   409→    statusMessage: "Connect via OAuth at /admin (Gemini CLI)",
+   410→    models: [
+   411→      { id: "gemini-2.0-flash", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: false } },
+   412→      { id: "gemini-2.5-pro", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   413→      { id: "gemini-2.5-flash", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   414→      { id: "gemini-2.0-flash-thinking-exp", object: "model", owned_by: "google", capabilities: { streaming: true, tools: true, vision: true, reasoning: true } },
+   415→    ],
+   416→  },
+   417→
+   418→  // ── Free-tier (free signup required) ──────────────────────────────────────
+   419→  {
+   420→    id: "bluesminds",
+   421→    name: "BluesMinds",
+   422→    category: "free_tier",
+   423→    protocol: "openai",
+   424→    baseUrl: "https://api.bluesminds.com/v1",
+   425→    webUrl: "https://api.bluesminds.com/sign-up",
+   426→    requiresApiKey: true,
+   427→    supportsCustomUrl: true,
+   428→    statusMessage: "BluesMinds API key missing",
+   429→    models: BLUESMINDS_MODELS,
+   430→  },
+   431→  {
+   432→    id: "gorouter",
+   433→    name: "GoRouter",
+   434→    category: "free_tier",
+   435→    protocol: "openai",
+   436→    baseUrl: "https://gorouter.app/v1",
+   437→    webUrl: "https://gorouter.app/sign-up",
+   438→    requiresApiKey: true,
+   439→    supportsCustomUrl: true,
+   440→    statusMessage: "GoRouter API key missing",
+   441→    models: GOROUTER_MODELS,
+   442→  },
+   443→  {
+   444→    id: "seekai",
+   445→    name: "SeekAI",
+   446→    category: "free_tier",
+   447→    protocol: "openai",
+   448→    baseUrl: "https://seekai.cc/v1",
+   449→    webUrl: "https://seekai.cc/sign-up",
+   450→    requiresApiKey: true,
+   451→    supportsCustomUrl: true,
+   452→    statusMessage: "SeekAI API key missing",
+   453→    models: SEEKAI_MODELS,
+   454→  },
+   455→
+   456→  // ── Ported from 9Router (free & cheap unlimited-tier gateways) ───────────
+   457→  {
+   458→    id: "opencode",
+   459→    name: "OpenCode (Free)",
+   460→    category: "free_tier",
+   461→    protocol: "openai",
+   462→    baseUrl: "https://opencode.ai",
+   463→    alias: "oc",
+   464→    webUrl: "https://opencode.ai/auth",
+   465→    requiresApiKey: false,
+   466→    supportsCustomUrl: false,
+   467→    statusMessage: "Free — no key needed (enable it). Optional opencode.ai key unlocks premium models",
+   468→    models: OPENCODE_MODELS,
+   469→  },
+   470→  {
+   471→    id: "llm7",
+   472→    name: "LLM7 (free token)",
+   473→    category: "free_tier",
+   474→    protocol: "openai",
+   475→    baseUrl: "https://api.llm7.io/v1",
+   476→    webUrl: "https://llm7.io",
+   477→    requiresApiKey: true,
+   478→    supportsCustomUrl: false,
+   479→    statusMessage: "LLM7 token missing — free at llm7.io",
+   480→    models: LLM7_MODELS,
+   481→  },
+   482→  {
+   483→    id: "kilo-gateway",
+   484→    name: "Kilo Gateway (free tier)",
+   485→    category: "free_tier",
+   486→    protocol: "openai",
+   487→    baseUrl: "https://api.kilo.ai/api/gateway",
+   488→    alias: "kgw",
+   489→    webUrl: "https://kilo.ai/dashboard?tab=apiKeys",
+   490→    requiresApiKey: true,
+   491→    supportsCustomUrl: false,
+   492→    statusMessage: "Kilo API key missing — free at kilo.ai dashboard",
+   493→    models: KILO_GATEWAY_MODELS,
+   494→  },
+   495→  {
+   496→    id: "kimchi",
+   497→    name: "Kimchi (free tier)",
+   498→    category: "free_tier",
+   499→    protocol: "openai",
+   500→    baseUrl: "https://llm.kimchi.dev/openai/v1",
+   501→    webUrl: "https://llm.kimchi.dev",
+   502→    requiresApiKey: true,
+   503→    supportsCustomUrl: false,
+   504→    statusMessage: "Kimchi API key missing",
+   505→    models: KIMCHI_MODELS,
+   506→  },
+   507→  {
+   508→    id: "glm-cn",
+   509→    name: "GLM (Zhipu, coding plan)",
+   510→    category: "api_key",
+   511→    protocol: "openai",
+   512→    baseUrl: "https://open.bigmodel.cn/api/coding/paas/v4",
+   513→    webUrl: "https://open.bigmodel.cn",
+   514→    requiresApiKey: true,
+   515→    supportsCustomUrl: false,
+   516→    statusMessage: "GLM API key missing",
+   517→    models: GLM_CN_MODELS,
+   518→  },
+   519→  {
+   520→    id: "opencode-go",
+   521→    name: "OpenCode Go ($5/mo)",
+   522→    category: "api_key",
+   523→    protocol: "openai",
+   524→    baseUrl: "https://opencode.ai/zen/go/v1",
+   525→    alias: "ocg",
+   526→    webUrl: "https://opencode.ai/auth",
+   527→    requiresApiKey: true,
+   528→    supportsCustomUrl: false,
+   529→    statusMessage: "OpenCode Go key missing — subscribe at opencode.ai/auth",
+   530→    models: OPENCODE_GO_MODELS,
+   531→  },
+   532→  {
+   533→    id: "gemini-web",
+   534→    name: "Gemini (Web Scraper)",
+   535→    category: "free_tier",
+   536→    protocol: "scrape",
+   537→    baseUrl: "https://gemini.google.com",
+   538→    alias: "gw",
+   539→    webUrl: "https://gemini.google.com",
+   540→    requiresApiKey: false,
+   541→    supportsCustomUrl: false,
+   542→    statusMessage: "Free — no key needed (cookie auto-fetched). Optional: paste base64 session to continue conversation",
+   543→    models: GEMINI_WEB_MODELS,
+   544→  },
+   545→
+   546→  // ── Standard API-key providers ────────────────────────────────────────────
+   547→  {
+   548→    id: "openai",
+   549→    name: "OpenAI",
+   550→    category: "api_key",
+   551→    protocol: "openai",
+   552→    baseUrl: "https://api.openai.com/v1",
+   553→    webUrl: "https://platform.openai.com/api-keys",
+   554→    requiresApiKey: true,
+   555→    supportsCustomUrl: false,
+   556→    statusMessage: "OpenAI API key missing",
+   557→    models: OPENAI_MODELS,
+   558→  },
+   559→  {
+   560→    id: "anthropic",
+   561→    name: "Anthropic",
+   562→    category: "api_key",
+   563→    protocol: "openai",
+   564→    baseUrl: "https://api.anthropic.com/v1",
+   565→    webUrl: "https://console.anthropic.com/settings/keys",
+   566→    requiresApiKey: true,
+   567→    supportsCustomUrl: false,
+   568→    statusMessage: "Anthropic API key missing",
+   569→    models: [],
+   570→  },
+   571→  {
+   572→    id: "groq",
+   573→    name: "Groq",
+   574→    category: "api_key",
+   575→    protocol: "openai",
+   576→    baseUrl: "https://api.groq.com/openai/v1",
+   577→    webUrl: "https://console.groq.com/keys",
+   578→    requiresApiKey: true,
+   579→    supportsCustomUrl: false,
+   580→    statusMessage: "Groq API key missing",
+   581→    models: GROQ_MODELS,
+   582→  },
+   583→  {
+   584→    id: "deepseek",
+   585→    name: "DeepSeek",
+   586→    category: "api_key",
+   587→    protocol: "openai",
+   588→    baseUrl: "https://api.deepseek.com/v1",
+   589→    webUrl: "https://deepseek.com",
+   590→    requiresApiKey: true,
+   591→    supportsCustomUrl: false,
+   592→    statusMessage: "DeepSeek API key missing",
+   593→    models: [],
+   594→  },
+   595→  {
+   596→    id: "fireworks",
+   597→    name: "Fireworks AI",
+   598→    category: "api_key",
+   599→    protocol: "openai",
+   600→    baseUrl: "https://api.fireworks.ai/inference/v1",
+   601→    webUrl: "https://fireworks.ai/account/api-keys",
+   602→    requiresApiKey: true,
+   603→    supportsCustomUrl: false,
+   604→    statusMessage: "Fireworks API key missing",
+   605→    models: FIREWORKS_MODELS,
+   606→  },
+   607→  {
+   608→    id: "together",
+   609→    name: "Together AI",
+   610→    category: "api_key",
+   611→    protocol: "openai",
+   612→    baseUrl: "https://api.together.xyz/v1",
+   613→    webUrl: "https://api.together.xyz/settings/api-keys",
+   614→    requiresApiKey: true,
+   615→    supportsCustomUrl: false,
+   616→    statusMessage: "Together API key missing",
+   617→    models: TOGETHER_MODELS,
+   618→  },
+   619→  {
+   620→    id: "perplexity",
+   621→    name: "Perplexity",
+   622→    category: "api_key",
+   623→    protocol: "openai",
+   624→    baseUrl: "https://api.perplexity.ai",
+   625→    webUrl: "https://docs.perplexity.ai/guides/getting-started",
+   626→    requiresApiKey: true,
+   627→    supportsCustomUrl: false,
+   628→    statusMessage: "Perplexity API key missing",
+   629→    models: PERPLEXITY_MODELS,
+   630→  },
+   631→  {
+   632→    id: "cohere",
+   633→    name: "Cohere",
+   634→    category: "api_key",
+   635→    protocol: "openai",
+   636→    baseUrl: "https://api.cohere.ai/v1",
+   637→    webUrl: "https://dashboard.cohere.com/api-keys",
+   638→    requiresApiKey: true,
+   639→    supportsCustomUrl: false,
+   640→    statusMessage: "Cohere API key missing",
+   641→    models: COHERE_MODELS,
+   642→  },
+   643→  {
+   644→    id: "huggingface",
+   645→    name: "HuggingFace",
+   646→    category: "api_key",
+   647→    protocol: "openai",
+   648→    baseUrl: "https://api-inference.huggingface.co/v1",
+   649→    webUrl: "https://huggingface.co/settings/tokens",
+   650→    requiresApiKey: true,
+   651→    supportsCustomUrl: false,
+   652→    statusMessage: "HuggingFace token missing",
+   653→    models: [],
+   654→  },
+   655→  {
+   656→    id: "replicate",
+   657→    name: "Replicate",
+   658→    category: "api_key",
+   659→    protocol: "openai",
+   660→    baseUrl: "https://api.replicate.com/v1",
+   661→    webUrl: "https://replicate.com/accounts/api-tokens",
+   662→    requiresApiKey: true,
+   663→    supportsCustomUrl: false,
+   664→    statusMessage: "Replicate API token missing",
+   665→    models: [],
+   666→  },
+   667→  {
+   668→    id: "azure",
+   669→    name: "Azure OpenAI",
+   670→    category: "api_key",
+   671→    protocol: "openai",
+   672→    baseUrl: "",
+   673→    webUrl: "https://portal.azure.com/",
+   674→    requiresApiKey: true,
+   675→    supportsCustomUrl: true,
+   676→    statusMessage: "Azure endpoint & key missing",
+   677→    models: [],
+   678→  },
+   679→  {
+   680→    id: "vertex",
+   681→    name: "Vertex AI (Google)",
+   682→    category: "api_key",
+   683→    protocol: "openai",
+   684→    baseUrl: "",
+   685→    webUrl: "https://console.cloud.google.com/",
+   686→    requiresApiKey: true,
+   687→    supportsCustomUrl: true,
+   688→    statusMessage: "Vertex AI credentials missing",
+   689→    models: [],
+   690→  },
+   691→  {
+   692→    id: "vercel",
+   693→    name: "Vercel AI SDK",
+   694→    category: "api_key",
+   695→    protocol: "openai",
+   696→    baseUrl: "https://api.vercel.ai/v1",
+   697→    webUrl: "https://vercel.com/dashboard",
+   698→    requiresApiKey: true,
+   699→    supportsCustomUrl: true,
+   700→    statusMessage: "Vercel AI key missing",
+   701→    models: [],
+   702→  },
+   703→  {
+   704→    id: "openrouter",
+   705→    name: "OpenRouter",
+   706→    category: "api_key",
+   707→    protocol: "openai",
+   708→    baseUrl: "https://openrouter.ai/api/v1",
+   709→    webUrl: "https://openrouter.ai/keys",
+   710→    requiresApiKey: true,
+   711→    supportsCustomUrl: false,
+   712→    statusMessage: "OpenRouter API key missing",
+   713→    models: OPENROUTER_MODELS,
+   714→  },
+   715→  {
+   716→    id: "ai21",
+   717→    name: "AI21 Labs",
+   718→    category: "api_key",
+   719→    protocol: "openai",
+   720→    baseUrl: "https://api.ai21.com/studio/v1",
+   721→    webUrl: "https://platform.ai21.com/user/settings/api-keys",
+   722→    requiresApiKey: true,
+   723→    supportsCustomUrl: false,
+   724→    statusMessage: "AI21 API key missing",
+   725→    models: [],
+   726→  },
+   727→  {
+   728→    id: "mistral",
+   729→    name: "Mistral AI",
+   730→    category: "api_key",
+   731→    protocol: "openai",
+   732→    baseUrl: "https://api.mistral.ai/v1",
+   733→    webUrl: "https://console.mistral.ai/api-keys",
+   734→    requiresApiKey: true,
+   735→    supportsCustomUrl: false,
+   736→    statusMessage: "Mistral API key missing",
+   737→    models: MISTRAL_MODELS,
+   738→  },
+   739→  {
+   740→    id: "octoml",
+   741→    name: "OctoML",
+   742→    category: "api_key",
+   743→    protocol: "openai",
+   744→    baseUrl: "https://llm.api.octoml.ai/v1",
+   745→    webUrl: "https://app.octoml.ai/",
+   746→    requiresApiKey: true,
+   747→    supportsCustomUrl: false,
+   748→    statusMessage: "OctoML API key missing",
+   749→    models: [],
+   750→  },
+   751→  {
+   752→    id: "anyscale",
+   753→    name: "Anyscale",
+   754→    category: "api_key",
+   755→    protocol: "openai",
+   756→    baseUrl: "https://api.endpoints.anyscale.com/v1",
+   757→    webUrl: "https://app.anyscale.com/settings/api-keys",
+   758→    requiresApiKey: true,
+   759→    supportsCustomUrl: false,
+   760→    statusMessage: "Anyscale API key missing",
+   761→    models: [],
+   762→  },
+   763→  {
+   764→    id: "runpod",
+   765→    name: "RunPod",
+   766→    category: "api_key",
+   767→    protocol: "openai",
+   768→    baseUrl: "https://api.runpod.ai/v2",
+   769→    webUrl: "https://www.runpod.io/console",
+   770→    requiresApiKey: true,
+   771→    supportsCustomUrl: true,
+   772→    statusMessage: "RunPod API key missing",
+   773→    models: [],
+   774→  },
+   775→  {
+   776→    id: "modal",
+   777→    name: "Modal",
+   778→    category: "api_key",
+   779→    protocol: "openai",
+   780→    baseUrl: "https://api.modal.run/v1",
+   781→    webUrl: "https://modal.com/",
+   782→    requiresApiKey: true,
+   783→    supportsCustomUrl: true,
+   784→    statusMessage: "Modal API key missing",
+   785→    models: [],
+   786→  },
+   787→  {
+   788→    id: "gemini",
+   789→    name: "Google Gemini",
+   790→    category: "api_key",
+   791→    protocol: "openai",
+   792→    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+   793→    webUrl: "https://aistudio.google.com/apikey",
+   794→    requiresApiKey: true,
+   795→    supportsCustomUrl: false,
+   796→    statusMessage: "Gemini API key missing",
+   797→    models: GEMINI_MODELS,
+   798→  },
+   799→  {
+   800→    id: "cohere",
+   801→    name: "Cohere",
+   802→    category: "api_key",
+   803→    protocol: "openai",
+   804→    baseUrl: "https://api.cohere.ai/v1",
+   805→    webUrl: "https://dashboard.cohere.com/api-keys",
+   806→    requiresApiKey: true,
+   807→    supportsCustomUrl: false,
+   808→    statusMessage: "Cohere API key missing",
+   809→    models: COHERE_MODELS,
+   810→  },
+   811→  {
+   812→    id: "perplexity",
+   813→    name: "Perplexity",
+   814→    category: "api_key",
+   815→    protocol: "openai",
+   816→    baseUrl: "https://api.perplexity.ai",
+   817→    webUrl: "https://docs.perplexity.ai/guides/getting-started",
+   818→    requiresApiKey: true,
+   819→    supportsCustomUrl: false,
+   820→    statusMessage: "Perplexity API key missing",
+   821→    models: PERPLEXITY_MODELS,
+   822→  },
+   823→  {
+   824→    id: "siliconflow",
+   825→    name: "SiliconFlow",
+   826→    category: "api_key",
+   827→    protocol: "openai",
+   828→    baseUrl: "https://api.siliconflow.cn/v1",
+   829→    webUrl: "https://cloud.siliconflow.cn",
+   830→    requiresApiKey: true,
+   831→    supportsCustomUrl: false,
+   832→    statusMessage: "SiliconFlow API key missing",
+   833→    models: SILICONFLOW_MODELS,
+   834→  },
+   835→  {
+   836→    id: "nebius",
+   837→    name: "Nebius",
+   838→    category: "api_key",
+   839→    protocol: "openai",
+   840→    baseUrl: "https://api.studio.nebius.ai/v1",
+   841→    webUrl: "https://studio.nebius.ai",
+   842→    requiresApiKey: true,
+   843→    supportsCustomUrl: false,
+   844→    statusMessage: "Nebius API key missing",
+   845→    models: NEBIUS_MODELS,
+   846→  },
+   847→  {
+   848→    id: "hyperbolic",
+   849→    name: "Hyperbolic",
+   850→    category: "api_key",
+   851→    protocol: "openai",
+   852→    baseUrl: "https://api.hyperbolic.xyz/v1",
+   853→    webUrl: "https://app.hyperbolic.xyz",
+   854→    requiresApiKey: true,
+   855→    supportsCustomUrl: false,
+   856→    statusMessage: "Hyperbolic API key missing",
+   857→    models: HYPERBOLIC_MODELS,
+   858→  },
+   859→  {
+   860→    id: "chutes",
+   861→    name: "Chutes AI",
+   862→    category: "api_key",
+   863→    protocol: "openai",
+   864→    baseUrl: "https://api.chutes.ai/v1",
+   865→    webUrl: "https://chutes.ai",
+   866→    requiresApiKey: true,
+   867→    supportsCustomUrl: false,
+   868→    statusMessage: "Chutes API key missing",
+   869→    models: CHUTES_MODELS,
+   870→  },
+   871→  {
+   872→    id: "ollama",
+   873→    name: "Ollama (local)",
+   874→    category: "self_hosted",
+   875→    protocol: "openai",
+   876→    baseUrl: "http://localhost:11434/v1",
+   877→    webUrl: "https://ollama.com",
+   878→    requiresApiKey: false,
+   879→    supportsCustomUrl: true,
+   880→    statusMessage: "Ollama not reachable at configured URL",
+   881→  },
+   882→  {
+   883→    id: "lmstudio",
+   884→    name: "LM Studio (local)",
+   885→    category: "self_hosted",
+   886→    protocol: "openai",
+   887→    baseUrl: "http://localhost:1234/v1",
+   888→    webUrl: "https://lmstudio.ai",
+   889→    requiresApiKey: false,
+   890→    supportsCustomUrl: true,
+   891→    statusMessage: "LM Studio not reachable at configured URL",
+   892→  },
+   893→];
+   894→
+   895→// ── Custom providers (user-defined, loaded from config.json) ──────────────────
+   896→
+   897→/**
+   898→ * Convert a user-defined CustomProviderDefinition (stored in config.json) into
+   899→ * a ProviderDefinition that the rest of the gateway can treat as built-in.
+   900→ */
+   901→function customDefToProviderDef(c: CustomProviderDefinition): ProviderDefinition {
+   902→  const requiresApiKey = c.authScheme !== "none";
+   903→  const buildHeaders = (base: Record<string, string>): Record<string, string> => {
+   904→    if (c.authScheme === "none") return base;
+   905→    // The actual key is injected at runtime by the executor from the stored
+   906→    // credential; here we only set up the header skeleton so the
+   907→    // OpenAIExecutor knows which header to populate.
+   908→    return base;
+   909→  };
+   910→  return {
+   911→    id: c.id,
+   912→    name: c.name,
+   913→    category: "api_key",
+   914→    protocol: "openai",
+   915→    baseUrl: c.baseUrl,
+   916→    requiresApiKey,
+   917→    supportsCustomUrl: false,
+   918→    statusMessage: requiresApiKey ? `${c.name} API key missing` : undefined,
+   919→    models: (c.models ?? []).map((m) => ({
+   920→      id: m.id,
+   921→      object: "model" as const,
+   922→      owned_by: c.id,
+   923→      capabilities: m.capabilities as ProviderStaticModels["capabilities"],
+   924→    })),
+   925→    buildHeaders,
+   926→    // Custom providers carry auth metadata in a side channel — the executor
+   927→    // builder reads it back from the CustomProviderDefinition at construction.
+   928→    // (We piggy-back on the alias field to mark custom providers.)
+   929→    alias: undefined,
+   930→  };
+   931→}
+   932→
+   933→/** Return provider definitions for every user-defined custom provider. */
+   934→export function listCustomProviderDefs(): ProviderDefinition[] {
+   935→  try {
+   936→    return store.listCustomProviders().map(customDefToProviderDef);
+   937→  } catch {
+   938→    return [];
+   939→  }
+   940→}
+   941→
+   942→/** All known provider definitions: built-in catalog + user-defined customs. */
+   943→export function allProviderDefs(): ProviderDefinition[] {
+   944→  return [...PROVIDER_CATALOG, ...listCustomProviderDefs()];
+   945→}
+   946→
+   947→/** Auth metadata for a custom provider (used by the executor builder). */
+   948→export function getCustomProviderAuth(id: string): CustomProviderDefinition | undefined {
+   949→  return store.findCustomProvider(id);
+   950→}
+   951→
+   952→// ── Builder ────────────────────────────────────────────────────────────────────
+   953→
+   954→export interface ProviderInstance {
+   955→  definition: ProviderDefinition;
+   956→  apiKey: string;
+   957→  baseUrl: string;
+   958→}
+   959→
+   960→/** Build an executor instance from a provider definition + runtime credential. */
+   961→export function buildExecutor(
+   962→  def: ProviderDefinition,
+   963→  apiKey: string,
+   964→  baseUrlOverride?: string
+   965→): unknown {
+   966→  const baseUrl = (baseUrlOverride ?? def.baseUrl).replace(/\/$/, "");
+   967→  if (def.protocol === "scrape") {
+   968→    if (def.id === "deepseek") {
+   969→      return new DeepSeekScraperExecutor({
+   970→        id: def.id,
+   971→        name: def.name,
+   972→        baseUrl,
+   973→        token: apiKey,
+   974→      });
+   975→    }
+   976→    // Gemini Web Scraper: cookie-based auth with session persistence.
+   977→    if (def.id === "gemini-web") {
+   978→      const models = def.models?.map((m) => ({
+   979→        id: `${def.alias ?? def.id}/${m.id}`,
+   980→        object: "model" as const,
+   981→        owned_by: def.alias ?? def.id,
+   982→        capabilities: m.capabilities,
+   983→      }));
+   984→      return new GeminiScraperExecutor({
+   985→        id: def.id,
+   986→        name: def.name,
+   987→        baseUrl,
+   988→        token: apiKey, // base64-encoded session string for continuity
+   989→        models,
+   990→      });
+   991→    }
+   992→    throw new Error(`Unknown scrape provider: ${def.id}`);
+   993→  }
+   994→  // OpenCode: bespoke executor (Bearer public free tier + Responses-API models).
+   995→  if (def.id === "opencode") {
+   996→    return new OpenCodeExecutor({
+   997→      id: def.id,
+   998→      name: def.name,
+   999→      baseUrl,
+  1000→      apiKey,
+  1001→      models: def.models?.map((m) => ({
+  1002→        id: `${def.alias ?? def.id}/${m.id}`,
+  1003→        object: "model" as const,
+  1004→        owned_by: def.alias ?? def.id,
+  1005→        capabilities: m.capabilities,
+  1006→      })),
+  1007→    });
+  1008→  }
+  1009→  // Anthropic executor
+  1010→  if (def.id === "anthropic") {
+  1011→    const models = def.models?.map((m) => ({
+  1012→      id: `${def.alias ?? def.id}/${m.id}`,
+  1013→      object: "model" as const,
+  1014→      owned_by: def.alias ?? def.id,
+  1015→      capabilities: m.capabilities,
+  1016→    }));
+  1017→    return new AnthropicExecutor({
+  1018→      id: def.id,
+  1019→      name: def.name,
+  1020→      baseUrl,
+  1021→      apiKey,
+  1022→      models,
+  1023→    });
+  1024→  }
+  1025→  // Groq executor
+  1026→  if (def.id === "groq") {
+  1027→    const models = def.models?.map((m) => ({
+  1028→      id: `${def.alias ?? def.id}/${m.id}`,
+  1029→      object: "model" as const,
+  1030→      owned_by: def.alias ?? def.id,
+  1031→      capabilities: m.capabilities,
+  1032→    }));
+  1033→    return new GroqExecutor({
+  1034→      id: def.id,
+  1035→      name: def.name,
+  1036→      baseUrl,
+  1037→      apiKey,
+  1038→      models,
+  1039→    });
+  1040→  }
+  1041→  // DeepSeek executor
+  1042→  if (def.id === "deepseek") {
+  1043→    return new DeepSeekExecutor({
+  1044→      id: def.id,
+  1045→      name: def.name,
+  1046→      baseUrl,
+  1047→      apiKey,
+  1048→    });
+  1049→  }
+  1050→  // Fireworks executor
+  1051→  if (def.id === "fireworks") {
+  1052→    const models = def.models?.map((m) => ({
+  1053→      id: `${def.alias ?? def.id}/${m.id}`,
+  1054→      object: "model" as const,
+  1055→      owned_by: def.alias ?? def.id,
+  1056→      capabilities: m.capabilities,
+  1057→    }));
+  1058→    return new FireworksExecutor({
+  1059→      id: def.id,
+  1060→      name: def.name,
+  1061→      baseUrl,
+  1062→      apiKey,
+  1063→      models,
+  1064→    });
+  1065→  }
+  1066→  // Default: OpenAI-compatible
+  1067→  const models = def.models?.map((m) => ({
+  1068→    id: `${def.alias ?? def.id}/${m.id}`,
+  1069→    object: "model" as const,
+  1070→    owned_by: def.alias ?? def.id,
+  1071→    capabilities: m.capabilities,
+  1072→  }));
+  1073→  // Custom providers may declare a non-Bearer auth scheme — pull the metadata
+  1074→  // from the config store and pass it down to the OpenAIExecutor.
+  1075→  const customAuth = getCustomProviderAuth(def.id);
+  1076→  const buildHeaders = customAuth
+  1077→    ? (base: Record<string, string>): Record<string, string> => {
+  1078→        if (customAuth.authScheme === "none") {
+  1079→          delete base["Authorization"];
+  1080→          return base;
+  1081→        }
+  1082→        if (customAuth.authScheme === "x-api-key") {
+  1083→          // Move the Bearer token to x-api-key
+  1084→          const token = base["Authorization"]?.startsWith("Bearer ")
+  1085→            ? base["Authorization"].slice(7)
+  1086→            : (customAuth as unknown as { apiKey?: string }).apiKey ?? "";
+  1087→          delete base["Authorization"];
+  1088→          base["x-api-key"] = token;
+  1089→          return base;
+  1090→        }
+  1091→        if (customAuth.authScheme === "custom-header" && customAuth.authHeaderName) {
+  1092→          const token = base["Authorization"]?.startsWith("Bearer ")
+  1093→            ? base["Authorization"].slice(7)
+  1094→            : (customAuth as unknown as { apiKey?: string }).apiKey ?? "";
+  1095→          delete base["Authorization"];
+  1096→          const prefix = customAuth.authHeaderPrefix ?? "";
+  1097→          base[customAuth.authHeaderName] = prefix ? `${prefix} ${token}`.trim() : token;
+  1098→          return base;
+  1099→        }
+  1100→        return base;
+  1101→      }
+  1102→    : undefined;
+  1103→  return new OpenAIExecutor({
+  1104→    id: def.id,
+  1105→    name: def.name,
+  1106→    baseUrl,
+  1107→    apiKey,
+  1108→    models,
+  1109→    stripProviderPrefix: true,
+  1110→    buildHeaders,
+  1111→  });
+  1112→}
+  1113→
+  1114→/** Find a provider definition by id or alias (e.g. "ds" → deepseek). */
+  1115→export function findProviderDef(idOrAlias: string): ProviderDefinition | undefined {
+  1116→  const lower = idOrAlias.toLowerCase();
+  1117→  return allProviderDefs().find(
+  1118→    (p) =>
+  1119→      p.id.toLowerCase() === lower || p.alias?.toLowerCase() === lower
+  1120→  );
+  1121→}
+  1122→
