@@ -1673,6 +1673,10 @@ export async function callKrouterStream(
       state.content = extracted;
       // Keep the reasoning intact so the UI can still show it as "thinking"
       // (don't clear it).
+      // Mark that content was synthesized post-stream (not emitted during
+      // streaming via delta.content). The agentic loop needs to know so it
+      // can re-emit a `content` SSE event for the UI to display.
+      state.content_from_reasoning_fallback = true;
     } else {
       state.content = state.reasoning;
       state.reasoning = '';

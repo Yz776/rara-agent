@@ -332,6 +332,18 @@ export async function POST(req: NextRequest): Promise<Response> {
         });
         lastAssistantId = persistedAssistant.id;
 
+        // ── REASONING-ONLY RE-EMIT ───────────────────────────────────────────
+        // If callKrouterStream returned content but never emitted any `content`
+        // SSE events during streaming (because the model emitted everything as
+        // `reasoning_content` and callKrouterStream's reasoning-as-content
+        // fallback kicked in AFTER the stream ended), the chat UI bubble is
+        // EMPTY — the UI only renders content events that fire during
+        // streaming, not the final result.content. Re-emit the fallback
+        // content here so the UI shows SOMETHING as the assistant's answer.
+        if (result.content_from_reasoning_fallback && result.content) {
+          send({ type: 'content', text: result.content, iter });
+        }
+
         // No tool calls → natural stop (model produced final text)
         if (result.tool_calls.length === 0) {
           // ── PROMPT-BASED TOOL CALLING ────────────────────────────────────────
