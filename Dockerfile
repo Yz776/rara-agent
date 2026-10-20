@@ -60,10 +60,11 @@ FROM oven/bun:1.3 AS runtime
 
 WORKDIR /app
 
-# Copy standalone Next.js output (already includes next, react, react-dom, etc.).
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+# Copy standalone Next.js output (preserves the .next/standalone/ directory
+# structure so the start script `bun .next/standalone/server.js` works as-is).
+COPY --from=builder /app/.next/standalone ./.next/standalone
+COPY --from=builder /app/.next/static ./.next/standalone/.next/static
+COPY --from=builder /app/public ./.next/standalone/public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/bun.lock ./bun.lock
 # node_modules: contains concurrently + Prisma client + everything else
