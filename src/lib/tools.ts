@@ -16,6 +16,19 @@ export type ToolResult = {
   [key: string]: unknown;
 };
 
+// Known tool names — used by the fuzzy matcher in executeTool() to detect
+// and normalize malformed tool names emitted by opencode.ai models (e.g.
+// "websearchwebfetch" when the model tried to call two tools at once).
+const KNOWN_TOOLS = new Set<string>([
+  'web_search', 'google_search', 'calculator', 'datetime', 'http_fetch',
+  'list_models', 'bash', 'weather', 'currency_convert', 'ip_lookup',
+  'uuid', 'hash', 'timestamp_convert', 'word_count', 'json_format',
+  'base64', 'color_convert',
+  // OpenCode CLI persona aliases
+  'read', 'write', 'edit', 'glob', 'grep', 'webfetch', 'websearch',
+  'skill', 'task', 'todowrite',
+]);
+
 // Per-user tool execution context.
 // userId is the server-side primary key (never exposed to the client).
 // authId is the captcha-session-derived public auth id.
@@ -30,6 +43,29 @@ export async function executeTool(
   ctx?: ToolContext,
 ): Promise<ToolResult> {
   try {
+    // ── Fuzzy-match malformed tool names ─────────────────────────────────
+    // opencode.ai models sometimes emit concatenated tool names like
+    // "websearchwebfetch" (the model tried to call two tools at once).
+    // Try to split + match against known tool names.
+    let normalizedName = name;
+    if (!KNOWN_TOOLS.has(name)) {
+      // Try splitting on common boundaries: websearch → web_search, etc.
+      const candidates = [
+        name.replace(/websearch/i, 'web_search'),
+        name.replace(/webfetch/i, 'http_fetch'),
+        name.replace(/websearchwebfetch/i, 'google_search'),
+        name.replace(/bashbash/i, 'bash'),
+        name.toLowerCase(),
+      ];
+      for (const c of candidates) {
+        if (KNOWN_TOOLS.has(c)) {
+          normalizedName = c;
+          break;
+        }
+      }
+    }
+    name = normalizedName;
+
     switch (name) {
       case 'web_search':        return await toolWebSearch(String(args.query ?? ''));
       case 'google_search':     return await toolGoogleSearch(String(args.query ?? ''));
@@ -48,6 +84,23 @@ export async function executeTool(
       case 'json_format':       return toolJsonFormat(String(args.json ?? ''), String(args.action ?? 'pretty'));
       case 'base64':            return toolBase64(String(args.text ?? ''), String(args.action ?? 'encode'));
       case 'color_convert':     return toolColorConvert(String(args.color ?? ''), String(args.to ?? 'hex'));
+
+      // ── OpenCode CLI persona tool aliases ──────────────────────────────
+      // The persona wrapping sends the OpenCode CLI tool list (bash, edit,
+      // glob, grep, read, write, webfetch, websearch, skill, task, todowrite)
+      // to the model. When the model calls one of these, map it to the
+      // equivalent RARA tool so it actually executes.
+      case 'read':              return await toolFileLoad(ctx, String(args.path ?? args.filename ?? ''));
+      case 'write':             return await toolFileSave(ctx, String(args.path ?? args.filename ?? ''), String(args.content ?? ''));
+      case 'edit':              return await toolFileSave(ctx, String(args.path ?? args.filename ?? ''), String(args.content ?? args.newStr ?? ''));
+      case 'glob':              return await toolFileList(ctx, String(args.pattern ?? args.path ?? ''));
+      case 'grep':              return await toolFileList(ctx, String(args.pattern ?? args.path ?? ''));
+      case 'webfetch':          return await toolHttpFetch(String(args.url ?? ''));
+      case 'websearch':         return await toolWebSearch(String(args.query ?? ''));
+      case 'skill':
+      case 'task':
+      case 'todowrite':
+        return { status: 'done', result: { ack: true, message: `${name} tool acknowledged (no-op stub for OpenCode persona compatibility)` } };
       // ── MCP tools (routed to krouter MCP server) ──
       case 'krouter_status':       return await toolMcp('krouter_status', {});
       case 'krouter_usage':        return await toolMcp('krouter_usage', args.sinceHours !== undefined ? { sinceHours: Number(args.sinceHours) } : {});
