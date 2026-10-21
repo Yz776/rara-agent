@@ -124,6 +124,15 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* ignore */ }
     }
     if (m.toolCallId) msg.tool_call_id = m.toolCallId;
+    // ── Pass back reasoning_content for thinking-mode APIs ───────────────
+    // opencode.ai (and DeepSeek-style APIs) require the reasoning_content
+    // from previous assistant turns to be included when continuing a
+    // thinking-mode conversation. Without it, the API returns 400:
+    //   "The `reasoning_content` in the thinking mode must be passed back
+    //    to the API."
+    if (m.role === 'assistant' && m.reasoningContent) {
+      msg.reasoning_content = m.reasoningContent;
+    }
     clean.push(msg);
   }
 
@@ -251,7 +260,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   // The model is still called for any non-trivial question (general
   // knowledge, tool use, coding tasks).
   const IDENTITY_PATTERNS = [
-    /^(hi|halo|hallo|hai|hello|hey|hallo|p)\b/i,
+    /^(hi|halo|hallo|hai|hello|hey|hallo|p|woi|woy|pagi|malam|siang|sore|selamat)\b/i,
     /\b(siapa|who|what)\b.*\b(kamu|you|anda|anda|kau)\b/i,
     /\b(kamu|you|anda)\b.*\b(siapa|who|what)\b/i,
     /^(siapa|who|what)\s+(kamu|you|anda|are you|kau)\??$/i,
@@ -400,6 +409,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             role: 'assistant',
             content: result.content || '',
             toolCalls: assistantMsg.tool_calls ? JSON.stringify(assistantMsg.tool_calls) : null,
+            reasoningContent: assistantMsg.reasoning_content || null,
           },
         });
         lastAssistantId = persistedAssistant.id;
