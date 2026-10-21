@@ -531,37 +531,35 @@ export async function POST(req: NextRequest): Promise<Response> {
       }
 
       // ── Fallback if loop ran out without producing text ──────────────────────
-      // Build a helpful fallback message using collected tool results instead of
-      // a generic "I couldn't do it" message.
+      // Build a helpful fallback message using collected tool results.
+      // Style: Rara answering naturally — NOT meta-commentary about the
+      // model's limitation. The user wants the answer, not an explanation
+      // of why Rara is summarizing.
       if (!hadError && !objectiveComplete && !finalText && !abortCtrl.signal.aborted) {
-        // Build fallback from collected context
         let fallback = '';
         if (collectedToolResults.length > 0) {
-          // Summarize what tools were called and their results
-          const toolSummary = collectedToolResults.slice(-5).map((t, i) => {
+          // Extract the most relevant output from the tool results
+          const outputs: string[] = [];
+          for (const t of collectedToolResults.slice(-5)) {
             const r = t.result;
             if (r.status === 'done') {
-              if (r.stdout) return `${t.name}: ${String(r.stdout).slice(0, 200)}`;
-              if (r.result !== undefined) return `${t.name}: ${JSON.stringify(r.result).slice(0, 200)}`;
-              return `${t.name}: ✓ done`;
+              if (r.stdout) outputs.push(String(r.stdout).trim().slice(0, 300));
+              else if (r.result !== undefined) outputs.push(JSON.stringify(r.result).slice(0, 300));
+            } else if (r.error) {
+              outputs.push(`(${t.name}: ${String(r.error).slice(0, 100)})`);
             }
-            return `${t.name}: ✗ ${r.error || 'error'}`;
-          }).join('\n');
-
-          // Rara-style cheerful fallback that actually shows what was done
-          const successCount = collectedToolResults.filter(t => t.result.status === 'done').length;
-          const emoji = successCount > 0 ? '✨' : '🤔';
-          fallback =
-            `${emoji} Aku sudah jalanin ${collectedToolResults.length} tool(s) ` +
-            `(${successCount} berhasil, ${collectedToolResults.length - successCount} gagal) — ` +
-            `model-nya emit reasoning doang bukan content final, jadi aku rangkum manual ya:\n\n` +
-            `📋 Hasil tool:\n${toolSummary}\n\n` +
-            `Kalau mau aku lanjutin atau ada hal lain yang mau dicoba, bilang aja! 😊`;
+          }
+          // Just present the answer naturally — Rara's voice
+          if (outputs.length === 1) {
+            fallback = `✨ ${outputs[0]}\n\nAda yang lain yang mau aku bantu? 😊`;
+          } else if (outputs.length > 1) {
+            fallback = `✨ Ini hasilnya:\n${outputs.map(o => `• ${o}`).join('\n')}\n\nAda yang lain yang mau aku bantu? 😊`;
+          } else {
+            fallback = `✨ Udah aku eksekusi tuh ${collectedToolResults.length} tool(s) — semua selesai. Ada yang lain yang mau aku bantu? 😊`;
+          }
         } else {
-          fallback =
-            '🤔 Hmm, opencode.ai free-tier model-nya cuma emit reasoning, gak emit content final. ' +
-            'Coba pertanyaan yang lebih spesifik atau yang butuh tool call — model-nya lebih ' +
-            'kayak AI agent beneran kalau pakai tools. 😊';
+          // No tools called — model just emitted reasoning
+          fallback = '🤔 Hmm, aku gak yakin gimana jawabnya. Coba pertanyaan yang lebih spesifik ya? 😊';
         }
         finalText = fallback;
         // Persist fallback as assistant message if there isn't one yet
