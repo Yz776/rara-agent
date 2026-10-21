@@ -18,6 +18,10 @@ export type ChatMessage = {
     function: { name: string; arguments: string };
   }>;
   tool_call_id?: string;
+  // Required by DeepSeek-style thinking-mode APIs: when continuing a
+  // thinking-mode conversation, the previous assistant message's
+  // reasoning_content MUST be included. Otherwise the API returns 400.
+  reasoning_content?: string;
 };
 
 export type ToolDef = {

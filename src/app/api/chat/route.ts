@@ -381,20 +381,32 @@ export async function POST(req: NextRequest): Promise<Response> {
             continue;
           }
           // No tool calls in text → natural stop (model produced final text)
-          // ── REASONING-ONLY RECOVERY (simplified) ──────────────────────────────
-          // opencode.ai free-tier models (big-pickle, glm-5.3-flash-free, etc.)
-          // emit ALL their output as `reasoning_content` and then finish_reason:
-          // stop WITHOUT ever producing a `content` delta. callKrouterStream
-          // handles this by either (a) extracting a quoted answer from the
-          // reasoning, or (b) copying the entire reasoning to content as a
-          // last resort (with content_from_reasoning_fallback=true).
+          // ── REASONING-ONLY FOLLOW-UP ──────────────────────────────────────────
+          // opencode.ai free-tier models emit ALL output as reasoning_content
+          // and then finish_reason: stop WITHOUT producing content. Instead
+          // of showing an empty bubble, send ONE follow-up request asking
+          // the model to write its final answer as content.
           //
-          // Either way, we accept the result and break the loop. The previous
-          // version tried to nudge the model with a follow-up "please respond
-          // with content" message — but the model just keeps emitting
-          // reasoning-only responses, leading to MAX_ITERS=20 iterations + the
-          // generic fallback. Better to accept the meta-monologue than loop
-          // 20 times and return the fallback.
+          // The assistant message is pushed with reasoning_content set (so
+          // the DeepSeek API accepts the continuation — otherwise 400 error).
+          // A user message is injected: "Here's your reasoning. Write your
+          // final answer now as content."
+          if (!result.content && result.reasoning && iter < MAX_ITERS) {
+            // Push the assistant message WITH reasoning_content (required by
+            // thinking-mode APIs for continuation)
+            assistantMsg.reasoning_content = result.reasoning;
+            // Inject follow-up instruction
+            allMessages.push({
+              role: 'user',
+              content:
+                'Berikut adalah reasoning kamu di atas. Sekarang TULIS ' +
+                'jawaban final kamu sebagai content (bukan reasoning_content). ' +
+                'Jawab langsung sesuai pertanyaan user. Gunakan persona Rara ' +
+                '(ceria, manis, Bahasa Indonesia). Jangan panggil tool. ' +
+                'Tulis jawabannya SEKARANG.',
+            });
+            continue; // retry — model should emit content this time
+          }
           finalText = result.content;
           send({ type: 'done', iter, reason: 'natural_stop' });
           break;
