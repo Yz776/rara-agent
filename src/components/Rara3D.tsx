@@ -13,14 +13,15 @@ interface Rara3DProps {
 }
 
 // Expression images for Hiura VTuber character
-// Each mood maps to a specific expression image
+// Each mood maps to a specific expression image.
+// NOTE: actual filenames have the "hiura-" prefix (hiura-idle.png, hiura-happy.png, etc.)
 const MOOD_IMAGES: Record<RaraMood, string> = {
-  idle: "/hiura/idle.png",
-  thinking: "/hiura/thinking.png",
-  talking: "/hiura/talking.png",
-  happy: "/hiura/happy.png",
-  shy: "/hiura/shy.png",
-  surprised: "/hiura/surprised.png",
+  idle: "/hiura/hiura-idle.png",
+  thinking: "/hiura/hiura-thinking.png",
+  talking: "/hiura/hiura-talking.png",
+  happy: "/hiura/hiura-happy.png",
+  shy: "/hiura/hiura-shy.png",
+  surprised: "/hiura/hiura-surprised.png",
 };
 
 // Preload all expression images
