@@ -36,7 +36,7 @@ jobs:
           pip install -q unsloth datasets huggingface_hub
           pip install -q llama-cpp-python
 
-      - name: Load model + dataset
+      - name: Load model + dataset + train
         run: |
           python3 -c "
           from unsloth import FastLanguageModel
@@ -48,9 +48,9 @@ jobs:
               max_seq_length=4096,
           )
           model = FastLanguageModel.get_peft_model(model,
-              r=32,
+              r=64,
               target_modules=['q_proj','k_proj','v_proj','o_proj','gate_proj','up_proj','down_proj'],
-              lora_alpha=64,
+              lora_alpha=128,
               lora_dropout=0.05,
               use_gradient_checkpointing='unsloth',
           )
@@ -72,16 +72,17 @@ jobs:
               args=UnslothTrainingArguments(
                   per_device_train_batch_size=2,
                   gradient_accumulation_steps=4,
-                  max_steps=120,
-                  learning_rate=1.5e-4,
-                  warmup_steps=10,
+                  max_steps=200,
+                  learning_rate=1e-4,
+                  warmup_steps=15,
                   logging_steps=5,
-                  save_steps=30,
+                  save_steps=50,
                   output_dir='rara-ckpt',
                   report_to='none',
                   weight_decay=0.01,
                   max_grad_norm=1.0,
                   seed=42,
+                  lr_scheduler_type='cosine',
               ),
           )
           stats = trainer.train()
