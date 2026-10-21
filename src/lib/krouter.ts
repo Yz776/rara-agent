@@ -1484,7 +1484,10 @@ export async function callKrouterStream(
   const payload = {
     model,
     messages,
-    tools: TOOLS,
+    // NOTE: gemma3:4b (and many small models) don't support native function
+    // calling. We DON'T send `tools` in the payload — instead, the model
+    // outputs tool calls as text: <tool>{"name":"X","args":{...}}</tool>
+    // The chat route parses these via parseToolCallsFromText().
     max_tokens: 4096,
     temperature: 0.7,
     stream: true,
