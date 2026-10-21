@@ -1,8 +1,7 @@
-name: Fine-tune Rara
+name: Fine-tune Rara (CPU)
 
 on:
   workflow_dispatch:
-    description: "Train Rara AI model (QLoRA Qwen2.5-7B → GGUF → HuggingFace)"
   push:
     paths:
       - 'training-data/rara_training_v2.jsonl'
@@ -11,7 +10,7 @@ on:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 360
 
     steps:
       - name: Checkout
@@ -26,79 +25,139 @@ jobs:
         run: |
           df -h
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache
+          sudo rm -rf /opt/hostedtoolcache /usr/local/lib/node_modules
           sudo apt-get clean
+          docker system prune -af --volumes 2>/dev/null || true
           df -h
 
-      - name: Install dependencies
+      - name: Install dependencies (CPU-only)
         run: |
-          pip install -q torch --index-url https://download.pytorch.org/whl/cu121
-          pip install -q unsloth datasets huggingface_hub
-          pip install -q llama-cpp-python
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q transformers datasets huggingface_hub peft accelerate
+          pip install -q bitsandbytes
+          df -h
 
-      - name: Load model + dataset + train
+      - name: Create training script
         run: |
-          python3 -c "
-          from unsloth import FastLanguageModel
+          cat > /tmp/train.py << 'TRAIN_EOF'
+          import torch
+          import os, json, sys
+          from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer, DataCollatorForSeq2Seq
+          from peft import LoraConfig, get_peft_model, TaskType
           from datasets import load_dataset
 
-          model, tokenizer = FastLanguageModel.from_pretrained(
-              'Qwen/Qwen2.5-7B-Instruct',
-              load_in_4bit=True,
-              max_seq_length=4096,
+          MODEL = "Qwen/Qwen2.5-3B-Instruct"
+          DATA = "training-data/rara_training_v2.jsonl"
+          OUT = "/content/rara-model"
+          os.makedirs(OUT, exist_ok=True)
+
+          print(f"Device: CPU ({os.cpu_count()} cores)")
+          print(f"RAM: {os.popen('free -h | head -2 | tail -1').read().strip()}")
+
+          # Load tokenizer
+          tokenizer = AutoTokenizer.from_pretrained(MODEL, trust_remote_code=True)
+          if tokenizer.pad_token is None:
+              tokenizer.pad_token = tokenizer.eos_token
+
+          # Load model in 8-bit (saves RAM on CPU)
+          model = AutoModelForCausalLM.from_pretrained(
+              MODEL,
+              torch_dtype=torch.float16,
+              device_map="cpu",
+              trust_remote_code=True,
+              load_in_8bit=False,
+              low_cpu_mem_usage=True,
           )
-          model = FastLanguageModel.get_peft_model(model,
-              r=64,
-              target_modules=['q_proj','k_proj','v_proj','o_proj','gate_proj','up_proj','down_proj'],
-              lora_alpha=128,
+
+          # LoRA config
+          lora = LoraConfig(
+              task_type=TaskType.CAUSAL_LM,
+              r=16,
+              lora_alpha=32,
               lora_dropout=0.05,
-              use_gradient_checkpointing='unsloth',
+              target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"],
           )
+          model = get_peft_model(model, lora)
 
-          ds = load_dataset('json', data_files='training-data/rara_training_v2.jsonl', split='train')
-          SYS = 'Kamu Rara. Pakai Aku bukan Saya. Jawab singkat + ceria + emoji. Bahasa Indonesia santai.'
+          n_t = sum(p.numel() for p in model.parameters() if p.requires_grad)
+          n_a = sum(p.numel() for p in model.parameters())
+          print(f"Trainable: {n_t:,} / {n_a:,} ({100*n_t/n_a:.1f}%)")
+
+          # Load dataset
+          ds = load_dataset("json", data_files=DATA, split="train")
+          SYS = 'Kamu Rara. Pakai Aku bukan Saya, kamu bukan Anda. Jawab singkat + ceria + emoji. Bahasa Indonesia santai.'
+
           def fmt(x):
-              msgs = x['messages']
-              if msgs and msgs[0]['role'] == 'system':
-                  msgs[0]['content'] = SYS
-              return {'text': tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=False)}
-          ds = ds.map(fmt)
-          print(f'{len(ds)} examples loaded')
+              msgs = [dict(m) for m in x["messages"]]
+              if msgs and msgs[0]["role"] == "system":
+                  msgs[0]["content"] = SYS
+              text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=False)
+              tokens = tokenizer(text, truncation=True, max_length=2048, return_tensors=None)
+              tokens["labels"] = tokens["input_ids"].copy()
+              return tokens
 
-          from unsloth import UnslothTrainer, UnslothTrainingArguments
-          trainer = UnslothTrainer(
-              model=model, tokenizer=tokenizer, train_dataset=ds,
-              dataset_text_field='text', max_seq_length=4096,
-              args=UnslothTrainingArguments(
-                  per_device_train_batch_size=2,
-                  gradient_accumulation_steps=4,
-                  max_steps=200,
-                  learning_rate=1e-4,
-                  warmup_steps=15,
-                  logging_steps=5,
-                  save_steps=50,
-                  output_dir='rara-ckpt',
-                  report_to='none',
-                  weight_decay=0.01,
-                  max_grad_norm=1.0,
-                  seed=42,
-                  lr_scheduler_type='cosine',
-              ),
+          ds = ds.map(fmt, remove_columns=ds.column_names)
+          print(f"Dataset: {len(ds)} examples")
+
+          # Training (CPU mode — slower but works)
+          args = TrainingArguments(
+              output_dir="/tmp/rara-ckpt",
+              per_device_train_batch_size=1,
+              gradient_accumulation_steps=8,
+              max_steps=100,
+              learning_rate=2e-4,
+              warmup_steps=10,
+              logging_steps=5,
+              save_steps=50,
+              save_total_limit=1,
+              report_to="none",
+              weight_decay=0.01,
+              max_grad_norm=1.0,
+              seed=42,
+              lr_scheduler_type="cosine",
+              fp16=False,
+              bf16=False,
+              dataloader_num_workers=2,
+              remove_unused_columns=False,
           )
-          stats = trainer.train()
-          print(f'Training done! Steps={stats.global_step} Loss={stats.training_loss:.4f}')
 
-          model.save_pretrained_merged('rara-model', tokenizer, save_method='merged_16bit')
-          print('Model saved')
-          "
+          collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True)
+          trainer = Trainer(
+              model=model,
+              tokenizer=tokenizer,
+              args=args,
+              train_dataset=ds,
+              data_collator=collator,
+          )
+
+          print("Training started (CPU mode)...")
+          stats = trainer.train()
+          print(f"Done! Steps={stats.global_step} Loss={stats.training_loss:.4f}")
+
+          # Save merged model
+          model = model.merge_and_unload()
+          model.save_pretrained(OUT)
+          tokenizer.save_pretrained(OUT)
+          print(f"Model saved to {OUT}")
+          TRAIN_EOF
+
+      - name: Train (CPU mode, ~2-4 hours)
+        run: |
+          python3 /tmp/train.py
+
+      - name: Build llama.cpp
+        run: |
+          git clone --depth 1 https://github.com/ggerganov/llama.cpp /tmp/llama.cpp
+          cd /tmp/llama.cpp && make -j$(nproc) 2>&1 | tail -1
+          echo "llama.cpp built"
 
       - name: Convert to GGUF
         run: |
-          git clone --depth 1 https://github.com/ggerganov/llama.cpp
-          cd llama.cpp && make -j$(nproc)
-          python convert_hf_to_gguf.py ../rara-model --outtype f16 --outfile ../rara.gguf
-          ./llama-quantize ../rara.gguf ../rara-q4.gguf Q4_K_M
-          ls -lh ../rara-q4.gguf
+          cd /tmp/llama.cpp
+          python convert_hf_to_gguf.py /content/rara-model --outtype f16 --outfile /tmp/rara-f16.gguf
+          ./llama-quantize /tmp/rara-f16.gguf /tmp/rara-q4.gguf Q4_K_M
+          ls -lh /tmp/rara-q4.gguf
+          cp /tmp/rara-q4.gguf rara-q4.gguf
 
       - name: Upload to HuggingFace
         env:
@@ -107,15 +166,18 @@ jobs:
           python3 -c "
           from huggingface_hub import create_repo, upload_file
           import os
-          create_repo('kangwifi/rara-ai', token=os.environ['HF_TOKEN'], exist_ok=True)
-          upload_file('rara-q4.gguf', 'rara-q4.gguf', 'kangwifi/rara-ai', token=os.environ['HF_TOKEN'])
-          print('Uploaded → huggingface.co/kangwifi/rara-ai')
+          token = os.environ['HF_TOKEN']
+          create_repo('kangwifi/rara-ai', token=token, exist_ok=True, private=False)
+          upload_file('rara-q4.gguf', 'rara-q4.gguf', 'kangwifi/rara-ai', token=token)
+          print('Uploaded -> huggingface.co/kangwifi/rara-ai')
           "
 
-      - name: Deploy to server
+      - name: Deploy commands
         if: success()
         run: |
-          echo "Deploy commands:"
+          echo "============================================"
+          echo "DEPLOY KE SERVER:"
           echo "docker exec kali ollama pull hf.co/kangwifi/rara-ai:rara-q4.gguf"
           echo "echo 'MODEL=hf.co/kangwifi/rara-ai:rara-q4.gguf' >> /opt/rara-agent/.env"
           echo "docker exec kali pm2 restart rara-web"
+          echo "============================================"
