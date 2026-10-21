@@ -50,7 +50,7 @@ export type ToolCall = {
 // limitation where free-tier models only emit reasoning_content (never
 // content), causing empty responses in the chat UI.
 const OLLAMA_BASE = process.env.OLLAMA_BASE || 'http://127.0.0.1:11434';
-export const DEFAULT_MODEL = process.env.MODEL || 'qwen3:4b';
+export const DEFAULT_MODEL = process.env.MODEL || 'qwen2.5:7b';
 
 // Models actually available on opencode.ai's free tier (verified 2026-10-20
 // via GET https://opencode.ai/zen/v1/models). The free-tier catalog rotates
@@ -1506,9 +1506,11 @@ export async function callKrouterStream(
   const payload = {
     model,
     messages,
-    // qwen3:4b supports native function calling. Send Rara's tools directly
-    // so the model can call them natively (returns tool_calls in the response).
-    tools: TOOLS,
+    // Only send the TOP 10 most commonly used tools. qwen3:4b (4B params)
+    // can't reliably select from 30+ tools — it hallucinates wrong tool
+    // calls (e.g. credit_card_validate when user asks for time).
+    // Reducing to 10 essential tools improves selection accuracy.
+    tools: TOOLS.slice(0, 10),  // datetime, weather, calculator, bash, google_search, web_search, http_fetch, list_models, file_save, file_load
     max_tokens: 4096,
     temperature: 0.7,
     stream: true,
