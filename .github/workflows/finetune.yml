@@ -2,10 +2,12 @@ name: Fine-tune Rara (CPU)
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'training-data/rara_training_v2.jsonl'
-      - '.github/workflows/finetune.yml'
+
+# Cegah overlap: kalau ada run fine-tune lagi jalan, run baru otomatis
+# cancel run lama (bukan nambah worker paralel).
+concurrency:
+  group: finetune-cpu
+  cancel-in-progress: true
 
 jobs:
   train:
@@ -120,13 +122,20 @@ jobs:
           )
 
           collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True)
-          trainer = Trainer(
+          # transformers >= 4.46 mengganti arg `tokenizer=` menjadi `processing_class=`.
+          # Pakai inspect biar kompatibel dua arah tanpa peduli versi terinstall.
+          import inspect as _inspect
+          _trainer_kwargs = dict(
               model=model,
-              tokenizer=tokenizer,
               args=args,
               train_dataset=ds,
               data_collator=collator,
           )
+          if 'processing_class' in _inspect.signature(Trainer).parameters:
+              _trainer_kwargs['processing_class'] = tokenizer
+          else:
+              _trainer_kwargs['tokenizer'] = tokenizer
+          trainer = Trainer(**_trainer_kwargs)
 
           print("Training started (CPU mode)...")
           stats = trainer.train()
