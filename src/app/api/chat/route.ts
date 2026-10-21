@@ -528,54 +528,38 @@ export async function POST(req: NextRequest): Promise<Response> {
           send({ type: 'done', iter: lastIter, reason: 'objective_complete' });
           break;
         }
-      }
 
-      // ── Fallback if loop ran out without producing text ──────────────────────
-      // Build a helpful fallback message using collected tool results.
-      // Style: Rara answering naturally — NOT meta-commentary about the
-      // model's limitation. The user wants the answer, not an explanation
-      // of why Rara is summarizing.
-      if (!hadError && !objectiveComplete && !finalText && !abortCtrl.signal.aborted) {
-        let fallback = '';
-        if (collectedToolResults.length > 0) {
-          // Extract the most relevant output from the tool results
-          const outputs: string[] = [];
-          for (const t of collectedToolResults.slice(-5)) {
-            const r = t.result;
-            if (r.status === 'done') {
-              if (r.stdout) outputs.push(String(r.stdout).trim().slice(0, 300));
-              else if (r.result !== undefined) outputs.push(JSON.stringify(r.result).slice(0, 300));
-            } else if (r.error) {
-              outputs.push(`(${t.name}: ${String(r.error).slice(0, 100)})`);
-            }
-          }
-          // Just present the answer naturally — Rara's voice
-          if (outputs.length === 1) {
-            fallback = `✨ ${outputs[0]}\n\nAda yang lain yang mau aku bantu? 😊`;
-          } else if (outputs.length > 1) {
-            fallback = `✨ Ini hasilnya:\n${outputs.map(o => `• ${o}`).join('\n')}\n\nAda yang lain yang mau aku bantu? 😊`;
-          } else {
-            fallback = `✨ Udah aku eksekusi tuh ${collectedToolResults.length} tool(s) — semua selesai. Ada yang lain yang mau aku bantu? 😊`;
-          }
-        } else {
-          // No tools called — model just emitted reasoning
-          fallback = '🤔 Hmm, aku gak yakin gimana jawabnya. Coba pertanyaan yang lebih spesifik ya? 😊';
-        }
-        finalText = fallback;
-        // Persist fallback as assistant message if there isn't one yet
-        if (lastAssistantId === null) {
-          await db.message.create({
-            data: {
-              conversationId: conversation!.id,
-              userId: auth.userId,
-              role: 'assistant',
-              content: finalText,
-            },
+        // ── POST-TOOL NUDGE ────────────────────────────────────────────────
+        // After tools have been executed, nudge the model to emit its final
+        // response as `content` on the next iter. opencode.ai free-tier
+        // models tend to emit only reasoning_content after tool execution,
+        // so we explicitly tell them to write the answer.
+        if (result.tool_calls.length > 0 && !objectiveComplete) {
+          allMessages.push({
+            role: 'system',
+            content:
+              'Tools have been executed. You now have all the results you need. ' +
+              'Write your final response to the user as `content` — NOT as reasoning_content. ' +
+              'Summarize what you did and what the results mean. ' +
+              'Do NOT call more tools unless absolutely necessary. ' +
+              'Respond in the Rara persona (cheerful, sweet, Indonesian).',
           });
         }
-        send({ type: 'content', text: fallback, iter: MAX_ITERS });
-        send({ type: 'done', iter: MAX_ITERS, reason: 'fallback_after_max_iters' });
       }
+
+      // ── NO HARDCODED FALLBACK — let the AI produce the final response ──────
+      // User request: "Jangan pake ini buat agar ai yg memberikan respon
+      // terakhirnya" — don't use the hardcoded fallback messages. Let the
+      // AI (model) produce the final response.
+      //
+      // If the model emitted only reasoning_content (no content) and no
+      // task_complete, finalText stays empty. The chat UI will show an
+      // empty bubble. This is the honest behavior — no fake summary, no
+      // hardcoded text.
+      //
+      // The model is nudged (via persona prompt + the stuck/unknown-tool
+      // nudges above) to emit content. If it still doesn't, that's the
+      // opencode.ai free-tier limitation.
 
       if (!hadError) {
         send({
