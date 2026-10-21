@@ -541,21 +541,27 @@ export async function POST(req: NextRequest): Promise<Response> {
           const toolSummary = collectedToolResults.slice(-5).map((t, i) => {
             const r = t.result;
             if (r.status === 'done') {
-              if (r.stdout) return `${t.name}: ${String(r.stdout).slice(0, 100)}`;
-              if (r.result !== undefined) return `${t.name}: ${JSON.stringify(r.result).slice(0, 100)}`;
-              return `${t.name}: done`;
+              if (r.stdout) return `${t.name}: ${String(r.stdout).slice(0, 200)}`;
+              if (r.result !== undefined) return `${t.name}: ${JSON.stringify(r.result).slice(0, 200)}`;
+              return `${t.name}: ✓ done`;
             }
-            return `${t.name}: ${r.error || 'error'}`;
+            return `${t.name}: ✗ ${r.error || 'error'}`;
           }).join('\n');
 
+          // Rara-style cheerful fallback that actually shows what was done
+          const successCount = collectedToolResults.filter(t => t.result.status === 'done').length;
+          const emoji = successCount > 0 ? '✨' : '🤔';
           fallback =
-            `Saya sudah menjalankan ${collectedToolResults.length} tool(s) tetapi belum sempat membuat ringkasan akhir.\n\n` +
-            `Hasil yang sudah didapat:\n${toolSummary}\n\n` +
-            `Berdasarkan hasil di atas, berikut jawaban saya:\n`;
+            `${emoji} Aku sudah jalanin ${collectedToolResults.length} tool(s) ` +
+            `(${successCount} berhasil, ${collectedToolResults.length - successCount} gagal) — ` +
+            `model-nya emit reasoning doang bukan content final, jadi aku rangkum manual ya:\n\n` +
+            `📋 Hasil tool:\n${toolSummary}\n\n` +
+            `Kalau mau aku lanjutin atau ada hal lain yang mau dicoba, bilang aja! 😊`;
         } else {
           fallback =
-            'Saya tidak bisa menyelesaikan permintaan ini. ' +
-            'Coba pertanyaan yang lebih spesifik, atau pecah jadi langkah-langkah kecil.';
+            '🤔 Hmm, opencode.ai free-tier model-nya cuma emit reasoning, gak emit content final. ' +
+            'Coba pertanyaan yang lebih spesifik atau yang butuh tool call — model-nya lebih ' +
+            'kayak AI agent beneran kalau pakai tools. 😊';
         }
         finalText = fallback;
         // Persist fallback as assistant message if there isn't one yet
