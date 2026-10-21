@@ -1,0 +1,502 @@
+[
+  {
+    "pattern": "• rss : \u003cn\u003e",
+    "count": 10,
+    "example": "• RSS : 110.55 MB"
+  },
+  {
+    "pattern": "• endianness : le",
+    "count": 10,
+    "example": "• Endianness : LE"
+  },
+  {
+    "pattern": "*operating system*",
+    "count": 10,
+    "example": "*Operating System*"
+  },
+  {
+    "pattern": "• core : \u003cn\u003e",
+    "count": 10,
+    "example": "• Core : 2"
+  },
+  {
+    "pattern": "• heap limit : \u003cn\u003e",
+    "count": 10,
+    "example": "• Heap Limit : 1.11 GB"
+  },
+  {
+    "pattern": "• used : \u003cn\u003e",
+    "count": 10,
+    "example": "• Used : 6.95 GB"
+  },
+  {
+    "pattern": "• architecture : x64",
+    "count": 10,
+    "example": "• Architecture : x64"
+  },
+  {
+    "pattern": "• heap used : \u003cn\u003e",
+    "count": 10,
+    "example": "• Heap Used : 25.49 MB"
+  },
+  {
+    "pattern": "• platform : linux",
+    "count": 10,
+    "example": "• Platform : linux"
+  },
+  {
+    "pattern": "• pid : \u003cn\u003e",
+    "count": 10,
+    "example": "• PID : 11893"
+  },
+  {
+    "pattern": "• external : \u003cn\u003e",
+    "count": 10,
+    "example": "• External : 16.50 MB"
+  },
+  {
+    "pattern": "*runtime*",
+    "count": 10,
+    "example": "*Runtime*"
+  },
+  {
+    "pattern": "🖥️ *server information*",
+    "count": 10,
+    "example": "🖥️ *SERVER INFORMATION*"
+  },
+  {
+    "pattern": "• clock : \u003cn\u003e",
+    "count": 10,
+    "example": "• Clock : 1498 MHz"
+  },
+  {
+    "pattern": "• heap total : \u003cn\u003e",
+    "count": 10,
+    "example": "• Heap Total : 11.19 MB"
+  },
+  {
+    "pattern": "• type : linux",
+    "count": 10,
+    "example": "• Type : Linux"
+  },
+  {
+    "pattern": "*process memory*",
+    "count": 10,
+    "example": "*Process Memory*"
+  },
+  {
+    "pattern": "• free : \u003cn\u003e",
+    "count": 10,
+    "example": "• Free : 0.80 GB"
+  },
+  {
+    "pattern": "• total : \u003cn\u003e",
+    "count": 10,
+    "example": "• Total : 7.75 GB"
+  },
+  {
+    "pattern": "*hardware*",
+    "count": 10,
+    "example": "*Hardware*"
+  },
+  {
+    "pattern": "*memory*",
+    "count": 10,
+    "example": "*Memory*"
+  },
+  {
+    "pattern": "• bun : \u003cn\u003e.\u003cn\u003e",
+    "count": 9,
+    "example": "• Bun : 1.4.2"
+  },
+  {
+    "pattern": "• engine : javascriptcore",
+    "count": 9,
+    "example": "• Engine : JavaScriptCore"
+  },
+  {
+    "pattern": "• distro : ubuntu \u003cn\u003e.\u003cn\u003elts",
+    "count": 7,
+    "example": "• Distro : Ubuntu 24.04.5 LTS"
+  },
+  {
+    "pattern": "• hostname : htch-runtime",
+    "count": 7,
+    "example": "• Hostname : htch-runtime"
+  },
+  {
+    "pattern": "• release : \u003cn\u003e.\u003cn\u003e-\u003cn\u003e-generic",
+    "count": 7,
+    "example": "• Release : 7.0.0-39-generic"
+  },
+  {
+    "pattern": "• cpu : amd epyc 9d25 \u003cn\u003e-core processor",
+    "count": 7,
+    "example": "• CPU : AMD EPYC 9D25 126-Core Processor"
+  },
+  {
+    "pattern": "ꜱᴛᴋ ᴀꜱꜱɪꜱᴛᴀɴᴛ",
+    "count": 5,
+    "example": "ꜱᴛᴋ ᴀꜱꜱɪꜱᴛᴀɴᴛ"
+  },
+  {
+    "pattern": "extendedtext.js",
+    "count": 4,
+    "example": "extendedText.js"
+  },
+  {
+    "pattern": "┃ ◦ ɴᴀᴍᴀ    : ᅠ",
+    "count": 3,
+    "example": "┃ ◦ ɴᴀᴍᴀ    : ᅠ"
+  },
+  {
+    "pattern": "┃ ◦ ꜰɪᴛᴜʀ   : \u003cn\u003eperintah · \u003cn\u003ekategori",
+    "count": 3,
+    "example": "┃ ◦ ꜰɪᴛᴜʀ   : 114 perintah · 1 kategori"
+  },
+  {
+    "pattern": "┃ ◦ ᴍᴏᴅᴇ    : public",
+    "count": 3,
+    "example": "┃ ◦ ᴍᴏᴅᴇ    : PUBLIC"
+  },
+  {
+    "pattern": "┃ ◦ ʙᴏᴛ     : virous",
+    "count": 3,
+    "example": "┃ ◦ ʙᴏᴛ     : Virous"
+  },
+  {
+    "pattern": "\u003e ⚡ *whiteshadow md - ultra fast*",
+    "count": 3,
+    "example": "\u003e ⚡ *Whiteshadow MD - Ultra Fast*"
+  },
+  {
+    "pattern": "┃ ◦ ᴠᴇʀsɪ   : \u003cn\u003e",
+    "count": 3,
+    "example": "┃ ◦ ᴠᴇʀsɪ   : 4.7"
+  },
+  {
+    "pattern": "┃ ◦ sᴛᴀᴛᴜs  : 🩸 free",
+    "count": 3,
+    "example": "┃ ◦ sᴛᴀᴛᴜs  : 🩸 Free"
+  },
+  {
+    "pattern": "🚀 *speed:* \u003cn\u003e",
+    "count": 3,
+    "example": "🚀 *Speed:* 1860 ms"
+  },
+  {
+    "pattern": "⛧ ─────────────────── ⛧",
+    "count": 3,
+    "example": "⛧ ─────────────────── ⛧"
+  },
+  {
+    "pattern": "┏━━ 𝑺𝑰𝑺𝑻𝑬𝑴",
+    "count": 3,
+    "example": "┏━━ 𝑺𝑰𝑺𝑻𝑬𝑴"
+  },
+  {
+    "pattern": "conversation.js",
+    "count": 3,
+    "example": "conversation.js"
+  },
+  {
+    "pattern": "┃ ◦ ᴡᴀᴋᴛᴜ   : \u003cn\u003e:\u003cn\u003ewib",
+    "count": 3,
+    "example": "┃ ◦ ᴡᴀᴋᴛᴜ   : 07:27 WIB"
+  },
+  {
+    "pattern": "┃ ◦ ᴀᴜᴛʜᴏʀ  : s0rrow",
+    "count": 3,
+    "example": "┃ ◦ ᴀᴜᴛʜᴏʀ  : s0rrow"
+  },
+  {
+    "pattern": "┏━━ 𝑷𝑬𝑵𝑮𝑮𝑼𝑵𝑨",
+    "count": 3,
+    "example": "┏━━ 𝑷𝑬𝑵𝑮𝑮𝑼𝑵𝑨"
+  },
+  {
+    "pattern": "┗━━━━━━━━━━━━━━━━━━━",
+    "count": 3,
+    "example": "┗━━━━━━━━━━━━━━━━━━━"
+  },
+  {
+    "pattern": "𝕾𝖆𝖑𝖆𝖒, *ᅠ*.",
+    "count": 3,
+    "example": "𝕾𝖆𝖑𝖆𝖒, *ᅠ*."
+  },
+  {
+    "pattern": "🖥️ *informasi sistem*",
+    "count": 2,
+    "example": "🖥️ *INFORMASI SISTEM*"
+  },
+  {
+    "pattern": "\u003e ◦ *engine v8:* \u003cip\u003e-node.\u003cn\u003e",
+    "count": 2,
+    "example": "\u003e ◦ *Engine V8:* 12.9.202.28-node.14"
+  },
+  {
+    "pattern": "\u003e ◦ *platform:* linux (x64)",
+    "count": 2,
+    "example": "\u003e ◦ *Platform:* linux (x64)"
+  },
+  {
+    "pattern": "- *bio:* [object object]",
+    "count": 2,
+    "example": "- *Bio:* [object Object]"
+  },
+  {
+    "pattern": "◣──────────❈",
+    "count": 2,
+    "example": "◣──────────❈"
+  },
+  {
+    "pattern": "\u003e ◦ *sisa bebas:* \u003cn\u003e",
+    "count": 2,
+    "example": "\u003e ◦ *Sisa Bebas:* 354.58 MB"
+  },
+  {
+    "pattern": "\u003e ◦ *model:* do-premium-intel",
+    "count": 2,
+    "example": "\u003e ◦ *Model:* DO-Premium-Intel"
+  },
+  {
+    "pattern": "• release : \u003cn\u003e.\u003cn\u003e+deb13-cloud-amd64",
+    "count": 2,
+    "example": "• Release : 6.12.111+deb13-cloud-amd64"
+  },
+  {
+    "pattern": "- *nomor:* +\u003cn\u003e",
+    "count": 2,
+    "example": "- *Nomor:* +6282310068109"
+  },
+  {
+    "pattern": "- *bot jid:* \u003cn\u003e:\u003cn\u003e@s.whatsapp.net",
+    "count": 2,
+    "example": "- *Bot JID:* 6281323910699:35@s.whatsapp.net"
+  },
+  {
+    "pattern": "latitude  : \u003cn\u003e",
+    "count": 2,
+    "example": "Latitude  : 50.6924"
+  },
+  {
+    "pattern": "list of menu categories",
+    "count": 2,
+    "example": "list of menu categories"
+  },
+  {
+    "pattern": "\u003e ◦ *nodejs:* v23.\u003cn\u003e",
+    "count": 2,
+    "example": "\u003e ◦ *NodeJS:* v23.11.1"
+  },
+  {
+    "pattern": "https://keyrafara.com",
+    "count": 2,
+    "example": "https://keyrafara.com"
+  },
+  {
+    "pattern": "botforwardedmessage.js",
+    "count": 2,
+    "example": "botForwardedMessage.js"
+  },
+  {
+    "pattern": "▨  *tools*",
+    "count": 2,
+    "example": "▨  *tools*"
+  },
+  {
+    "pattern": "▨  *downloader*",
+    "count": 2,
+    "example": "▨  *downloader*"
+  },
+  {
+    "pattern": "location",
+    "count": 2,
+    "example": "Location"
+  },
+  {
+    "pattern": "\u003e ◦ *os:* linux (\u003cn\u003e.\u003cn\u003e-\u003cn\u003e-generic)",
+    "count": 2,
+    "example": "\u003e ◦ *OS:* Linux (5.15.0-191-generic)"
+  },
+  {
+    "pattern": "\u003e ◦ *dipakai:* \u003cn\u003e (\u003cn\u003e%)",
+    "count": 2,
+    "example": "\u003e ◦ *Dipakai:* 7.41 GB (95.5%)"
+  },
+  {
+    "pattern": "\u003e ◦ *cores:* \u003cn\u003ecore(s)",
+    "count": 2,
+    "example": "\u003e ◦ *Cores:* 4 Core(s)"
+  },
+  {
+    "pattern": "✠ ᴊᴀɴɢᴀɴ sᴘᴀᴍ ᴀɢᴀʀ ʙᴏᴛ ᴛᴇᴛᴀᴘ ᴀᴋᴛɪꜰ \u003cn\u003e ᴊᴀᴍ",
+    "count": 2,
+    "example": "✠ ᴊᴀɴɢᴀɴ sᴘᴀᴍ ᴀɢᴀʀ ʙᴏᴛ ᴛᴇᴛᴀᴘ ᴀᴋᴛɪꜰ 24 ᴊᴀᴍ"
+  },
+  {
+    "pattern": "- *tipe:* s.whatsapp.net",
+    "count": 2,
+    "example": "- *Tipe:* S.WhatsApp.Net"
+  },
+  {
+    "pattern": "▨  *search*",
+    "count": 2,
+    "example": "▨  *search*"
+  },
+  {
+    "pattern": "✠ ᴋᴇᴍʙᴀʟɪ: `.menu`",
+    "count": 2,
+    "example": "✠ ᴋᴇᴍʙᴀʟɪ: `.menu`"
+  },
+  {
+    "pattern": "📦 *memori nodejs*",
+    "count": 2,
+    "example": "📦 *MEMORI NODEJS*"
+  },
+  {
+    "pattern": "\u003e ◦ *hostname:* 666c4f66-\u003cn\u003e-4d7c-95cd-5d6dcd3e1035",
+    "count": 2,
+    "example": "\u003e ◦ *Hostname:* 666c4f66-8144-4d7c-95cd-5d6dcd3e1035"
+  },
+  {
+    "pattern": "*〔 👤 informasi pribadi 〕*",
+    "count": 2,
+    "example": "*〔 👤 INFORMASI PRIBADI 〕*"
+  },
+  {
+    "pattern": "- *bot platform:* android",
+    "count": 2,
+    "example": "- *Bot Platform:* android"
+  },
+  {
+    "pattern": "🏓 *pong!* (\u003cn\u003e)",
+    "count": 2,
+    "example": "🏓 *PONG!* (1ms)"
+  },
+  {
+    "pattern": "💻 *informasi cpu*",
+    "count": 2,
+    "example": "💻 *INFORMASI CPU*"
+  },
+  {
+    "pattern": "⎆  𝚅𝚎𝚛𝚜𝚒 : 𝟷.𝟾",
+    "count": 2,
+    "example": "⎆  𝚅𝚎𝚛𝚜𝚒 : 𝟷.𝟾"
+  },
+  {
+    "pattern": "*〔 ⚔️ rpg stats \u0026 level 〕*",
+    "count": 2,
+    "example": "*〔 ⚔️ RPG STATS \u0026 LEVEL 〕*"
+  },
+  {
+    "pattern": "- *nama asli:* ㅤ",
+    "count": 2,
+    "example": "- *Nama Asli:* ㅤ"
+  },
+  {
+    "pattern": "- *progress ke level \u003cn\u003e:*",
+    "count": 2,
+    "example": "- *Progress Ke Level 2:*"
+  },
+  {
+    "pattern": "◣─────────────✦",
+    "count": 2,
+    "example": "◣─────────────✦"
+  },
+  {
+    "pattern": "\u003e ◦ *uptime bot:* 7m 3s",
+    "count": 2,
+    "example": "\u003e ◦ *Uptime Bot:* 7m 3s"
+  },
+  {
+    "pattern": "⎆  𝚁𝚞𝚗𝚝𝚒𝚖𝚎 : -",
+    "count": 2,
+    "example": "⎆  𝚁𝚞𝚗𝚝𝚒𝚖𝚎 : -"
+  },
+  {
+    "pattern": "```ip track result",
+    "count": 2,
+    "example": "```IP TRACK RESULT"
+  },
+  {
+    "pattern": "⎆  [ 𝙼𝚘𝚍𝚎 : 𝚖𝚍",
+    "count": 2,
+    "example": "⎆  [ 𝙼𝚘𝚍𝚎 : 𝚖𝚍"
+  },
+  {
+    "pattern": "- *mana (magic):* 💧 \u003cn\u003e / \u003cn\u003e",
+    "count": 2,
+    "example": "- *Mana (Magic):* 💧 100 / 100"
+  },
+  {
+    "pattern": "*_𝙹𝚊𝚗𝚐𝚊𝚗 𝙳𝚒 𝚂𝚙𝚊𝚖 𝚈𝚊 𝙰𝚐𝚊𝚛 𝙱𝚘𝚝𝚗𝚢𝚊 𝙱𝚒𝚜𝚊 𝙰𝚔𝚝𝚒𝚏 𝟸𝟺 𝙹𝚊𝚖 𝙳𝚊𝚗 𝚃𝚒𝚍𝚊𝚔 𝚃𝚎𝚛𝚔𝚎𝚗𝚊 𝙱𝚕𝚘𝚔𝚒𝚛 𝚂𝚙𝚊𝚖🍁_*",
+    "count": 2,
+    "example": "*_𝙹𝚊𝚗𝚐𝚊𝚗 𝙳𝚒 𝚂𝚙𝚊𝚖 𝚈𝚊 𝙰𝚐𝚊𝚛 𝙱𝚘𝚝𝚗𝚢𝚊 𝙱𝚒𝚜𝚊 𝙰𝚔𝚝𝚒𝚏 𝟸𝟺 𝙹𝚊𝚖 𝙳𝚊𝚗 𝚃𝚒𝚍𝚊𝚔 𝚃𝚎𝚛𝚔𝚎𝚗𝚊 𝙱𝚕𝚘𝚔𝚒𝚛 𝚂𝚙𝚊𝚖🍁_*"
+  },
+  {
+    "pattern": "- *level saat ini:* \u003cn\u003e",
+    "count": 2,
+    "example": "- *Level Saat Ini:* 1"
+  },
+  {
+    "pattern": "⎆  𝙱𝚘𝚝 : 𝚂𝚑𝚒𝚛𝚘𝚡𝚢 𝙼𝙳",
+    "count": 2,
+    "example": "⎆  𝙱𝚘𝚝 : 𝚂𝚑𝚒𝚛𝚘𝚡𝚢 𝙼𝙳"
+  },
+  {
+    "pattern": "https://wa.me",
+    "count": 2,
+    "example": "https://wa.me"
+  },
+  {
+    "pattern": "\u003e ◦ *load avg:* \u003cn\u003e (1m), \u003cn\u003e (5m), \u003cn\u003e (15m)",
+    "count": 2,
+    "example": "\u003e ◦ *Load Avg:* 0.39 (1m), 6.94 (5m), 9.92 (15m)"
+  },
+  {
+    "pattern": "\u003e ◦ *speed:* \u003cn\u003e",
+    "count": 2,
+    "example": "\u003e ◦ *Speed:* 0 MHz"
+  },
+  {
+    "pattern": "*〔 💰 aset \u0026 keuangan 〕*",
+    "count": 2,
+    "example": "*〔 💰 ASET \u0026 KEUANGAN 〕*"
+  },
+  {
+    "pattern": "- *role / pangkat:* 🛡️ warrior",
+    "count": 2,
+    "example": "- *Role / Pangkat:* 🛡️ Warrior"
+  },
+  {
+    "pattern": "*〔 📱 whatsapp info 〕*",
+    "count": 2,
+    "example": "*〔 📱 WHATSAPP INFO 〕*"
+  },
+  {
+    "pattern": "- *bio set:* \u003cn\u003e/\u003cn\u003e/\u003cn\u003e, \u003cn\u003e.\u003cn\u003e",
+    "count": 2,
+    "example": "- *Bio Set:* 1/1/1970, 00.00.00"
+  },
+  {
+    "pattern": "• distro : debian gnu/linux \u003cn\u003e (trixie)",
+    "count": 2,
+    "example": "• Distro : Debian GNU/Linux 13 (trixie)"
+  },
+  {
+    "pattern": "◤───「 𝙸𝙽𝙵𝙾 𝚄𝚂𝙴𝚁 」──✦",
+    "count": 2,
+    "example": "◤───「 𝙸𝙽𝙵𝙾 𝚄𝚂𝙴𝚁 」──✦"
+  },
+  {
+    "pattern": "- *total exp:* \u003cn\u003exp",
+    "count": 2,
+    "example": "- *Total Exp:* 855 XP"
+  },
+  {
+    "pattern": "- *bot whatsapp:* bukan",
+    "count": 2,
+    "example": "- *Bot WhatsApp:* Bukan"
+  }
+]

@@ -1,0 +1,522 @@
+[
+  {
+    "from": "kangwifiinc 🤖",
+    "msg_id": "3EB0BB8F86DCCE5F3814D9",
+    "text": "Failed: Flaticon is rate-limiting this IP (bot challenge). Try again in a few minutes.",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0F2E8ED761C3AEDC204",
+    "text": "```Failed to track: The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0641441FA553AF5BE06",
+    "text": "```IP TRACK RESULT\n\nIP        : 94.23.214.79\nCountry   : France (FR)\nRegion    : Hauts-de-France (HDF)\nCity      : Roubaix\nZIP       : 59100\nTimezone  : Europe/Paris\n\nISP       : OVH SAS\nOrg       : OVH SAS\nAS        : AS16276 OVH SAS\n\nLocation\nLatitude  : 50.6924\nLongitude : 3.20113```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB07505AE07126ADDA769",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC 9D25 126-Core Processor\n• Core : 2\n• Clock : 1498 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 7.75 GB\n• Used : 6.95 GB\n• Free : 0.80 GB\n\n*Operating System*\n• Distro : Ubuntu 24.04.5 LTS\n• Platform : linux\n• Type : Linux\n• Release : 7.0.0-39-generic\n• Hostname : htch-runtime\n• Uptime : 2h 11m 9s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 11893\n• Process Uptime : 13s\n• Heap Limit : 1.11 GB\n\n*Process Memory*\n• RSS : 110.55 MB\n• Heap Used : 25.49 MB\n• Heap Total : 11.19 MB\n• External : 16.50 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB08ED083867227A99251",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC 9D25 126-Core Processor\n• Core : 2\n• Clock : 1498 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 7.75 GB\n• Used : 7.04 GB\n• Free : 0.71 GB\n\n*Operating System*\n• Distro : Ubuntu 24.04.5 LTS\n• Platform : linux\n• Type : Linux\n• Release : 7.0.0-39-generic\n• Hostname : htch-runtime\n• Uptime : 2h 12m 17s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 12011\n• Process Uptime : 4s\n• Heap Limit : 1.13 GB\n\n*Process Memory*\n• RSS : 112.39 MB\n• Heap Used : 25.59 MB\n• Heap Total : 11.36 MB\n• External : 16.34 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB07AD35B4708538884C8",
+    "text": "Error: The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0E30CBA50B269F38F14",
+    "text": "```IP TRACK RESULT\n\nIP        : 2606:4700:3035::6815:26a4\nCountry   : Canada (CA)\nRegion    : Ontario (ON)\nCity      : Toronto\nZIP       : M5A\nTimezone  : America/Toronto\n\nISP       : Cloudflare, Inc.\nOrg       : Cloudflare, Inc.\nAS        : AS13335 Cloudflare, Inc.\n\nLocation\nLatitude  : 43.6532\nLongitude : -79.3832```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0973C52677719211EA8",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC 9D25 126-Core Processor\n• Core : 2\n• Clock : 1498 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 7.75 GB\n• Used : 3.91 GB\n• Free : 3.84 GB\n\n*Operating System*\n• Distro : Ubuntu 24.04.5 LTS\n• Platform : linux\n• Type : Linux\n• Release : 7.0.0-39-generic\n• Hostname : htch-runtime\n• Uptime : 5m 13s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 1865\n• Process Uptime : 2m 29s\n• Heap Limit : 1.12 GB\n\n*Process Memory*\n• RSS : 104.76 MB\n• Heap Used : 18.66 MB\n• Heap Total : 10.69 MB\n• External : 10.86 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0003984B31F870CAF2E",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC 9D25 126-Core Processor\n• Core : 2\n• Clock : 1498 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 7.75 GB\n• Used : 7.11 GB\n• Free : 0.64 GB\n\n*Operating System*\n• Distro : Ubuntu 24.04.5 LTS\n• Platform : linux\n• Type : Linux\n• Release : 7.0.0-39-generic\n• Hostname : htch-runtime\n• Uptime : 1h 33s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 2295\n• Process Uptime : 52m 27s\n• Heap Limit : 1.14 GB\n\n*Process Memory*\n• RSS : 75.63 MB\n• Heap Used : 23.23 MB\n• Heap Total : 11.46 MB\n• External : 14.51 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB07471469A6780275C20",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC 9D25 126-Core Processor\n• Core : 2\n• Clock : 1498 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 7.75 GB\n• Used : 7.02 GB\n• Free : 0.73 GB\n\n*Operating System*\n• Distro : Ubuntu 24.04.5 LTS\n• Platform : linux\n• Type : Linux\n• Release : 7.0.0-39-generic\n• Hostname : htch-runtime\n• Uptime : 2h 36m 53s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 1930\n• Process Uptime : 2h 32m 11s\n• Heap Limit : 1.08 GB\n\n*Process Memory*\n• RSS : 79.96 MB\n• Heap Used : 21.72 MB\n• Heap Total : 10.93 MB\n• External : 13.16 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB094AFC0249577651912",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC-Milan Processor\n• Core : 8\n• Clock : 2595 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 15.62 GB\n• Used : 2.58 GB\n• Free : 13.05 GB\n\n*Operating System*\n• Distro : Debian GNU/Linux 13 (trixie)\n• Platform : linux\n• Type : Linux\n• Release : 6.12.111+deb13-cloud-amd64\n• Hostname : keyra\n• Uptime : 1d 19h 27m 1s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 99375\n• Process Uptime : 1h 59m 49s\n• Heap Limit : 1.16 GB\n\n*Process Memory*\n• RSS : 116.21 MB\n• Heap Used : 18.42 MB\n• Heap Total : 11.92 MB\n• External : 8.63 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB036B19266972EE905B2",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC 9D25 126-Core Processor\n• Core : 2\n• Clock : 1498 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 7.75 GB\n• Used : 7.02 GB\n• Free : 0.73 GB\n\n*Operating System*\n• Distro : Ubuntu 24.04.5 LTS\n• Platform : linux\n• Type : Linux\n• Release : 7.0.0-39-generic\n• Hostname : htch-runtime\n• Uptime : 1h 22m 51s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 1803\n• Process Uptime : 1h 20m 21s\n• Heap Limit : 1.10 GB\n\n*Process Memory*\n• RSS : 88.98 MB\n• Heap Used : 24.14 MB\n• Heap Total : 11.60 MB\n• External : 15.67 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0FE9CD6D1991A9F95E3",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC 9D25 126-Core Processor\n• Core : 2\n• Clock : 1498 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 7.75 GB\n• Used : 7.07 GB\n• Free : 0.68 GB\n\n*Operating System*\n• Distro : Ubuntu 24.04.5 LTS\n• Platform : linux\n• Type : Linux\n• Release : 7.0.0-39-generic\n• Hostname : htch-runtime\n• Uptime : 23m 7s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 2030\n• Process Uptime : 16m 39s\n• Heap Limit : 1.14 GB\n\n*Process Memory*\n• RSS : 77.14 MB\n• Heap Used : 19.08 MB\n• Heap Total : 10.71 MB\n• External : 11.16 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB01017EE49342FA92F52",
+    "text": "🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : AMD EPYC-Milan Processor\n• Core : 8\n• Clock : 2595 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 15.62 GB\n• Used : 2.69 GB\n• Free : 12.93 GB\n\n*Operating System*\n• Distro : Debian GNU/Linux 13 (trixie)\n• Platform : linux\n• Type : Linux\n• Release : 6.12.111+deb13-cloud-amd64\n• Hostname : keyra\n• Uptime : 1d 21h 24m 27s\n\n*Runtime*\n• Bun : 1.4.2\n• Engine : JavaScriptCore\n• PID : 99375\n• Process Uptime : 3h 57m 16s\n• Heap Limit : 1.31 GB\n\n*Process Memory*\n• RSS : 125.24 MB\n• Heap Used : 22.66 MB\n• Heap Total : 12.81 MB\n• External : 12.33 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0B9589F20578295E0A1",
+    "text": "```Eval Error:\nReferenceError: sock is not defined```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB027E319BF1361845F96",
+    "text": "Error: Lyrics not found for the given query",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB032A799CC21A406D454",
+    "text": "https://open.spotify.com/track/3OAeD8xwRSYtTeyuVXfBiv\n```Empty cups, ashtrays flooded\nWe talk of habits, the hearts we spare\nWith the blue moon I saw through you\nCold eyes and a distant stare\n\nDon't you ask me why\nWhat my tattoo's mean\n'Cause they ain't for you\nAnd they ain't for me\n\nI ain't getting over\nAnyone at all\nYou can't pick me up\nIf I don't ever fall.\n\nHey stranger wanna know me truly\nStep closer it's a broken spell\nKeep me up, make me feel something\nMaybe then I can show and tell.\n\nHey stranger wanna know me truly\nStep closer it's a broken spell\nKeep me up, make me feel something\nMaybe then I can show and tell.\n\nHey stranger wanna know me truly\nHey stranger wanna know me truly\nHey stranger wanna know me truly\n\nMaybe then I can show and tell.\n\nStole your shirt, left no number\nGot my hair like the autumn leaves\nUndercover I showed myself\nI am a secret you just can't keep\n\nDon't you ask me why\nWhat my tattoo's mean\n'Cause they ain't for you\nAnd they ain't for me\n\nI ain't getting over\nAnyone at all\nYou can't pick me up\nIf I don't ever fall\n\nHey stranger wanna know me truly\nStep closer it's a broken spell\nKeep me up, make me feel something\nMaybe then I can show and tell.\n\nHey Stranger...\nMaybe then I can show and tell.\n\nHey stranger wanna know me truly\nHey stranger wanna know me truly\nHey stranger wanna know me truly\n\nMaybe then I can show and tell```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB00AD93768D637CA9F80",
+    "text": "Enter a song title or YouTube URL.",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB025882A9B2958FE65AF",
+    "text": "https://keyrafara.com\n\nlist of menu categories\n▨  *core*\n▨  *downloader*\n▨  *search*\n▨  *tools*",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB0D442743874C691E025",
+    "text": "rss : 107.31 MB\nheapTotal : 10.97 MB\nheapUsed : 19.32 MB\nexternal : 10.13 MB\narrayBuffers : 1.13 MB",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB00F4D7B3CB505FC9A1B",
+    "text": "https://open.spotify.com/track/2ldAdghnrO34HPcZ0IWfTu\n```[Verse 1]\nI'm clumsy\nYeah my head's a mess, cause you got me\nGrowing taller everyday\nWe're giants in a little man's world\nMy heart is pumping up so big that it could burst\n\n[Pre-Chorus]\nI'm trying so hard not to let it show\nBut you got me feeling like\nI'm stepping on buildings, cars, and boats\nI swear I could touch the sky\n\n[Chorus]\nOhhh, I'm ten feet tall\nOhhh, I'm ten feet tall\n\n[Verse 2]\nI'll be careful, so don't be afraid\nYou're safe here, no these arms won't let you break\nI put up a sign in the clouds\nSo they all know that we ain't ever coming down\n\n[Pre-Chorus]\nI'm trying so hard not to let it show\nBut you got me feeling like\nI'm stepping on buildings, cars, and boats\nI swear I could touch the sky\n\n[Chorus]\nOhhh, I'm ten feet tall\nOhhh, I'm ten feet tall\n\n[Bridge]\nYou build me up\nMake me what I never was\nYou build me up\nFrom nothing into something\nYeah something from the dust\n\n[Pre-Chorus]\nI'm trying so hard not to let it show\nBut you got me feeling like\nI'm stepping on buildings, cars, and boats\nI swear I could touch the sky\n\n[Chorus]\nOhhh, I'm ten feet tall\nOhhh, I'm ten feet tall\nOhhh, I'm ten feet tall\nOhhh, I'm ten feet tall```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB034BF24AB7B0F5DCB36",
+    "text": "https://open.spotify.com/track/3kXoKlD84c6OmIcOLfrfEs\n```[Verse 1: Maurice White]\nDo you remember\nTwenty-first night of September?\nLove was changin' the minds, pretenders\nWhile chasin' the clouds away\nOur hearts were ringin'\nIn the key that our souls were singin'\nAs we danced in the night, remember\nHow the stars stole the night away, oh yeah, ayy, ayy\n\n[Chorus: Philip Bailey]\nHey, hey, hey\nBa-dee-ya\nSay, do you remember?\nBa-dee-ya\nDancin' in September\nBa-dee-ya\nNever was a cloudy day\n\n[Post-Chorus: Philip Bailey \u0026 Maurice White]\nBa-du, ba-du, ba-du, ba-du\nBa-du, ba-du, ba-du, ba-du\nBa-du, ba-du, ba-du-da\nBa-du, yeah\n\n[Verse 2: Maurice White]\nMy thoughts are with you\nHoldin' hands with your heart to see you\nOnly blue talk and love, remember\nHow we knew love was here to stay\nNow December\nFound a love we shared in September\nOnly blue talk and love, remember\nTrue love we share today\n\n[Chorus: Philip Bailey \u0026 Maurice White]\nHey, hey, hey (Yeah, yeah, yeah)\nBa-dee-ya\nSay, do you remember?\nBa-dee-ya (Oh)\nDancin' in September\nBa-dee-ya (Hey)\nNever was a cloudy day\nAnd we'll say ba-dee-ya (Ba-dee-ya, dee-ya)\nSay, do you remember?\nBa-dee-ya (Ba-dee-ya, dee-ya)\nDancin' in September\nBa-dee-ya (Ba-dee-ya, dee-ya)\nGolden dreams were shiny days (Dee-ya)\n\n[Bridge: Maurice White]\nThe bells was ringin', oh-oh\nOur souls were singin'\nDo you remember never a cloudy day? Yow\n\n[Chorus: Philip Bailey]\nAnd we'll say ba-dee-ya (Ba-dee-ya, dee-ya)\nSay, do you remember?\nBa-dee-ya (Ba-dee-ya, dee-ya)\nDancin' in September\nBa-dee-ya (Ba-dee-ya, dee-ya)\nNever was a cloudy day (Dee-ya)\nAnd we'll say ba-dee-ya (Ba-dee-ya, dee-ya)\nSay, do you remember?\nBa-dee-ya (Ba-dee-ya, dee-ya)\nDancin' in September\nBa-dee-ya (Ba-dee ya, dee-ya)\nGolden dreams were shiny days (Dee-ya)\n\n[Outro: Philip Bailey \u0026 Maurice White]\nBa-dee-ya, dee-ya, dee-ya\nBa-dee-ya, dee-ya, dee-ya\nBa-dee-ya, dee-ya, dee-ya, dee-ya\nBa-dee-ya, dee-ya, dee-ya\nBa-dee-ya, dee-ya, dee-ya\nBa-dee-ya, dee-ya, dee-ya, dee-ya```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB06D5171A6F4B3590121",
+    "text": "```Failed to fetch URL.\nStatus: 403 Forbidden```",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB054E07F8B2F5CC6964E",
+    "text": "Access granted to septiaoffcial | septia.id\nAccess: tt",
+    "ts": 1791070384
+  },
+  {
+    "from": "auto:keyra",
+    "msg_id": "3EB048E479DBCEAA06DAD5",
+    "text": "```Error: The operation timed out.```",
+    "ts": 1791070384
+  },
+  {
+    "msg_id": "3EB0D8F77C3A17F7093A12",
+    "text": "3EB0D2034CB768D758E737",
+    "ts": 1791070485
+  },
+  {
+    "msg_id": "3EB09819E077DA438B83BB",
+    "text": "3EB0F0463AA2146FCFAD79",
+    "ts": 1791070490
+  },
+  {
+    "msg_id": "3EB0A26E27275E515717AA",
+    "text": "command/cmd tidak ada di dalam daftar\n\nmungkiin command yang lu maksud\n⇒ *.protect*",
+    "ts": 1791070619
+  },
+  {
+    "msg_id": "3EB025480F8F51B917F230",
+    "text": "✅ Berhasil resend oleh Alya\nTipe: interactiveMessage",
+    "ts": 1791070621
+  },
+  {
+    "msg_id": "3EB0648DC25168F5530ABE",
+    "text": "\nI'm sorry, but I don't have that command :(\n\nDid you mean this command?\n⇒ *.protect*",
+    "ts": 1791070623
+  },
+  {
+    "msg_id": "3EB0ECB9DB7667BEA9D789",
+    "text": "\n�️ *Admin Only!* Kamu harus jadi Admin grup untuk pakai fitur ini.",
+    "ts": 1791070828
+  },
+  {
+    "msg_id": "3EB0C8B9A3DA8ED8E0927F",
+    "text": "\n*jadikan bot admin*",
+    "ts": 1791070839
+  },
+  {
+    "msg_id": "3EB037CE6DF90E307AEF94",
+    "text": "⛧ ─────────────────── ⛧\n        𝖁𝖎𝖗𝖔𝖚𝖘\n     ᴋᴀᴛᴇɢᴏʀɪ ᴍᴀɪɴ\n⛧ ─────────────────── ⛧\n\n𝕾𝖆𝖑𝖆𝖒, *ᅠ*.\n\n┏━━ 𝑷𝑬𝑵𝑮𝑮𝑼𝑵𝑨\n┃ ◦ ɴᴀᴍᴀ    : ᅠ\n┃ ◦ sᴛᴀᴛᴜs  : 🩸 Free\n┗━━━━━━━━━━━━━━━━━━━\n\n┏━━ 𝑺𝑰𝑺𝑻𝑬𝑴\n┃ ◦ ʙᴏᴛ     : Virous\n┃ ◦ ᴀᴜᴛʜᴏʀ  : s0rrow\n┃ ◦ ᴠᴇʀsɪ   : 4.7\n┃ ◦ ᴍᴏᴅᴇ    : PUBLIC\n┃ ◦ ᴜᴘᴛɪᴍᴇ  : 55m 46s\n┃ ◦ ꜰɪᴛᴜʀ   : 114 perintah · 1 kategori\n┃ ◦ ᴡᴀᴋᴛᴜ   : 07:27 WIB\n┗━━━━━━━━━━━━━━━━━━━\n\n┏━━ 🏠 𝑴𝑨𝑰𝑵  ⟦ 114 ⟧\n┃ ◦ .allmenu\n┃ ◦ .aturanbot\n┃ ◦ .becomebot\n┃ ◦ .benefitowner\n┃ ◦ .benefitprem\n┃ ◦ .benefitpremium\n┃ ◦ .berhentijadibot\n┃ ◦ .bot\n┃ ◦ .botgb\n┃ ◦ .botrules\n┃ ◦ .botstats\n┃ ◦ .cari\n┃ ◦ .carifitur\n┃ ◦ .cat\n┃ ◦ .category\n┃ ◦ .countplugin\n┃ ◦ .cpu\n┃ ◦ .creator\n┃ ◦ .creator2\n┃ ◦ .credit\n┃ ◦ .credits\n┃ ◦ .credits2\n┃ ◦ .dev\n┃ ◦ .developer\n┃ ◦ .disable\n┃ ◦ .disk\n┃ ◦ .distribusi\n┃ ◦ .donasi\n┃ ◦ .donate\n┃ ◦ .donation\n┃ ◦ .enable\n┃ ◦ .f02\n┃ ◦ .findcmd\n┃ ◦ .gbbot\n┃ ◦ .gcbot\n┃ ◦ .grupbot\n┃ ◦ .hargabot\n┃ ◦ .hargapanel\n┃ ◦ .jadibot\n┃ ◦ .jadibotqr\n┃ ◦ .joinf02\n┃ ◦ .kartu\n┃ ◦ .kredit\n┃ ◦ .kredit2\n┃ ◦ .latency\n┃ ◦ .latency2\n┃ ◦ .lb\n┃ ◦ .leaderboard\n┃ ◦ .mc\n┃ ◦ .menu\n┃ ◦ .menucat\n┃ ◦ .mycard\n┃ ◦ .off\n┃ ◦ .officialgb\n┃ ◦ .on\n┃ ◦ .owner\n┃ ◦ .owner2\n┃ ◦ .ownerbenefits\n┃ ◦ .ownerfitur\n┃ ◦ .p\n┃ ◦ .p2\n┃ ◦ .peraturanbot\n┃ ◦ .ping\n┃ ◦ .ping2\n┃ ◦ .premium2\n┃ ◦ .premiumbenefits\n┃ ◦ .premiumfitur\n┃ ◦ .ram\n┃ ◦ .rank\n┃ ◦ .ranking\n┃ ◦ .resetlimit\n┃ ◦ .rules\n┃ ◦ .saweria\n┃ ◦ .sc\n┃ ◦ .script\n┃ ◦ .searchcmd\n┃ ◦ .seleksif02\n┃ ◦ .setgbbot\n┃ ◦ .sethargabot\n┃ ◦ .sethargapanel\n┃ ◦ .sewa2\n┃ ◦ .speed\n┃ ◦ .speed2\n┃ ◦ .stat\n┃ ◦ .stats\n┃ ◦ .status2\n┃ ◦ .stopbot\n┃ ◦ .stopjadibot\n┃ ◦ .support\n┃ ◦ .sys\n┃ ◦ .sys2\n┃ ◦ .system\n┃ ◦ .thanksto\n┃ ◦ .thanksto2\n┃ ◦ .topbal\n┃ ◦ .topbalance\n┃ ◦ .topcoin\n┃ ◦ .topenergi\n┃ ◦ .topenergy\n┃ ◦ .topexp\n┃ ◦ .topglobal\n┃ ◦ .topkoin\n┃ ◦ .toplevel\n┃ ◦ .toplimit\n┃ ◦ .topmoney\n┃ ◦ .topxp\n┃ ◦ .totalcmd\n┃ ◦ .totalfeature\n┃ ◦ .totalfitur\n┃ ◦ .tqto\n┃ ◦ .tqto2\n┃ ◦ .trakteer\n┃ ◦ .unjadibot\n┃ ◦ .usercard\n┗━━━━━━━━━━━━━━━━━━━\n\n✠ ᴊᴀɴɢᴀɴ sᴘᴀᴍ ᴀɢᴀʀ ʙᴏᴛ ᴛᴇᴛᴀᴘ ᴀᴋᴛɪꜰ 24 ᴊᴀᴍ\n✠ ᴋᴇᴍʙᴀʟɪ: `.menu`",
+    "ts": 1791074138
+  },
+  {
+    "msg_id": "3EB0C61D020EFE10F4CC66",
+    "text": "◤───「 𝙸𝙽𝙵𝙾 𝚄𝚂𝙴𝚁 」──✦\n ⎆  [ 𝙽𝚊𝚖𝚊 : ᅠ\n ⎆  [ 𝚁𝚘𝚕𝚎 : *𝚄𝚜𝚎𝚛*\n ⎆  [ 𝙼𝚘𝚍𝚎 : 𝚖𝚍\n ⎆  [ 𝙳𝚎𝚟𝚎𝚕𝚘𝚙𝚎𝚛 : 𝚔𝚢𝚔𝚎𝚍𝚞𝚊\n◣──────────❈\n\n◤───「 𝙸𝙽𝙵𝙾 𝙱𝙾𝚃 」──✦\n ⎆  𝚁𝚞𝚗𝚝𝚒𝚖𝚎 : -\n ⎆  𝚅𝚎𝚛𝚜𝚒 : 𝟷.𝟾\n ⎆  𝙵𝚒𝚝𝚞𝚛 : 𝟷𝟷𝟹 𝚌𝚘𝚖𝚖𝚊𝚗𝚍𝚜\n ⎆  𝙱𝚘𝚝 : 𝚂𝚑𝚒𝚛𝚘𝚡𝚢 𝙼𝙳\n◣─────────────✦\n\n◤─「 𝙼𝙰𝙸𝙽 𝙼𝙴𝙽𝚄 」─✦\n│⟡ 〔 _.𝚊𝚕𝚕𝚖𝚎𝚗𝚞_\n│⟡ 〔 _.𝚊𝚝𝚞𝚛𝚊𝚗𝚋𝚘𝚝_\n│⟡ 〔 _.𝚋𝚊𝚢𝚊𝚛_\n│⟡ 〔 _.𝚋𝚎𝚌𝚘𝚖𝚎𝚋𝚘𝚝_\n│⟡ 〔 _.𝚋𝚎𝚗𝚎𝚏𝚒𝚝𝚘𝚠𝚗𝚎𝚛_\n│⟡ 〔 _.𝚋𝚎𝚗𝚎𝚏𝚒𝚝𝚙𝚛𝚎𝚖_\n│⟡ 〔 _.𝚋𝚎𝚗𝚎𝚏𝚒𝚝𝚙𝚛𝚎𝚖𝚒𝚞𝚖_\n│⟡ 〔 _.𝚋𝚎𝚛𝚑𝚎𝚗𝚝𝚒𝚓𝚊𝚍𝚒𝚋𝚘𝚝_\n│⟡ 〔 _.𝚋𝚘𝚝_\n│⟡ 〔 _.𝚋𝚘𝚝𝚐𝚋_\n│⟡ 〔 _.𝚋𝚘𝚝𝚛𝚞𝚕𝚎𝚜_\n│⟡ 〔 _.𝚋𝚘𝚝𝚜𝚝𝚊𝚝𝚜_\n│⟡ 〔 _.𝚋𝚢𝚛_\n│⟡ 〔 _.𝚌𝚊𝚛𝚒_\n│⟡ 〔 _.𝚌𝚊𝚛𝚒𝚏𝚒𝚝𝚞𝚛_\n│⟡ 〔 _.𝚌𝚊𝚝𝚎𝚐𝚘𝚛𝚢_\n│⟡ 〔 _.𝚌𝚑_\n│⟡ 〔 _.𝚌𝚑𝚊𝚗𝚗𝚎𝚕_\n│⟡ 〔 _.𝚌𝚘𝚞𝚗𝚝𝚙𝚕𝚞𝚐𝚒𝚗_\n│⟡ 〔 _.𝚌𝚙𝚞_\n│⟡ 〔 _.𝚌𝚛𝚎𝚊𝚝𝚘𝚛_\n│⟡ 〔 _.𝚌𝚛𝚎𝚊𝚝𝚘𝚛𝟸_\n│⟡ 〔 _.𝚌𝚛𝚎𝚍𝚒𝚝_\n│⟡ 〔 _.𝚌𝚛𝚎𝚍𝚒𝚝𝚜_\n│⟡ 〔 _.𝚌𝚛𝚎𝚍𝚒𝚝𝚜𝟸_\n│⟡ 〔 _.𝚍𝚎𝚟_\n│⟡ 〔 _.𝚍𝚎𝚟𝚎𝚕𝚘𝚙𝚎𝚛_\n│⟡ 〔 _.𝚍𝚒𝚜𝚊𝚋𝚕𝚎_\n│⟡ 〔 _.𝚍𝚒𝚜𝚔_\n│⟡ 〔 _.𝚍𝚒𝚜𝚝𝚛𝚒𝚋𝚞𝚜𝚒_\n│⟡ 〔 _.𝚎𝚗𝚊𝚋𝚕𝚎_\n│⟡ 〔 _.𝚏𝟶𝟸_\n│⟡ 〔 _.𝚏𝚒𝚗𝚍𝚌𝚖𝚍_\n│⟡ 〔 _.𝚐𝚋𝚋𝚘𝚝_\n│⟡ 〔 _.𝚐𝚌𝚋𝚘𝚝_\n│⟡ 〔 _.𝚐𝚛𝚞𝚙𝚋𝚘𝚝_\n│⟡ 〔 _.𝚑𝚊𝚛𝚐𝚊𝚙𝚊𝚗𝚎𝚕_\n│⟡ 〔 _.𝚓𝚊𝚍𝚒𝚋𝚘𝚝_\n│⟡ 〔 _.𝚓𝚊𝚍𝚒𝚋𝚘𝚝𝚚𝚛_\n│⟡ 〔 _.𝚓𝚘𝚒𝚗𝚌𝚑_\n│⟡ 〔 _.𝚓𝚘𝚒𝚗𝚏𝟶𝟸_\n│⟡ 〔 _.𝚔𝚊𝚛𝚝𝚞_\n│⟡ 〔 _.𝚔𝚛𝚎𝚍𝚒𝚝_\n│⟡ 〔 _.𝚔𝚛𝚎𝚍𝚒𝚝𝟸_\n│⟡ 〔 _.𝚕𝚊𝚝𝚎𝚗𝚌𝚢_\n│⟡ 〔 _.𝚕𝚊𝚝𝚎𝚗𝚌𝚢𝟸_\n│⟡ 〔 _.𝚕𝚋_\n│⟡ 〔 _.𝚕𝚎𝚊𝚍𝚎𝚛𝚋𝚘𝚊𝚛𝚍_\n│⟡ 〔 _.𝚖𝚌_\n│⟡ 〔 _.𝚖𝚎𝚗𝚞_\n│⟡ 〔 _.𝚖𝚎𝚗𝚞𝚌𝚊𝚝_\n│⟡ 〔 _.𝚖𝚢𝚌𝚊𝚛𝚍_\n│⟡ 〔 _.𝚘𝚏𝚏_\n│⟡ 〔 _.𝚘𝚏𝚏𝚒𝚌𝚒𝚊𝚕𝚐𝚋_\n│⟡ 〔 _.𝚘𝚗_\n│⟡ 〔 _.𝚜𝚎𝚠𝚊𝟸_\n│⟡ 〔 _.𝚘𝚠𝚗𝚎𝚛_\n│⟡ 〔 _.𝚘𝚠𝚗𝚎𝚛𝟸_\n│⟡ 〔 _.𝚘𝚠𝚗𝚎𝚛𝚋𝚎𝚗𝚎𝚏𝚒𝚝𝚜_\n│⟡ 〔 _.𝚘𝚠𝚗𝚎𝚛𝚏𝚒𝚝𝚞𝚛_\n│⟡ 〔 _.𝚙_\n│⟡ 〔 _.𝚙𝟸_\n│⟡ 〔 _.𝚙𝚊𝚢𝚢_\n│⟡ 〔 _.𝚙𝚎𝚛𝚊𝚝𝚞𝚛𝚊𝚗𝚋𝚘𝚝_\n│⟡ 〔 _.𝚙𝚒𝚗𝚐_\n│⟡ 〔 _.𝚙𝚒𝚗𝚐𝟸_\n│⟡ 〔 _.𝚙𝚛𝚎𝚖𝚒𝚞𝚖𝟸_\n│⟡ 〔 _.𝚙𝚛𝚎𝚖𝚒𝚞𝚖𝚋𝚎𝚗𝚎𝚏𝚒𝚝𝚜_\n│⟡ 〔 _.𝚙𝚛𝚎𝚖𝚒𝚞𝚖𝚏𝚒𝚝𝚞𝚛_\n│⟡ 〔 _.𝚛𝚊𝚖_\n│⟡ 〔 _.𝚛𝚊𝚗𝚔_\n│⟡ 〔 _.𝚛𝚊𝚗𝚔𝚒𝚗𝚐_\n│⟡ 〔 _.𝚛𝚎𝚜𝚎𝚝𝚕𝚒𝚖𝚒𝚝_\n│⟡ 〔 _.𝚛𝚞𝚕𝚎𝚜_\n│⟡ 〔 _.𝚜𝚊𝚕𝚞𝚛𝚊𝚗_\n│⟡ 〔 _.𝚜𝚊𝚠𝚎𝚛𝚒𝚊_\n│⟡ 〔 _.𝚜𝚎𝚊𝚛𝚌𝚑𝚌𝚖𝚍_\n│⟡ 〔 _.𝚜𝚎𝚕𝚎𝚔𝚜𝚒𝚏𝟶𝟸_\n│⟡ 〔 _.𝚜𝚎𝚝𝚐𝚋𝚋𝚘𝚝_\n│⟡ 〔 _.𝚜𝚎𝚝𝚑𝚊𝚛𝚐𝚊𝚙𝚊𝚗𝚎𝚕_\n│⟡ 〔 _.𝚜𝚙𝚎𝚎𝚍_\n│⟡ 〔 _.𝚜𝚙𝚎𝚎𝚍𝟸_\n│⟡ 〔 _.𝚜𝚝𝚊𝚝_\n│⟡ 〔 _.𝚜𝚝𝚊𝚝𝚜_\n│⟡ 〔 _.𝚜𝚝𝚊𝚝𝚞𝚜𝟸_\n│⟡ 〔 _.𝚜𝚝𝚘𝚙𝚋𝚘𝚝_\n│⟡ 〔 _.𝚜𝚝𝚘𝚙𝚓𝚊𝚍𝚒𝚋𝚘𝚝_\n│⟡ 〔 _.𝚜𝚞𝚙𝚙𝚘𝚛𝚝_\n│⟡ 〔 _.𝚜𝚢𝚜_\n│⟡ 〔 _.𝚜𝚢𝚜𝟸_\n│⟡ 〔 _.𝚜𝚢𝚜𝚝𝚎𝚖_\n│⟡ 〔 _.𝚝𝚑𝚊𝚗𝚔𝚜𝚝𝚘_\n│⟡ 〔 _.𝚝𝚑𝚊𝚗𝚔𝚜𝚝𝚘𝟸_\n│⟡ 〔 _.𝚝𝚘𝚙𝚋𝚊𝚕_\n│⟡ 〔 _.𝚝𝚘𝚙𝚋𝚊𝚕𝚊𝚗𝚌𝚎_\n│⟡ 〔 _.𝚝𝚘𝚙𝚌𝚘𝚒𝚗_\n│⟡ 〔 _.𝚝𝚘𝚙𝚎𝚗𝚎𝚛𝚐𝚒_\n│⟡ 〔 _.𝚝𝚘𝚙𝚎𝚗𝚎𝚛𝚐𝚢_\n│⟡ 〔 _.𝚝𝚘𝚙𝚎𝚡𝚙_\n│⟡ 〔 _.𝚝𝚘𝚙𝚐𝚕𝚘𝚋𝚊𝚕_\n│⟡ 〔 _.𝚝𝚘𝚙𝚔𝚘𝚒𝚗_\n│⟡ 〔 _.𝚝𝚘𝚙𝚕𝚎𝚟𝚎𝚕_\n│⟡ 〔 _.𝚝𝚘𝚙𝚕𝚒𝚖𝚒𝚝_\n│⟡ 〔 _.𝚝𝚘𝚙𝚖𝚘𝚗𝚎𝚢_\n│⟡ 〔 _.𝚝𝚘𝚙𝚡𝚙_\n│⟡ 〔 _.𝚝𝚘𝚝𝚊𝚕𝚌𝚖𝚍_\n│⟡ 〔 _.𝚝𝚘𝚝𝚊𝚕𝚏𝚎𝚊𝚝𝚞𝚛𝚎_\n│⟡ 〔 _.𝚝𝚘𝚝𝚊𝚕𝚏𝚒𝚝𝚞𝚛_\n│⟡ 〔 _.𝚝𝚚𝚝𝚘_\n│⟡ 〔 _.𝚝𝚚𝚝𝚘𝟸_\n│⟡ 〔 _.𝚝𝚛𝚊𝚔𝚝𝚎𝚎𝚛_\n│⟡ 〔 _.𝚞𝚗𝚓𝚊𝚍𝚒𝚋𝚘𝚝_\n│⟡ 〔 _.𝚞𝚜𝚎𝚛𝚌𝚊𝚛𝚍_\n◣──────────❈\n*_𝙹𝚊𝚗𝚐𝚊𝚗 𝙳𝚒 𝚂𝚙𝚊𝚖 𝚈𝚊 𝙰𝚐𝚊𝚛 𝙱𝚘𝚝𝚗𝚢𝚊 𝙱𝚒𝚜𝚊 𝙰𝚔𝚝𝚒𝚏 𝟸𝟺 𝙹𝚊𝚖 𝙳𝚊𝚗 𝚃𝚒𝚍𝚊𝚔 𝚃𝚎𝚛𝚔𝚎𝚗𝚊 𝙱𝚕𝚘𝚔𝚒𝚛 𝚂𝚙𝚊𝚖🍁_*",
+    "ts": 1791074142
+  },
+  {
+    "msg_id": "3EB06256685E8A7F0DE4ED",
+    "text": "⛧ ─────────────────── ⛧\n        𝖁𝖎𝖗𝖔𝖚𝖘\n     ᴋᴀᴛᴇɢᴏʀɪ ᴅᴏᴡɴʟᴏᴀᴅ\n⛧ ─────────────────── ⛧\n\n𝕾𝖆𝖑𝖆𝖒, *ᅠ*.\n\n┏━━ 𝑷𝑬𝑵𝑮𝑮𝑼𝑵𝑨\n┃ ◦ ɴᴀᴍᴀ    : ᅠ\n┃ ◦ sᴛᴀᴛᴜs  : 🩸 Free\n┗━━━━━━━━━━━━━━━━━━━\n\n┏━━ 𝑺𝑰𝑺𝑻𝑬𝑴\n┃ ◦ ʙᴏᴛ     : Virous\n┃ ◦ ᴀᴜᴛʜᴏʀ  : s0rrow\n┃ ◦ ᴠᴇʀsɪ   : 4.7\n┃ ◦ ᴍᴏᴅᴇ    : PUBLIC\n┃ ◦ ᴜᴘᴛɪᴍᴇ  : 56m 6s\n┃ ◦ ꜰɪᴛᴜʀ   : 104 perintah · 1 kategori\n┃ ◦ ᴡᴀᴋᴛᴜ   : 07:27 WIB\n┗━━━━━━━━━━━━━━━━━━━\n\n┏━━ 📥 𝑫𝑶𝑾𝑵𝑳𝑶𝑨𝑫  ⟦ 104 ⟧\n┃ ◦ .capcut\n┃ ◦ .capcutdl\n┃ ◦ .ccdl\n┃ ◦ .cf\n┃ ◦ .cfdl\n┃ ◦ .cocofun\n┃ ◦ .cocofundl\n┃ ◦ .dailymotion\n┃ ◦ .dailymotiondl\n┃ ◦ .dmdl\n┃ ◦ .douyin\n┃ ◦ .douyindl\n┃ ◦ .drive\n┃ ◦ .drivedl\n┃ ◦ .driveurl\n┃ ◦ .dydl\n┃ ◦ .facebook\n┃ ◦ .facebookdl\n┃ ◦ .fb\n┃ ◦ .fbdl\n┃ ◦ .fbdown\n┃ ◦ .gdrive\n┃ ◦ .gitclone\n┃ ◦ .gitdl\n┃ ◦ .githubdl\n┃ ◦ .ig\n┃ ◦ .igaudio\n┃ ◦ .igdl\n┃ ◦ .igmp3\n┃ ◦ .instagram\n┃ ◦ .instagramdl\n┃ ◦ .likee\n┃ ◦ .likeedl\n┃ ◦ .lk\n┃ ◦ .lkdl\n┃ ◦ .mediafire\n┃ ◦ .mediafiredl\n┃ ◦ .mf\n┃ ◦ .mfdl\n┃ ◦ .pddl\n┃ ◦ .pddownload\n┃ ◦ .pindl\n┃ ◦ .pindownload\n┃ ◦ .pintdl\n┃ ◦ .pinterestdl\n┃ ◦ .pixeldrain\n┃ ◦ .pixeldraindl\n┃ ◦ .rednote\n┃ ◦ .rednotedl\n┃ ◦ .repodownload\n┃ ◦ .sfile\n┃ ◦ .sfiledl\n┃ ◦ .sfiledownload\n┃ ◦ .shopeedl\n┃ ◦ .shopeevid\n┃ ◦ .shopeevideo\n┃ ◦ .snackvideo\n┃ ◦ .snackvideodl\n┃ ◦ .spdl\n┃ ◦ .spotdl\n┃ ◦ .spotify-dl\n┃ ◦ .spotifydl\n┃ ◦ .sv\n┃ ◦ .svdl\n┃ ◦ .tb\n┃ ◦ .tbdl\n┃ ◦ .tdl\n┃ ◦ .tera\n┃ ◦ .terabox\n┃ ◦ .teraboxdl\n┃ ◦ .threaddl\n┃ ◦ .threads\n┃ ◦ .threadsdl\n┃ ◦ .tiktok\n┃ ◦ .tiktok2\n┃ ◦ .tiktokdl\n┃ ◦ .tiktokdl2\n┃ ◦ .tiktokimg\n┃ ◦ .tiktokmusic\n┃ ◦ .tiktokslide\n┃ ◦ .tt\n┃ ◦ .tt2\n┃ ◦ .ttdown\n┃ ◦ .ttdown2\n┃ ◦ .ttimg\n┃ ◦ .ttmp3\n┃ ◦ .ttmp4\n┃ ◦ .ttmusic\n┃ ◦ .ttslide\n┃ ◦ .vdl\n┃ ◦ .videy\n┃ ◦ .videydl\n┃ ◦ .videydownload\n┃ ◦ .xhs\n┃ ◦ .xhsdl\n┃ ◦ .xiaohongshu\n┃ ◦ .youtubemp3\n┃ ◦ .youtubemp4\n┃ ◦ .ytaudio\n┃ ◦ .ytmp3\n┃ ◦ .ytmp4\n┃ ◦ .ytp\n┃ ◦ .ytplay\n┃ ◦ .ytvideo\n┗━━━━━━━━━━━━━━━━━━━\n\n✠ ᴊᴀɴɢᴀɴ sᴘᴀᴍ ᴀɢᴀʀ ʙᴏᴛ ᴛᴇᴛᴀᴘ ᴀᴋᴛɪꜰ 24 ᴊᴀᴍ\n✠ ᴋᴇᴍʙᴀʟɪ: `.menu`",
+    "ts": 1791074145
+  },
+  {
+    "msg_id": "3EB0DD7269D3D3EF57EA3F",
+    "text": "◤───「 𝙸𝙽𝙵𝙾 𝚄𝚂𝙴𝚁 」──✦\n ⎆  [ 𝙽𝚊𝚖𝚊 : ᅠ\n ⎆  [ 𝚁𝚘𝚕𝚎 : *𝚄𝚜𝚎𝚛*\n ⎆  [ 𝙼𝚘𝚍𝚎 : 𝚖𝚍\n ⎆  [ 𝙳𝚎𝚟𝚎𝚕𝚘𝚙𝚎𝚛 : 𝚔𝚢𝚔𝚎𝚍𝚞𝚊\n◣──────────❈\n\n◤───「 𝙸𝙽𝙵𝙾 𝙱𝙾𝚃 」──✦\n ⎆  𝚁𝚞𝚗𝚝𝚒𝚖𝚎 : -\n ⎆  𝚅𝚎𝚛𝚜𝚒 : 𝟷.𝟾\n ⎆  𝙵𝚒𝚝𝚞𝚛 : 𝟷𝟶𝟺 𝚌𝚘𝚖𝚖𝚊𝚗𝚍𝚜\n ⎆  𝙱𝚘𝚝 : 𝚂𝚑𝚒𝚛𝚘𝚡𝚢 𝙼𝙳\n◣─────────────✦\n\n◤─「 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳 𝙼𝙴𝙽𝚄 」─✦\n│⟡ 〔 _.𝚡𝚑𝚜_\n│⟡ 〔 _.𝚌𝚊𝚙𝚌𝚞𝚝_\n│⟡ 〔 _.𝚌𝚊𝚙𝚌𝚞𝚝𝚍𝚕_\n│⟡ 〔 _.𝚌𝚌𝚍𝚕_\n│⟡ 〔 _.𝚌𝚏_\n│⟡ 〔 _.𝚌𝚏𝚍𝚕_\n│⟡ 〔 _.𝚌𝚘𝚌𝚘𝚏𝚞𝚗_\n│⟡ 〔 _.𝚌𝚘𝚌𝚘𝚏𝚞𝚗𝚍𝚕_\n│⟡ 〔 _.𝚍𝚊𝚒𝚕𝚢𝚖𝚘𝚝𝚒𝚘𝚗_\n│⟡ 〔 _.𝚍𝚊𝚒𝚕𝚢𝚖𝚘𝚝𝚒𝚘𝚗𝚍𝚕_\n│⟡ 〔 _.𝚍𝚖𝚍𝚕_\n│⟡ 〔 _.𝚍𝚘𝚞𝚢𝚒𝚗_\n│⟡ 〔 _.𝚍𝚘𝚞𝚢𝚒𝚗𝚍𝚕_\n│⟡ 〔 _.𝚍𝚛𝚒𝚟𝚎_\n│⟡ 〔 _.𝚍𝚛𝚒𝚟𝚎𝚍𝚕_\n│⟡ 〔 _.𝚍𝚛𝚒𝚟𝚎𝚞𝚛𝚕_\n│⟡ 〔 _.𝚍𝚢𝚍𝚕_\n│⟡ 〔 _.𝚏𝚊𝚌𝚎𝚋𝚘𝚘𝚔_\n│⟡ 〔 _.𝚏𝚊𝚌𝚎𝚋𝚘𝚘𝚔𝚍𝚕_\n│⟡ 〔 _.𝚏𝚋_\n│⟡ 〔 _.𝚏𝚋𝚍𝚕_\n│⟡ 〔 _.𝚏𝚋𝚍𝚘𝚠𝚗_\n│⟡ 〔 _.𝚐𝚍𝚛𝚒𝚟𝚎_\n│⟡ 〔 _.𝚐𝚒𝚝𝚌𝚕𝚘𝚗𝚎_\n│⟡ 〔 _.𝚐𝚒𝚝𝚍𝚕_\n│⟡ 〔 _.𝚐𝚒𝚝𝚑𝚞𝚋𝚍𝚕_\n│⟡ 〔 _.𝚒𝚐_\n│⟡ 〔 _.𝚒𝚐𝚊𝚞𝚍𝚒𝚘_\n│⟡ 〔 _.𝚒𝚐𝚍𝚕_\n│⟡ 〔 _.𝚒𝚐𝚖𝚙𝟹_\n│⟡ 〔 _.𝚒𝚗𝚜𝚝𝚊𝚐𝚛𝚊𝚖_\n│⟡ 〔 _.𝚒𝚗𝚜𝚝𝚊𝚐𝚛𝚊𝚖𝚍𝚕_\n│⟡ 〔 _.𝚕𝚒𝚔𝚎𝚎_\n│⟡ 〔 _.𝚕𝚒𝚔𝚎𝚎𝚍𝚕_\n│⟡ 〔 _.𝚕𝚔_\n│⟡ 〔 _.𝚕𝚔𝚍𝚕_\n│⟡ 〔 _.𝚖𝚎𝚍𝚒𝚊𝚏𝚒𝚛𝚎_\n│⟡ 〔 _.𝚖𝚎𝚍𝚒𝚊𝚏𝚒𝚛𝚎𝚍𝚕_\n│⟡ 〔 _.𝚖𝚏_\n│⟡ 〔 _.𝚖𝚏𝚍𝚕_\n│⟡ 〔 _.𝚙𝚍𝚍𝚕_\n│⟡ 〔 _.𝚙𝚍𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍_\n│⟡ 〔 _.𝚙𝚒𝚗𝚍𝚕_\n│⟡ 〔 _.𝚙𝚒𝚗𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍_\n│⟡ 〔 _.𝚙𝚒𝚗𝚝𝚍𝚕_\n│⟡ 〔 _.𝚙𝚒𝚗𝚝𝚎𝚛𝚎𝚜𝚝𝚍𝚕_\n│⟡ 〔 _.𝚙𝚒𝚡𝚎𝚕𝚍𝚛𝚊𝚒𝚗_\n│⟡ 〔 _.𝚙𝚒𝚡𝚎𝚕𝚍𝚛𝚊𝚒𝚗𝚍𝚕_\n│⟡ 〔 _.𝚛𝚎𝚍𝚗𝚘𝚝𝚎_\n│⟡ 〔 _.𝚛𝚎𝚍𝚗𝚘𝚝𝚎𝚍𝚕_\n│⟡ 〔 _.𝚛𝚎𝚙𝚘𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍_\n│⟡ 〔 _.𝚜𝚏𝚒𝚕𝚎_\n│⟡ 〔 _.𝚜𝚏𝚒𝚕𝚎𝚍𝚕_\n│⟡ 〔 _.𝚜𝚏𝚒𝚕𝚎𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍_\n│⟡ 〔 _.𝚜𝚑𝚘𝚙𝚎𝚎𝚍𝚕_\n│⟡ 〔 _.𝚜𝚑𝚘𝚙𝚎𝚎𝚟𝚒𝚍_\n│⟡ 〔 _.𝚜𝚑𝚘𝚙𝚎𝚎𝚟𝚒𝚍𝚎𝚘_\n│⟡ 〔 _.𝚜𝚗𝚊𝚌𝚔𝚟𝚒𝚍𝚎𝚘_\n│⟡ 〔 _.𝚜𝚗𝚊𝚌𝚔𝚟𝚒𝚍𝚎𝚘𝚍𝚕_\n│⟡ 〔 _.𝚜𝚙𝚍𝚕_\n│⟡ 〔 _.𝚜𝚙𝚘𝚝𝚍𝚕_\n│⟡ 〔 _.𝚜𝚙𝚘𝚝𝚒𝚏𝚢-𝚍𝚕_\n│⟡ 〔 _.𝚜𝚙𝚘𝚝𝚒𝚏𝚢𝚍𝚕_\n│⟡ 〔 _.𝚜𝚟_\n│⟡ 〔 _.𝚜𝚟𝚍𝚕_\n│⟡ 〔 _.𝚝𝚋_\n│⟡ 〔 _.𝚝𝚋𝚍𝚕_\n│⟡ 〔 _.𝚝𝚍𝚕_\n│⟡ 〔 _.𝚝𝚎𝚛𝚊_\n│⟡ 〔 _.𝚝𝚎𝚛𝚊𝚋𝚘𝚡_\n│⟡ 〔 _.𝚝𝚎𝚛𝚊𝚋𝚘𝚡𝚍𝚕_\n│⟡ 〔 _.𝚝𝚑𝚛𝚎𝚊𝚍𝚍𝚕_\n│⟡ 〔 _.𝚝𝚑𝚛𝚎𝚊𝚍𝚜_\n│⟡ 〔 _.𝚝𝚑𝚛𝚎𝚊𝚍𝚜𝚍𝚕_\n│⟡ 〔 _.𝚝𝚒𝚔𝚝𝚘𝚔_\n│⟡ 〔 _.𝚝𝚝_\n│⟡ 〔 _.𝚝𝚝𝚖𝚙𝟺_\n│⟡ 〔 _.𝚝𝚒𝚔𝚝𝚘𝚔𝚍𝚕_\n│⟡ 〔 _.𝚝𝚒𝚔𝚝𝚘𝚔𝟸_\n│⟡ 〔 _.𝚝𝚝𝟸_\n│⟡ 〔 _.𝚝𝚒𝚔𝚝𝚘𝚔𝚍𝚕𝟸_\n│⟡ 〔 _.𝚝𝚒𝚔𝚝𝚘𝚔𝚒𝚖𝚐_\n│⟡ 〔 _.𝚝𝚒𝚔𝚝𝚘𝚔𝚖𝚞𝚜𝚒𝚌_\n│⟡ 〔 _.𝚝𝚒𝚔𝚝𝚘𝚔𝚜𝚕𝚒𝚍𝚎_\n│⟡ 〔 _.𝚝𝚝𝚍𝚘𝚠𝚗_\n│⟡ 〔 _.𝚝𝚝𝚍𝚘𝚠𝚗𝟸_\n│⟡ 〔 _.𝚝𝚝𝚒𝚖𝚐_\n│⟡ 〔 _.𝚝𝚝𝚖𝚙𝟹_\n│⟡ 〔 _.𝚝𝚝𝚖𝚞𝚜𝚒𝚌_\n│⟡ 〔 _.𝚝𝚝𝚜𝚕𝚒𝚍𝚎_\n│⟡ 〔 _.𝚟𝚍𝚕_\n│⟡ 〔 _.𝚟𝚒𝚍𝚎𝚢_\n│⟡ 〔 _.𝚟𝚒𝚍𝚎𝚢𝚍𝚕_\n│⟡ 〔 _.𝚟𝚒𝚍𝚎𝚢𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍_\n│⟡ 〔 _.𝚡𝚑𝚜𝚍𝚕_\n│⟡ 〔 _.𝚡𝚒𝚊𝚘𝚑𝚘𝚗𝚐𝚜𝚑𝚞_\n│⟡ 〔 _.𝚢𝚘𝚞𝚝𝚞𝚋𝚎𝚖𝚙𝟹_\n│⟡ 〔 _.𝚢𝚘𝚞𝚝𝚞𝚋𝚎𝚖𝚙𝟺_\n│⟡ 〔 _.𝚢𝚝𝚊𝚞𝚍𝚒𝚘_\n│⟡ 〔 _.𝚢𝚝𝚖𝚙𝟹_\n│⟡ 〔 _.𝚢𝚝𝚖𝚙𝟺_\n│⟡ 〔 _.𝚢𝚝𝚙_\n│⟡ 〔 _.𝚢𝚝𝚙𝚕𝚊𝚢_\n│⟡ 〔 _.𝚢𝚝𝚟𝚒𝚍𝚎𝚘_\n◣──────────❈\n*_𝙹𝚊𝚗𝚐𝚊𝚗 𝙳𝚒 𝚂𝚙𝚊𝚖 𝚈𝚊 𝙰𝚐𝚊𝚛 𝙱𝚘𝚝𝚗𝚢𝚊 𝙱𝚒𝚜𝚊 𝙰𝚔𝚝𝚒𝚏 𝟸𝟺 𝙹𝚊𝚖 𝙳𝚊𝚗 𝚃𝚒𝚍𝚊𝚔 𝚃𝚎𝚛𝚔𝚎𝚗𝚊 𝙱𝚕𝚘𝚔𝚒𝚛 𝚂𝚙𝚊𝚖🍁_*",
+    "ts": 1791074149
+  },
+  {
+    "msg_id": "3EB0675D8BD81244A1769A",
+    "text": "⛧ ─────────────────── ⛧\n        𝖁𝖎𝖗𝖔𝖚𝖘\n     ᴍᴇɴᴜ ᴜᴛᴀᴍᴀ\n⛧ ─────────────────── ⛧\n\n𝕾𝖆𝖑𝖆𝖒, *ᅠ*.\nSelamat Pagi 🌅\n_Bergerak dalam diam. Bicara lewat hasil._\n\n┏━━ 𝑷𝑬𝑵𝑮𝑮𝑼𝑵𝑨\n┃ ◦ ɴᴀᴍᴀ    : ᅠ\n┃ ◦ sᴛᴀᴛᴜs  : 🩸 Free\n┗━━━━━━━━━━━━━━━━━━━\n\n┏━━ 𝑺𝑰𝑺𝑻𝑬𝑴\n┃ ◦ ʙᴏᴛ     : Virous\n┃ ◦ ᴀᴜᴛʜᴏʀ  : s0rrow\n┃ ◦ ᴠᴇʀsɪ   : 4.7\n┃ ◦ ᴍᴏᴅᴇ    : PUBLIC\n┃ ◦ ᴜᴘᴛɪᴍᴇ  : 57m 27s\n┃ ◦ ꜰɪᴛᴜʀ   : 3970 perintah · 47 kategori\n┃ ◦ ᴡᴀᴋᴛᴜ   : 07:28 WIB\n┗━━━━━━━━━━━━━━━━━━━\n\n✠ ᴛᴇᴋᴀɴ ᴛᴏᴍʙᴏʟ ᴅɪ ʙᴀᴡᴀʜ ᴜɴᴛᴜᴋ ᴍᴇᴍɪʟɪʜ ᴋᴀᴛᴇɢᴏʀɪ\n✠ ᴀᴛᴀᴜ ᴋᴇᴛɪᴋ `.allmenu` ᴜɴᴛᴜᴋ sᴇᴍᴜᴀ ᴘᴇʀɪɴᴛᴀʜ",
+    "ts": 1791074152
+  },
+  {
+    "msg_id": "3EB046CD4198D094550F8D",
+    "text": "𝑺𝑯𝑰𝑹𝑶𝑿𝒀 𝑴𝑫  ✦\n\n𝑺𝒆𝒍𝒂𝒎𝒂𝒕 𝑷𝒂𝒈𝒊 🌅 ᅠ\n┏━━ 𝑼𝑺𝑬𝑹 𝑰𝑵𝑭𝑶 ━━┓\n┃  𝑵𝒂𝒎𝒂   : ᅠ\n┃  𝑺𝒕𝒂𝒕𝒖𝒔 : *User*\n┃  𝑴𝒐𝒅𝒆   : PUBLIC\n┃  𝑵𝒐𝒎𝒐𝒓  : +6283179510385\n┗━━━━━━━━━━━━━━━━━━┛\n\n┏━━ 𝑩𝑶𝑻 𝑰𝑵𝑭𝑶 ━━┓\n┃  𝑩𝒐𝒕     : Shiroxy MD\n┃  𝑫𝒆𝒗𝒆𝒍𝒐𝒑𝒆𝒓  : kykedua\n┃  𝑽𝒆𝒓𝒔𝒊   : 1.8\n┃  𝑼𝒑𝒕𝒊𝒎𝒆  : 1s\n┗━━━━━━━━━━━━━━━━━━┛\n╭─ 𝑴𝑬𝑵𝑼 𝑼𝑻𝑨𝑴𝑨 ─╮\n│ ✦ Pilih kategori lewat tombol di bawah.\n│ ✦ Setiap kategori langsung membuka .𝒎𝒆𝒏𝒖𝒄𝒂𝒕 .\n╰──────────────────╯",
+    "ts": 1791074157
+  },
+  {
+    "msg_id": "3EB0CBDC9A63BD6EA7D4A3",
+    "text": "Halo kak @6282310068109! 👋\nIni adalah rincian lengkap dari profil, status, dan seluruh aset yang kakak miliki saat ini di dalam sistem bot:\n\n*〔 👤 INFORMASI PRIBADI 〕*\n- *Nama Asli:* ㅤ\n- *Tag / Mention:* @6282310068109\n- *Status Akun:* 🆓 Free User\n\n*〔 ⚔️ RPG STATS \u0026 LEVEL 〕*\n- *Role / Pangkat:* 🛡️ Warrior\n- *Level Saat Ini:* 1\n- *Total Exp:* 855 XP\n- *Kesehatan (Health):* ❤️ 100 / 100\n- *Mana (Magic):* 💧 100 / 100\n- *Stamina:* ⚡ 100 / 100\n- *Progress Ke Level 2:*\n  ▱▱▱▱▱▱▱▱▱▱\n  _855 / 10.000 XP_\n\n*〔 💰 ASET \u0026 KEUANGAN 〕*\n- *Koin Tunai:* 🪙 Rp 0 _(Digunakan untuk fitur RPG)_\n- *Uang di Bank:* 🏦 Rp 0 _(Aman dari resiko perampokan)_\n- *Sisa Energi:* ⚡ 133 _(Dibutuhkan setiap kali memakai command)_\n\n*〔 📱 WHATSAPP INFO 〕*\n- *Nomor:* +6282310068109\n- *Eksistensi WA:* Ya\n- *JID:* 6282310068109@s.whatsapp.net\n- *LID:* 6282310068109@s.whatsapp.net\n- *Tipe:* S.WhatsApp.Net\n- *Bot WhatsApp:* Bukan\n- *Device ID:* AC8D788BDC1D9786668E8D459345E904\n\n*〔 ℹ️ BIO \u0026 PROFILE 〕*\n- *Avatar:* Ada\n- *Bio:* [object Object]\n- *Bio Set:* 1/1/1970, 00.00.00\n\n*〔 🏢 BUSINESS INFO 〕*\n- *Tipe Akun:* WhatsApp Biasa\n\n*〔 🤖 BOT VIEWPOINT 〕*\n- *Bot JID:* 6281323910699:35@s.whatsapp.net\n- *Bot Platform:* android\n- *Runtime:* Node v20.20.2\n",
+    "ts": 1791074161
+  },
+  {
+    "msg_id": "3EB06E6DCBDEB9E51B4D6E",
+    "text": "Halo kak @6282310068109! 👋\nIni adalah rincian lengkap dari profil, status, dan seluruh aset yang kakak miliki saat ini di dalam sistem bot:\n\n*〔 👤 INFORMASI PRIBADI 〕*\n- *Nama Asli:* ㅤ\n- *Tag / Mention:* @6282310068109\n- *Status Akun:* 👑 Owner\n\n*〔 ⚔️ RPG STATS \u0026 LEVEL 〕*\n- *Role / Pangkat:* 🛡️ Warrior\n- *Level Saat Ini:* 1\n- *Total Exp:* 810 XP\n- *Kesehatan (Health):* ❤️ 100 / 100\n- *Mana (Magic):* 💧 100 / 100\n- *Stamina:* ⚡ 100 / 100\n- *Progress Ke Level 2:*\n  ▱▱▱▱▱▱▱▱▱▱\n  _810 / 10.000 XP_\n\n*〔 💰 ASET \u0026 KEUANGAN 〕*\n- *Koin Tunai:* 🪙 Rp 0 _(Digunakan untuk fitur RPG)_\n- *Uang di Bank:* 🏦 Rp 0 _(Aman dari resiko perampokan)_\n- *Sisa Energi:* ⚡ ∞ Tak Terbatas _(Dibutuhkan setiap kali memakai command)_\n\n*〔 📱 WHATSAPP INFO 〕*\n- *Nomor:* +6282310068109\n- *Eksistensi WA:* Ya\n- *JID:* 6282310068109@s.whatsapp.net\n- *LID:* 6282310068109@s.whatsapp.net\n- *Tipe:* S.WhatsApp.Net\n- *Bot WhatsApp:* Bukan\n- *Device ID:* AC8D788BDC1D9786668E8D459345E904\n\n*〔 ℹ️ BIO \u0026 PROFILE 〕*\n- *Avatar:* Ada\n- *Bio:* [object Object]\n- *Bio Set:* 1/1/1970, 00.00.00\n\n*〔 🏢 BUSINESS INFO 〕*\n- *Tipe Akun:* WhatsApp Biasa\n\n*〔 🤖 BOT VIEWPOINT 〕*\n- *Bot JID:* 6285782094843:50@s.whatsapp.net\n- *Bot Platform:* android\n- *Runtime:* Node v23.11.1\n",
+    "ts": 1791074164
+  },
+  {
+    "msg_id": "3EB065D3AC58F65DD66E93",
+    "text": "undefined",
+    "ts": 1791076874
+  },
+  {
+    "msg_id": "3EB0149E65026F1CD5038A",
+    "text": "🏓 *PONG!* (1ms)\n\nBerikut adalah detail spesifikasi dan performa server secara lengkap:\n\n🖥️ *INFORMASI SISTEM*\n\u003e ◦ *OS:* Linux (5.15.0-191-generic)\n\u003e ◦ *Platform:* linux (x64)\n\u003e ◦ *Hostname:* 666c4f66-8144-4d7c-95cd-5d6dcd3e1035\n\u003e ◦ *NodeJS:* v23.11.1\n\u003e ◦ *Engine V8:* 12.9.202.28-node.14\n\n💻 *INFORMASI CPU*\n\u003e ◦ *Model:* DO-Premium-Intel\n\u003e ◦ *Cores:* 4 Core(s)\n\u003e ◦ *Speed:* 0 MHz\n\u003e ◦ *Load Avg:* 0.39 (1m), 6.94 (5m), 9.92 (15m)\n\n🧠 *PENGGUNAAN MEMORI*\n\u003e ◦ *Total RAM:* 7.75 GB\n\u003e ◦ *Dipakai:* 7.41 GB (95.5%)\n\u003e ◦ *Sisa Bebas:* 354.58 MB\n\n📦 *MEMORI NODEJS*\n\u003e ◦ *RSS:* 1.28 GB\n\u003e ◦ *Heap Total:* 374.89 MB\n\u003e ◦ *Heap Used:* 330.62 MB\n\u003e ◦ *External:* 77.83 MB\n\n⏱️ *WAKTU AKTIF (UPTIME)*\n\u003e ◦ *Uptime Server:* 1d 15h 56m\n\u003e ◦ *Uptime Bot:* 7m 3s\n\nSistem berjalan stabil dan menyelesaikan kalkulasi dalam waktu eksekusi *1ms*.",
+    "ts": 1791082177
+  },
+  {
+    "msg_id": "3EB05EA4A4DA9194B8A998",
+    "text": "🏓 *PONG!* (0ms)\n\nBerikut adalah detail spesifikasi dan performa server secara lengkap:\n\n🖥️ *INFORMASI SISTEM*\n\u003e ◦ *OS:* Linux (5.15.0-191-generic)\n\u003e ◦ *Platform:* linux (x64)\n\u003e ◦ *Hostname:* 666c4f66-8144-4d7c-95cd-5d6dcd3e1035\n\u003e ◦ *NodeJS:* v23.11.1\n\u003e ◦ *Engine V8:* 12.9.202.28-node.14\n\n💻 *INFORMASI CPU*\n\u003e ◦ *Model:* DO-Premium-Intel\n\u003e ◦ *Cores:* 4 Core(s)\n\u003e ◦ *Speed:* 0 MHz\n\u003e ◦ *Load Avg:* 0.39 (1m), 6.94 (5m), 9.92 (15m)\n\n🧠 *PENGGUNAAN MEMORI*\n\u003e ◦ *Total RAM:* 7.75 GB\n\u003e ◦ *Dipakai:* 7.41 GB (95.5%)\n\u003e ◦ *Sisa Bebas:* 354.58 MB\n\n📦 *MEMORI NODEJS*\n\u003e ◦ *RSS:* 1.28 GB\n\u003e ◦ *Heap Total:* 374.89 MB\n\u003e ◦ *Heap Used:* 340.19 MB\n\u003e ◦ *External:* 76.60 MB\n\n⏱️ *WAKTU AKTIF (UPTIME)*\n\u003e ◦ *Uptime Server:* 1d 15h 56m\n\u003e ◦ *Uptime Bot:* 7m 3s\n\nSistem berjalan stabil dan menyelesaikan kalkulasi dalam waktu eksekusi *0ms*.",
+    "ts": 1791082180
+  },
+  {
+    "msg_id": "3EB0C3F62872B9BF9250E4",
+    "text": "extendedText.js",
+    "ts": 1791082887
+  },
+  {
+    "msg_id": "3EB054FCA0DDAA14306E50",
+    "text": "conversation.js",
+    "ts": 1791082892
+  },
+  {
+    "msg_id": "3EB0D3CDBB5281829447E0",
+    "text": "Jangan alay plis",
+    "ts": 1791082927
+  },
+  {
+    "msg_id": "3EB0556D2C6DAB641458A5",
+    "text": "extendedText.js",
+    "ts": 1791082928
+  },
+  {
+    "msg_id": "3EB0A48AEBEAA21FB34ABC",
+    "text": "botForwardedMessage.js",
+    "ts": 1791082947
+  },
+  {
+    "msg_id": "3EB05AF59505B32FBF66C1",
+    "text": "📦 *CRM DEBUG (Raw Message)*\n\n```json\n{\n  \"key\": {\n    \"remoteJid\": \"120363410933636228@g.us\",\n    \"fromMe\": false,\n    \"id\": \"AC1A32E8CFCA55AA290EBE9FA0569CB3\",\n    \"participant\": \"5059958018128@lid\",\n    \"participantAlt\": \"6283147243013@s.whatsapp.net\",\n    \"addressingMode\": \"lid\"\n  },\n  \"messageTimestamp\": 1791082941,\n  \"pushName\": \"ܓܓܓܓܮ\",\n  \"broadcast\": false,\n  \"message\": {\n    \"senderKeyDistributionMessage\": {\n      \"groupId\": \"120363410933636228@g.us\",\n      \"axolotlSenderKeyDistributionMessage\": \"MwjK/96YARAAGiBhADdCf6+f+FQUDzOdjswa8nNlGUtTdbrcnJl/QktjhCIhBQjdT5E6974mRo8gO6FsXrI7NCOG+QltBOE1yvGLHZQJ\"\n    },\n    \"extendedTextMessage\": {\n      \"text\": \".crm\",\n      \"previewType\": \"NONE\",\n      \"contextInfo\": {\n        \"stanzaId\": \"ZAXINDEP-EDD9-ANJIR\",\n        \"participant\": \"228480046366937@lid\",\n        \"quotedMessage\": {\n          \"conversation\": \"\"\n        },\n        \"expiration\": 7776000,\n        \"disappearingMode\": {\n          \"initiator\": \"CHANGED_IN_CHAT\",\n          \"trigger\": \"UNKNOWN\"\n        },\n        \"quotedType\": \"EXPLICIT\"\n      },\n      \"inviteLinkGroupTypeV2\": \"DEFAULT\"\n    },\n    \"messageContextInfo\": {\n      \"messageSecret\": \"6w+UvnoexYCnRl26/MEHrDwl3gAs2m3MQNVBh4c4SFY=\"\n    }\n  }\n}\n```",
+    "ts": 1791082949
+  },
+  {
+    "msg_id": "3EB0DD72D773E4210B63A8",
+    "text": "conversation.js",
+    "ts": 1791082958
+  },
+  {
+    "msg_id": "3EB020B7E1BA083F36092B",
+    "text": "3EB00CA733D2957655661A",
+    "ts": 1791083013
+  },
+  {
+    "msg_id": "3EB07D88D34875537B36D7",
+    "text": "conversation.js",
+    "ts": 1791083045
+  },
+  {
+    "msg_id": "3EB06218131FA466C481AC",
+    "text": "╭─┈──────────❁─┈─╮\n│  ✦ Moszy AI MD\n│  ─────────────\n│  Prefix   : ,\n│  Owner    : @62895622348724\n│  Version  : 1.0.0\n│  Status   : Online\n│  Features : 219\n│  Runtime  : 10j 19m\n╰─┈──────────❁─┈─╯\n\n📍 Bekasi • 33°C • 10:05 WIB\n\nHii Kamu~! ੨ ͥ ͦ ͧ ੨ ა ♡\n\nKenalin, aku *Moszy AI MD* ✨\nAsisten virtual yang siap nemenin kamu\n24 jam nonstop — download, AI, sticker,\ntools grup, dan masih banyak lagi~\n\nMakasih udah mampir ke sini yaa~\nSemoga harimu manis terus ♡\nKalau bingung, tinggal pilih kategori di bawah.\n\n📂 *Cara pakai*\n• Tekan tombol *Lihat Kategori Menu* di bawah\n• Atau ketik command langsung kalau udah hafal\n• Contoh: ketik command dari list biar langsung jalan\n\nButuh bantuan owner? Tag lewat info di atas yaa ♡",
+    "ts": 1791083139
+  },
+  {
+    "msg_id": "3EB0965AF325BE059CCBBA",
+    "text": "🔐 Kamu belum daftar.\nKetik *,daftarbot \u003cnama\u003e \u003cumur\u003e*\nContoh: *,daftarbot Budi 18*",
+    "ts": 1791083147
+  },
+  {
+    "msg_id": "3EB0C5AA65A2B04269673D",
+    "text": "❌ Command *,scanrichmessage* tidak ditemukan.\nMungkin maksudmu *,scanrichmessages*?\n\nKlik tombol di bawah atau ketik *,menu*.",
+    "ts": 1791083151
+  },
+  {
+    "msg_id": "3EB0928AA033D12D675F5F",
+    "text": "agentuser@VM-6-180-ubuntu\n-------------------------\nOS: Ubuntu 24.04.4 LTS (Noble Numbat) x86_64\nHost: CVM (3.0)\nKernel: Linux 6.8.0-101-generic\nUptime: 4 days, 12 hours, 27 mins\nPackages: 941 (dpkg)\nShell: bun\nDisplay (VGA-1): 1024x768 [External]\nCPU: AMD EPYC 9K84 96-Core (2) @ 2.60 GHz\nGPU: Cirrus Logic GD 5446\nMemory: 1.08 GiB / 7.45 GiB (15%)\nSwap: 424.00 KiB / 9.94 GiB (0%)\nDisk (/): 20.50 GiB / 49.10 GiB (42%) - ext4\nLocal IP (eth0): 10.80.6.180/16\nLocale: en_US.UTF-8\n\n\u001b[40m   \u001b[41m   \u001b[42m   \u001b[43m   \u001b[44m   \u001b[45m   \u001b[46m   \u001b[47m   \u001b[m\n\u001b[100m   \u001b[101m   \u001b[102m   \u001b[103m   \u001b[104m   \u001b[105m   \u001b[106m   \u001b[107m   \u001b[m\n",
+    "ts": 1791083239
+  },
+  {
+    "msg_id": "3EB0271C9CF73AB48BEA9B",
+    "text": "🚀 *Speed:* 1860 ms\n\n\u003e ⚡ *Whiteshadow MD - Ultra Fast*",
+    "ts": 1791083337
+  },
+  {
+    "msg_id": "A5E6182C5461CA58FCA732BEEC843FD8",
+    "text": "Ok.",
+    "ts": 1791083342
+  },
+  {
+    "msg_id": "3EB0B3D83B7C262D147122",
+    "text": "🚀 *Speed:* 1083 ms\n\n\u003e ⚡ *Whiteshadow MD - Ultra Fast*",
+    "ts": 1791083344
+  },
+  {
+    "msg_id": "3EB05BAD1ED711E738140E",
+    "text": "🚀 *Speed:* 1860 ms\n\n\u003e ⚡ *Whiteshadow MD - Ultra Fast*",
+    "ts": 1791083349
+  },
+  {
+    "msg_id": "3EB0B59047A5A28E7DDB70",
+    "text": "interactive.js",
+    "ts": 1791083351
+  },
+  {
+    "msg_id": "3EB07432BB27C1F8BE2FCF",
+    "text": "\n🌟 *ʜᴇʟʟᴏ Herxa* 👋\n*ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴡʜɪᴛᴇsʜᴀᴅᴏᴡ ᴍɪɴɪ*\n\n╭─── [ *🤖 ʙᴏᴛ ɪɴғᴏ* ] ────\n│ 👤 *ᴏᴡɴᴇʀ:* ᴄʜᴀᴍᴏᴅ ɴɪᴍsᴀʀᴀ\n│ ⚡ *ᴘʀᴇғɪx:* [ . ]\n│ ⏰ *ᴛɪᴍᴇ:* 8:39:06 AM\n│ 📅 *ᴅᴀᴛᴇ:* Sun, Oct 4, 2026\n│ 🚀 *ᴠᴇʀsɪᴏɴ:* 1.0.5 (beta)\n╰──────────────────\n\n╭── [ *📥 ᴅᴏᴡɴʟᴏᴀᴅᴇʀs \u0026 ᴍᴏᴠɪᴇs* ] ──\n│ 🎥 `.yt` (download song \u0026 video)\n│ 🎞️ `.movie` \u003cmovie name\u003e\n│ 🎬 `.cz` \u003cmovie name\u003e\n│ 📽️ `.sinhalasub` \u003cmovie name\u003e\n│ 🎬 `.moviesublk` \u003cmovie name\u003e\n│ 🍿 `.cinema` \u003cmovie/tv name\u003e\n│ 📝 `.subzlk` \u003cmovie name\u003e\n│ 🧸 `.cartoon` \u003cname\u003e\n│ ⚡ `.download` (download direct link)\n│ 🎵 `.song` \u003cname\u003e\n│ 🎶 `.songhub` \u003cname\u003e\n│ 🎬 `.video` \u003cname\u003e\n│ 🎼 `.spotify` \u003cname\u003e\n│ 🕺 `.tiktok` \u003curl\u003e\n│ 📘 `.fb` \u003curl\u003e\n│ 📸 `.insta` \u003curl\u003e\n│ 💾 `.x/twitter` \u003curl\u003e\n│ 📦 `.mediafire` \u003curl\u003e\n│ 💽 `.gdrive` \u003curl\u003e\n│ ☁️ `.mega` \u003cmega url\u003e\n│ 🔞 `.xham` \u003cname\u003e\n│ 📖 `.pastpaper` \u003cname\u003e\n│ 📥 `.apk` \u003cname\u003e\n│ 📲 `.app` \u003cname\u003e\n│ 🧩 `.getmods` \u003capp name\u003e\n│ 🛠️ `.apkmody` \u003capp name\u003e\n│ 📟 `.web2zip` \u003cweb url\u003e\n╰──────────────────\n\n╭── [ *🔍 sᴇᴀʀᴄʜ \u0026 ᴀɪ* ] ───\n│ 🧠 `.ai` \u003cquestion\u003e\n│ ✨ `.gemini` \u003cquestion\u003e\n│ 🐋 `.deepseek` \u003cquestion\u003e\n│ 💬 `.chatgpt` \u003cquestion\u003e\n│ 🦙 `.llama` \u003cquestion\u003e\n│ 💎 `.gemma` \u003cquestion\u003e\n│ 🧿 `.qwen` \u003cquestion\u003e\n│ 🕉️ `.gita` \u003cquestion\u003e\n│ 🤖 `.ai2` \u003cquestion\u003e\n│ 🫯  `.ai3` \u003cquestion\u003e\n│ ➗ `.math` \u003cquestion\u003e\n│ 🪄 `.gen` \u003cprompt\u003e\n│ 📽️ `.aivideo ` \u003cprompt\u003e\n│ 🪢 `.zerogpt` \u003ctext\u003e\n│ 📜 `.lyrics` \u003csong name\u003e\n│ 🔎 `.google` (google search)\n│ 📖 `.wiki` \u003ctopic\u003e\n│ 👤 `.getpp` (wa number)\n│ 🔍 `.sps` (spotify search)\n│ 🧾 `.yts` (youtube search)\n│ 🫧 `.ts` (tiktok search)\n│ 🌐 `.groupsor` (search groups)\n│ 🖼️ `.img` \u003cimage name\u003e\n│ 📌 `.pinterest` \u003cname\u003e\n│ 🔠 `.fancy` \u003ctext\u003e\n│ 🔡 `.fancy2` \u003ctext\u003e\n│ 🎇 `.getsticker` \u003cname\u003e\n╰──────────────────\n\n╭── [ *🛠️ ᴛᴏᴏʟs* ] ───\n│ 🕹️ `.games` (all games list)\n│ 🌐 `.fetch` \u003capi url\u003e\n│ 🔗 `.groupadd` (add from groupsor)\n│ 🖼️ `.sticker` (sticker maker)\n│ 🔒 `.setlock` (sticker locker)\n│ 🪄 `.premium` (normal sticker \u003e\u003e\u003e premium)\n│ ✏️ `.take` (sticker editer)\n│ ⚡ `.ping2`\n│ 👥 `.ginfo` (gruop info)\n│ 📖 `.readmore` \u003ctext\u003e\n│ 🌦️ `.weather` \u003ccity name\u003e\n│ 📱 `.imei` \u003cimei num\u003e\n│ 🖇️ `.shorturl` \u003clongurl\u003e\n│ 📨 `.tempmail`\n│ 📬 `.inbox` \u003cemail id\u003e\n│ 🖥️ `.ss` \u003cweb link\u003e\n│ 🎰 `.fakeff` \u003cnickname\u003e\n│ 🌐 `.translate` \u003clang\u003e \u003ctext\u003e\n│ 🔢 `.calculater` (miniapp)\n╰──────────────────\n\n╭── [ *📰 ɴᴇᴡs \u0026 ᴜᴘᴅᴀᴛᴇs* ] ─\n│ 🌍 `.worldnews`\n│ 🇱🇰 `.sinhalanews`\n│ 📺 `.derana`\n│ 🎙️ `.news1st`\n│ 📰 `.bbc`\n╰──────────────────\n\n╭── [ *⚙️ ᴍᴀɪɴ \u0026 ᴏᴡɴᴇʀ* ] ──\n│ 🔄 `.forward` \u003cjid\u003e\n│ ✏️ `.rename`\n│ 🔗 `.pair`\n│ 📡 `.ping`\n│ 📢 `.hidetag`\n│ ♻️ `.alive`\n│ 🪪 `.jid`\n│ 🧑‍💻 `.owner`\n│ ⚙️ `.setting`\n│ 📝 `.settings`\n│ 🚫 `.block`\n│ 🔓 `.unblock`\n│ 👁️ `.vv`\n│ 👀 `.vv2`\n│ 📥 `.save`\n│ 🫟 `.gs` (upload group status)\n│ ❇️ `.gs2` (custom audience)\n│ 📜 `.grouplist`\n│ 🎤 `.csong`\n│ 📤 `.upload`\n│ 🤖 `.addai` (add metaai)\n│ ➕ `.join`\n│ ➖ `.leave`\n│ 👥 `.add` \u003cnumber\u003e\n│ ❌ `.kick` \u003c@user\u003e\n│ 💥 `.kickall`\n│ ⭐ `.promote` \u003c@user\u003e\n│ ⬇️ `.demote` \u003c@user\u003e\n│ 🔗 `.glink`\n│ ♻️ `.revoke`\n│ 🔇 `.mute`\n│ 🔊 `.unmute`\n╰──────────────────\n\n\u003e *💡 ᴛɪᴘ: ᴛʏᴘᴇ .\u003cᴄᴏᴍᴍᴀɴᴅ\u003e ᴛᴏ sᴇᴇ ʜᴏᴡ ᴛᴏ ᴜsᴇ ɪᴛ.*\n",
+    "ts": 1791083357
+  },
+  {
+    "msg_id": "3EB0B7EF5451B20BD31549",
+    "text": "❌ *කරුණාකර API URL එකක් ලබා දෙන්න.*\n\n\u003e උදා: .fetch https://api.github.com/users/github",
+    "ts": 1791083362
+  },
+  {
+    "msg_id": "ZAXINDEP-4C32-ANJIR",
+    "text": "https://rezero.fandom.com/wiki/Emilia\n🖥️ *SERVER INFORMATION*\n\n*Hardware*\n• CPU : Intel(R) Xeon(R) CPU E5-1620 v2 @ 3.70GHz\n• Core : 8\n• Clock : 3700 MHz\n• Architecture : x64\n• Endianness : LE\n\n*Memory*\n• Total : 31.30 GB\n• Used : 24.22 GB\n• Free : 7.08 GB\n\n*Operating System*\n• Platform : linux\n• Type : Linux\n• Release : 6.1.0-53-amd64\n• Hostname : 54122bee-c942-4152-86e7-d0845d6d0428\n• Uptime : 2d 10h 54m 41s\n\n*Runtime*\n• Node.js : v24.20.0\n• V8 : 13.6.233.17-node.53\n• PID : 50\n• Architecture : x64\n• Heap Limit : 0.25 GB\n\n*Process Memory*\n• RSS : 117.14 MB\n• Heap Used : 39.84 MB\n• Heap Total : 43.39 MB\n• External : 16.01 MB",
+    "ts": 1791083420
+  },
+  {
+    "msg_id": "3EB091C17EBD29C035BE70",
+    "text": "✅ *teslistct* terkirim\nItem: *5*\nTipe: viewOnce + interactive + bloksWidget (im_a2ui)\n\n_Kalau bubble kosong / tidak render, zapo-js mungkin strip field bloksWidget — kirim log error-nya._",
+    "ts": 1791083429
+  },
+  {
+    "msg_id": "3EB04DC0F13A9C499STARFALL289CE",
+    "text": "╭══════════════⊷\n┃ ❍ 𝐏𝐢𝐧𝐠 : 1049ms\n┃ ❍ 𝐔𝐬𝐞𝐫 : Ashish\n┃ ❍ 𝐃𝐚𝐭𝐞 : 04/10/2026\n┃ ❍ 𝐔𝐩𝐭𝐢𝐦𝐞 : 1h  58s\n┃ ❍ 𝐏𝐥𝐮𝐠𝐢𝐧 : 186\n┃ ❍ 𝐕𝐞𝐫𝐬𝐢𝐨𝐧 : 0.0.1\n┃ ❍ 𝐑𝐚𝐦 : 6.7 / 15.2 GB\n┃ ❍ 𝐂𝐩𝐮 : 2.40GHz\n┃ ❍ 𝐏𝐫𝐞𝐟𝐢𝛔 : .\n┃ ❍ 𝐒𝐞𝐫𝐯𝐞𝐫 : 6877.4 MB\n╰═════════════════⊷\n‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎\n*`〄⟩ 𝐆𝐑𝐎𝐔𝐏 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐀𝐝𝐝\n┃ ❍ .𝐀𝐝𝐝𝐦𝐞𝐭𝐚\n┃ ❍ .𝐀𝐧𝐭𝐢𝐛𝐚𝐝𝐢𝐦𝐠\n┃ ❍ .𝐀𝐧𝐭𝐢𝐜𝐚𝐥𝐥\n┃ ❍ .𝐀𝐧𝐭𝐢𝐜𝐚𝐫𝐨𝐮𝐬𝐞𝐥\n┃ ❍ .𝐀𝐧𝐭𝐢𝐝𝐞𝐥𝐞𝐭𝐞\n┃ ❍ .𝐀𝐧𝐭𝐢𝐟𝐨𝐫𝐞𝐢𝐠𝐧\n┃ ❍ .𝐀𝐧𝐭𝐢𝐥𝐢𝐧𝐤\n┃ ❍ .𝐀𝐧𝐭𝐢𝐦𝐞𝐧𝐭𝐢𝐨𝐧\n┃ ❍ .𝐀𝐧𝐭𝐢𝐦𝐬𝐠\n┃ ❍ .𝐀𝐧𝐭𝐢𝐫𝐢𝐜𝐡\n┃ ❍ .𝐀𝐧𝐭𝐢𝐬𝐭𝐢𝐜𝐤𝐞𝐫\n┃ ❍ .𝐀𝐧𝐭𝐢𝐯𝐢𝐫𝐮𝐬\n┃ ❍ .𝐁𝐚𝐧\n┃ ❍ .𝐂𝐣𝐨𝐢𝐧\n┃ ❍ .𝐂𝐥𝐞𝐚𝐫𝐦𝐞𝐧𝐭𝐢𝐨𝐧\n┃ ❍ .𝐂𝐥𝐨𝐬𝐞\n┃ ❍ .𝐃𝐞𝐥\n┃ ❍ .𝐃𝐞𝐦𝐨𝐭𝐞\n┃ ❍ .𝐃𝐠𝐜\n┃ ❍ .𝐅𝐫𝐦𝐯\n┃ ❍ .𝐅𝐫𝐦𝐯𝐩𝐢𝐜𝐤\n┃ ❍ .𝐅𝐮𝐥𝐥𝐠𝐩\n┃ ❍ .𝐆𝐦𝐞𝐧\n┃ ❍ .𝐆𝐦𝐨𝐝𝐞\n┃ ❍ .𝐆𝐬𝐭𝐚𝐭𝐮𝐬\n┃ ❍ .𝐆𝐬𝐯2\n┃ ❍ .𝐆𝐭𝐚𝐛𝐥𝐞\n┃ ❍ .𝐊𝐢𝐜𝐤\n┃ ❍ .𝐌𝐞𝐞\n┃ ❍ .𝐎𝐩𝐞𝐧\n┃ ❍ .𝐏𝐢𝐧\n┃ ❍ .𝐏𝐫𝐨𝐦𝐨𝐭𝐞\n┃ ❍ .𝐒𝐞𝐭𝐠𝐝𝐞𝐬𝐜\n┃ ❍ .𝐒𝐞𝐭𝐠𝐧𝐚𝐦𝐞\n┃ ❍ .𝐒𝐩𝐩\n┃ ❍ .𝐒𝐭𝐚𝐠\n┃ ❍ .𝐓𝐚𝐠\n┃ ❍ .𝐓𝐚𝐠𝐚𝐝𝐦𝐢𝐧\n┃ ❍ .𝐓𝐚𝐠𝐚𝐥𝐥\n┃ ❍ .𝐓𝐚𝐠𝐭𝐚𝐛𝐥𝐞\n┃ ❍ .𝐔𝐧𝐛𝐚𝐧\n┃ ❍ .𝐔𝐧𝐩𝐢𝐧\n┃ ❍ .𝐖𝐞𝐥𝐜𝐨𝐦𝐞\n╰════════════════⊷\n*`〄⟩ 𝐎𝐖𝐍𝐄𝐑 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐀𝐝𝐝𝐩𝐫𝐞𝐦\n┃ ❍ .𝐀𝐥𝐰𝐚𝐲𝐬𝐨𝐧𝐥𝐢𝐧𝐞\n┃ ❍ .𝐀𝐮𝐭𝐨𝐫𝐞𝐚𝐜𝐭\n┃ ❍ .𝐀𝐮𝐭𝐨𝐫𝐞𝐜𝐨𝐫𝐝𝐢𝐧𝐠\n┃ ❍ .𝐀𝐮𝐭𝐨𝐬𝐞𝐞𝐧\n┃ ❍ .𝐀𝐮𝐭𝐨𝐭𝐲𝐩𝐢𝐧𝐠\n┃ ❍ .𝐁𝐥𝐨𝐜𝐤\n┃ ❍ .𝐁𝐥𝐨𝐜𝐤𝐥𝐢𝐬𝐭\n┃ ❍ .𝐂𝐡𝐬𝐭𝐬\n┃ ❍ .𝐂𝐥𝐞𝐚𝐫𝐝𝐢𝐬𝐤\n┃ ❍ .𝐂𝐦𝐮𝐬𝐢𝐜\n┃ ❍ .𝐂𝐩𝐨𝐬𝐭\n┃ ❍ .𝐂𝐫𝐦\n┃ ❍ .𝐂𝐬𝐨𝐧𝐠\n┃ ❍ .𝐃𝐞𝐥𝐩𝐫𝐞𝐦\n┃ ❍ .𝐃𝐞𝐥𝐬𝐮𝐝𝐨\n┃ ❍ .𝐅𝐮𝐥𝐥𝐩𝐩\n┃ ❍ .𝐋𝐢𝐬𝐭𝐠𝐜\n┃ ❍ .𝐋𝐢𝐬𝐭𝐩𝐫𝐞𝐦\n┃ ❍ .𝐌𝐨𝐝𝐞\n┃ ❍ .𝐎𝐰𝐧𝐞𝐫\n┃ ❍ .𝐎𝐰𝐧𝐞𝐫2\n┃ ❍ .𝐏𝐚𝐢𝐫\n┃ ❍ .𝐏𝐚𝐲\n┃ ❍ .𝐏𝐚𝐲2\n┃ ❍ .𝐏𝐚𝐲3\n┃ ❍ .𝐏𝐚𝐲𝐭𝐞𝐬𝐭\n┃ ❍ .𝐑𝐮𝐧\n┃ ❍ .𝐒𝐞𝐭𝐬𝐮𝐝𝐨\n┃ ❍ .𝐒𝐭𝐬\n┃ ❍ .𝐒𝐭𝐬𝐯𝐢𝐞𝐰\n┃ ❍ .𝐒𝐮𝐝𝐨𝐥𝐢𝐬𝐭\n┃ ❍ .𝐒𝐯\n┃ ❍ .𝐓𝐬𝐞𝐬𝐬𝐢𝐨𝐧\n┃ ❍ .𝐔𝐧𝐛𝐥𝐨𝐜𝐤\n┃ ❍ .𝐙𝐮𝐬𝐡𝐲\n╰════════════════⊷\n*`〄⟩ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐂𝐢𝐦𝐠\n┃ ❍ .𝐃𝐞𝐥𝐦𝐤𝐯\n┃ ❍ .𝐅𝐛\n┃ ❍ .𝐇𝐝\n┃ ❍ .𝐇𝐝𝐩𝐫𝐨\n┃ ❍ .𝐈𝐠\n┃ ❍ .𝐋𝐲𝐫𝐢𝐜𝐬\n┃ ❍ .𝐌𝐞𝐝𝐢𝐚𝐟𝐢𝐫𝐞\n┃ ❍ .𝐌𝐨𝐯𝐢𝐞\n┃ ❍ .𝐌𝐮𝐬𝐢𝐜𝐢𝐧𝐟𝐨\n┃ ❍ .𝐏𝐢𝐧𝐭𝐞𝐫𝐞𝐬𝐭\n┃ ❍ .𝐏𝐥𝐚𝐲\n┃ ❍ .𝐏𝐥𝐚𝐲2\n┃ ❍ .𝐑𝐩𝐥𝐚𝐲\n┃ ❍ .𝐑𝐬𝐨𝐧𝐠\n┃ ❍ .𝐒𝐨𝐮𝐧𝐝𝐜𝐥𝐨𝐮𝐝\n┃ ❍ .𝐓𝐢𝐤𝐭𝐨𝐤\n┃ ❍ .𝐓𝐬𝐭𝐢𝐜𝐤\n┃ ❍ .𝐕𝐯\n┃ ❍ .𝐘𝐭𝐥𝐢𝐧𝐤\n┃ ❍ .𝐘𝐭𝐦𝐩3\n┃ ❍ .𝐘𝐭𝐦𝐩4\n╰════════════════⊷\n*`〄⟩ 𝐂𝐎𝐍𝐕𝐄𝐑𝐓𝐄𝐑 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐁𝐚𝐬𝐬\n┃ ❍ .𝐁𝐥𝐨𝐰𝐧\n┃ ❍ .𝐂𝐡𝐢𝐩𝐦𝐮𝐧𝐤\n┃ ❍ .𝐂𝐡𝐨𝐫𝐮𝐬\n┃ ❍ .𝐃𝐞𝐞𝐩\n┃ ❍ .𝐃𝐞𝐦𝐨𝐧\n┃ ❍ .𝐄𝐚𝐫𝐫𝐚𝐩𝐞\n┃ ❍ .𝐄𝐜𝐡𝐨\n┃ ❍ .𝐅𝐚𝐬𝐭\n┃ ❍ .𝐅𝐚𝐭\n┃ ❍ .𝐅𝐥𝐚𝐧𝐠𝐞𝐫\n┃ ❍ .𝐍𝐢𝐠𝐡𝐭𝐜𝐨𝐫𝐞\n┃ ❍ .𝐍𝐨𝐫𝐦𝐚𝐥𝐢𝐳𝐞\n┃ ❍ .𝐏𝐡𝐚𝐬𝐞𝐫\n┃ ❍ .𝐑𝐚𝐝𝐢𝐨\n┃ ❍ .𝐑𝐞𝐯𝐞𝐫𝐛\n┃ ❍ .𝐑𝐞𝐯𝐞𝐫𝐬𝐞\n┃ ❍ .𝐑𝐨𝐛𝐨𝐭\n┃ ❍ .𝐒𝐥𝐨𝐰\n┃ ❍ .𝐒𝐦𝐨𝐨𝐭𝐡\n┃ ❍ .𝐀𝐢𝐬𝐭𝐢𝐜𝐤𝐞𝐫\n┃ ❍ .𝐏𝐫𝐞𝐦𝐩𝐚𝐜𝐤\n┃ ❍ .𝐏𝐫𝐞𝐦𝐬𝐭𝐢𝐜𝐤𝐞𝐫\n┃ ❍ .𝐒𝐭𝐢𝐜𝐤𝐞𝐫\n┃ ❍ .𝐓𝐨𝐢𝐦𝐠\n┃ ❍ .𝐓𝐨𝐦𝐩3\n┃ ❍ .𝐓𝐭𝐬\n┃ ❍ .𝐔𝐫𝐥\n┃ ❍ .𝐕𝐨\n╰════════════════⊷\n*`〄⟩ 𝐌𝐄𝐃𝐈𝐀 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐁𝐫𝐚𝐭\n┃ ❍ .𝐁𝐫𝐚𝐭2\n┃ ❍ .𝐂𝐢𝐫𝐜𝐥𝐞\n┃ ❍ .𝐄𝐝𝐢𝐭2\n┃ ❍ .𝐌𝐨𝐭𝐢𝐨𝐧𝐩𝐢𝐜\n┃ ❍ .𝐍𝐮𝐝𝐞\n┃ ❍ .𝐑𝐞𝐚𝐠𝐢𝐫𝐬𝐭𝐢𝐜𝐤𝐞𝐫\n┃ ❍ .𝐒𝐦𝐢𝐤𝐮\n┃ ❍ .𝐕𝐜𝐢𝐫𝐜𝐥𝐞\n┃ ❍ .𝐕𝐢𝐝𝐦𝐮𝐬𝐢𝐜\n╰════════════════⊷\n*`〄⟩ 𝐓𝐎𝐎𝐋𝐒 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐂𝐡𝐫\n┃ ❍ .𝐂𝐤𝐛𝐚𝐧\n┃ ❍ .𝐅𝐞𝐭𝐜𝐡𝐰𝐞𝐛\n┃ ❍ .𝐈𝐝\n┃ ❍ .𝐉𝐢𝐝\n┃ ❍ .𝐋𝐢𝐝\n┃ ❍ .𝐌𝐲𝐥𝐢𝐝\n┃ ❍ .𝐖𝐞𝐚𝐭𝐡𝐞𝐫\n╰════════════════⊷\n*`〄⟩ 𝐅𝐔𝐍 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐂𝐚𝐭\n┃ ❍ .𝐂𝐫𝐲\n┃ ❍ .𝐂𝐮𝐝𝐝𝐥𝐞\n┃ ❍ .𝐁𝐮𝐥𝐥𝐲\n┃ ❍ .𝐇𝐮𝐠\n┃ ❍ .𝐀𝐰𝐨𝐨\n┃ ❍ .𝐋𝐢𝐜𝐤\n┃ ❍ .𝐏𝐚𝐭\n┃ ❍ .𝐒𝐦𝐮𝐠\n┃ ❍ .𝐁𝐨𝐧𝐤\n┃ ❍ .𝐘𝐞𝐞𝐭\n┃ ❍ .𝐁𝐥𝐮𝐬𝐡\n┃ ❍ .𝐇𝐚𝐧𝐝𝐡𝐨𝐥𝐝\n┃ ❍ .𝐇𝐢𝐠𝐡𝐟𝐢𝐯𝐞\n┃ ❍ .𝐍𝐨𝐦\n┃ ❍ .𝐖𝐚𝐯𝐞\n┃ ❍ .𝐒𝐦𝐢𝐥𝐞\n┃ ❍ .𝐖𝐢𝐧𝐤\n┃ ❍ .𝐇𝐚𝐩𝐩𝐲\n┃ ❍ .𝐆𝐥𝐨𝐦𝐩\n┃ ❍ .𝐁𝐢𝐭𝐞\n┃ ❍ .𝐏𝐨𝐤𝐞\n┃ ❍ .𝐂𝐫𝐢𝐧𝐠𝐞\n┃ ❍ .𝐃𝐚𝐧𝐜𝐞\n┃ ❍ .𝐊𝐢𝐥𝐥\n┃ ❍ .𝐒𝐥𝐚𝐩\n┃ ❍ .𝐊𝐢𝐬𝐬\n┃ ❍ .𝐇𝐚𝐧𝐝\n┃ ❍ .𝐇𝐞𝐚𝐫𝐭\n┃ ❍ .𝐌𝐨𝐨𝐧\n┃ ❍ .𝐌𝐨𝐨𝐧2\n┃ ❍ .𝐒𝐚𝐝\n┃ ❍ .𝐒𝐤𝐲\n╰════════════════⊷\n*`〄⟩ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐀𝐥𝐢𝐯𝐞\n┃ ❍ .𝐇𝐞𝐥𝐩\n┃ ❍ .𝐌𝐞𝐧𝐮\n┃ ❍ .𝐎𝐦𝐞𝐧𝐮\n┃ ❍ .𝐏𝐢𝐧𝐠\n┃ ❍ .𝐑𝐮𝐧𝐭𝐢𝐦𝐞\n╰════════════════⊷\n*`〄⟩ 𝐁𝐕𝐆 -𝐕1 |-𓋜`*\n╭══════════════⊷\n┃ ❍ .𝐆𝐜𝐛𝐮𝐠\n╰════════════════⊷",
+    "ts": 1791088216
+  },
+  {
+    "msg_id": "3EB0FC3282FF9304300276",
+    "text": "contoh:\npin furina\npin furina -u (list url + tombol copy)\npin \u003curl pin / url pinimg\u003e -all (semua ukuran/ratio + tombol copy)\npin -d \u003curl pin\u003e (download media)",
+    "ts": 1791090087
+  },
+  {
+    "msg_id": "PP1791090009605",
+    "text": "https://wa.me\n\ntrusted user\n\n[1] Star Studio Code\n\u003e 114251163242733@lid\n\n[2] Meta Ai\n\u003e 867051314767696@lid\n\n[3] WhatsApp.Com/WhatsApp.Net\n\u003e 99429314994409@lid\n\n[4] WhatsApp.Com\n\u003e 7822007881962@lid\n\n[5] Star Studio Code 🎭\n\u003e 52120233443422@lid\n\n[6] Tukang Ngasih Kado\n\u003e 209964543009014@lid\n\n[7] Fgṣi JC | NB‮\n\u003e 229016732737759@lid\n\n[8] iKayzi!?\n\u003e 219125607571523@lid\n\n\nblocked user\n\n[1] nanaly baru lulus esde😎\n\u003e 99493605326943@lid\n\n[2] mina.dev\n\u003e 75097603895322@lid",
+    "ts": 1791090092
+  },
+  {
+    "msg_id": "3EB096B5C223E1C2AFE897",
+    "text": "udah dikirim ulang, id baru: 3EB0CED0C0464737F31922",
+    "ts": 1791090226
+  },
+  {
+    "msg_id": "3EB0CED0C0464737F31922",
+    "text": "https://keyrafara.com\n\nlist of menu categories\n▨  *core*\n▨  *downloader*\n▨  *search*\n▨  *tools*",
+    "ts": 1791090229
+  },
+  {
+    "msg_id": "CLUTCH-929A6C23081B",
+    "text": "👑 *PROMOSI ADMIN*\nuser: @96920299151375\nsekarang menjadi *Admin Grup*\noleh: @208581496422476",
+    "ts": 1791090759
+  },
+  {
+    "msg_id": "3EB0FA7E387DD8A6EB1FFD",
+    "text": "https://cos.kiracloud.me/image.4cb8b559.jpg",
+    "ts": 1791090886
+  },
+  {
+    "msg_id": "3EB0554526A97F9EA21939",
+    "text": "*JVKE - golden hour (official music video)*\nchannel: JVKE\ndurasi: 3:52\nlink: https://youtube.com/watch?v=PEM0Vs8jf1w",
+    "ts": 1791090889
+  },
+  {
+    "msg_id": "3EB08C779CB90EE4AA9F14",
+    "text": "ꜱᴛᴋ ᴀꜱꜱɪꜱᴛᴀɴᴛ",
+    "ts": 1791091113
+  },
+  {
+    "msg_id": "3EB015150E688BE59575E9",
+    "text": "cute😀#fyp #viral #pets #hamster#cute",
+    "ts": 1791091126
+  },
+  {
+    "msg_id": "3EB0D14D649B3B0F3AB534",
+    "text": "ꜱᴛᴋ ᴀꜱꜱɪꜱᴛᴀɴᴛ",
+    "ts": 1791091216
+  },
+  {
+    "msg_id": "3EB02651924A16CEA94E3A",
+    "text": "[ ʙ ᴏ ᴛ  ɪ ɴ ꜰ ᴏ ]\n ∘ ɴᴀᴍᴀ   : ʏᴜɪ-ᴀꜱꜱɪꜱᴛᴀɴᴛ\n ∘ ᴜᴘᴛɪᴍᴇ : 37 ᴍᴇɴɪᴛ, 31 ᴅᴇᴛɪᴋ\n ∘ ᴘʟᴜɢɪɴ : 209 ᴍᴏᴅᴜʟᴇꜱ\n ∘ ᴛʏᴘᴇ   : ᴇꜱᴍ ᴄᴀꜱᴇ x ᴘʟᴜɢɪɴ\n ∘ ᴍᴏᴅᴇ   : ꜱᴇʟꜰ\n ∘ ꜱᴘʀ    : ᴏꜰꜰ\n\n[ ᴜ ꜱ ᴇ ʀ  ɪ ɴ ꜰ ᴏ ]\n ∘ ɴᴀᴍᴀ   : ɪᴇɴᴢ\n ∘ ɴᴏᴍᴏʀ  : @6285899292940\n ∘ ꜱᴛᴀᴛᴜꜱ : ᴅᴇᴠᴇʟᴏᴘᴇʀ\n\n[ ꜰ ᴏ ʀ ᴍ ᴀ ᴛ ]\n ⓟ ᴘʀᴇᴍɪᴜᴍ  ⁓  ⓒ ᴄᴏɪɴꜱ\n ⓐ ᴀᴅᴍɪɴ    ⁓  ⓞ ᴏᴡɴᴇʀ\n\n\u003e _ꜱᴇɴᴛᴜʜ ᴛᴏᴍʙᴏʟ ᴅɪ ʙᴀᴡᴀʜ ᴜɴᴛᴜᴋ ᴍᴇɴᴊᴇʟᴀᴊᴀʜ ᴍᴇɴᴜ._",
+    "ts": 1791091231
+  },
+  {
+    "msg_id": "3EB0601F2BDC34D79C30BA",
+    "text": "ꜱᴛᴋ ᴀꜱꜱɪꜱᴛᴀɴᴛ",
+    "ts": 1791091254
+  },
+  {
+    "msg_id": "3EB0FDF4C1CC574D010F64",
+    "text": "ꜱᴛᴋ ᴀꜱꜱɪꜱᴛᴀɴᴛ",
+    "ts": 1791091260
+  },
+  {
+    "msg_id": "3EB07034C91B6C052ECD3F",
+    "text": "ꜱᴛᴋ ᴀꜱꜱɪꜱᴛᴀɴᴛ",
+    "ts": 1791091263
+  },
+  {
+    "msg_id": "3EB004EBC2F4CA1A69222E",
+    "text": "Format: .pay \u003cproduk\u003e \u003charga\u003e\n\nContoh:\n\u003e .pay pulsa 25rb\n\u003e .pay game's 50000\n\u003e .pay topup 15k\n\nBatal transaksi: reply pesan QR + ketik `cancel`",
+    "ts": 1791092517
+  },
+  {
+    "msg_id": "3EB0288E121EB90A8DAB2A",
+    "text": "元 - jarrxz",
+    "ts": 1791099193
+  },
+  {
+    "msg_id": "3EB076C66329B06C04E9EE",
+    "text": "```🖥️ SYSTEM MONITOR```\n    \n📡 *PERFORMANCE*\n- CPU : 🟢 20.8% [██░░░░░░░░]\n- RAM : 🟢 63.7% [██████░░░░]\n- 1.27 GB / 2.00 GB\n- Disk : 🟢 54.4% [█████░░░░░]\n-  5.31 GB / 9.75 GB\n\n💻 *HARDWARE*\n- CPU : unknown\n- Cores : 1 core\n- Speed : 2.50 GHz\n- Load : 4.92 | 5.48 | 5.71 (1/5/15m)\n\n🌐 *NETWORK*\n- Total ↓ : 1.52 GB\n- Total ↑ : 95.22 MB \n\n🔧 *SYSTEM INFO*\n- Host : jarrxz\n- OS : Ubuntu 24.04 LTS\n- Archl : x64\n- Kernel : 7.0.14-5-pve\n- Node.js : v24.21.0\n\n🤖 *INFO BOT*\n- Respons : 🔴 509 ms\n- Runtime bot : 26m 46s\n- Runtime VPS : 1d 4h 4m",
+    "ts": 1791100275
+  },
+  {
+    "msg_id": "3EB01D7E97AF1B2F21F19E",
+    "text": "📌 *.crm* butuh pesan yang di-reply.\n\n*Command:*\n• .crm → Generate file relay siap pakai dari pesan\n• .crm #rowid → Generate file relay langsung dari SQLite\n• .crm2 → Kirim raw + relay code via tombol interaktif\n• .adn → Ambil AdditionalNodes dari pesan\n• .insp → Ambil raw payload (JSON) pesan\n• .relay → Langsung relay ulang pesan beserta child-nya\n• .lastchat \u003cjumlah\u003e → Tampilkan pesan terakhir berdasarkan timestamp\n\n*Flag opsional:*\n• -raw → Export raw JSON pesan\n• -message → Export bagian message saja\n• -relay → Export kode relay\n• -file → Kirim hasil export sebagai dokumen\n• -snip→ Tampilkan hasil sebagai code snippet\n• -nofilter→ Jangan filter AdditionalNodes\n• -nochild → Matikan pencarian child\n• -noproto → Skip deep search protocolMessage/secretEncryptedMessage\n\nContoh:\n.crm\n.crm #4825\n.crm #4825 -snip\n.insp -noproto -raw -file\n.relay -nochild\n.lastchat\n.lastchat 10",
+    "ts": 1791103190
+  },
+  {
+    "msg_id": "3EB0F7AF1F0STARFALL41A07F0DD9C",
+    "text": "sendPaymentMessage-lboifdka.js",
+    "ts": 1791110305
+  },
+  {
+    "msg_id": "PP1791113228308",
+    "text": "https://wa.me\n\n❌ *Akses Ditolak:* Command ini khusus Admin Group!",
+    "ts": 1791113237
+  },
+  {
+    "msg_id": "ACEC102A9351FA92A585EBF0D3DA9E0A",
+    "text": "‎",
+    "ts": 1791113571
+  },
+  {
+    "msg_id": "3EB0DD3F4DF3349628DBED",
+    "text": " ",
+    "ts": 1791113681
+  },
+  {
+    "msg_id": "3EB076A7C2A9AAF3563BAE",
+    "text": "extendedText.js",
+    "ts": 1791113684
+  },
+  {
+    "msg_id": "3EB0A8BE542776625612DC",
+    "text": " ",
+    "ts": 1791113922
+  },
+  {
+    "msg_id": "3EB059876E2D9D99ADCA74",
+    "text": "extendedText.js",
+    "ts": 1791113933
+  },
+  {
+    "msg_id": "3EB0020589448AA1FB84A9",
+    "text": "udah ce er rem ya",
+    "ts": 1791113940
+  },
+  {
+    "msg_id": "3EB0B9DFC218B1F6A66044",
+    "text": "Sedang diproses, mohon tunggu sebentar ya kak... ⏳",
+    "ts": 1791113948
+  },
+  {
+    "msg_id": "3EB0C02AF29E6D69F0A810",
+    "text": "📋 3 pesan (dbStore, orderId permanen)\n\n1. [order #167180] extendedTextMessage | 4/10/2026, 18.36.22\nsalkir\n\n2. [order #167171] extendedTextMessage | 4/10/2026, 18.36.00\n \n\n3. [order #167162] extendedTextMessage | 4/10/2026, 18.35.45\n︳\n︳\n︳\ny̳a̳y̳a̳ ̳i̳ ̳a̳g̳r̳e̳e̳ ̳v̳e̳r̳y̳ ̳m̳u̳c̳h̳\n\n🗑️ 3 pesan yang udah dihapus\n\n1. [order #167175] extendedTextMessage | 4/10/2026, 18.36.09\nconst VERSION = '4.7';\nimport { generateWAMessageFromContent, prepareWAMessageMe...\n\n2. [order #166502] extendedTextMessage | 4/10/2026, 18.21.06\ntak tersedia\n\n3. [order #166443] extendedTextMessage | 4/10/2026, 18.19.13\ntest",
+    "ts": 1791114442
+  },
+  {
+    "msg_id": "3EB0075CBDFA351B2636E3",
+    "text": "Stealth mode: *off*",
+    "ts": 1791116360
+  },
+  {
+    "msg_id": "3EB07ED692124073A4F7CA",
+    "text": "botForwardedMessage.js",
+    "ts": 1791150872
+  },
+  {
+    "msg_id": "3EB0B8E222EAE395031675",
+    "text": "🚩 𝗠𝗮𝗮𝗳, 𝗣𝗲𝗿𝗶𝗻𝘁𝗮𝗵 𝗜𝗻𝗶 𝗛𝗮𝗻𝘆𝗮 𝗨𝗻𝘁𝘂𝗸 *𝗗𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿*.",
+    "ts": 1791151197
+  },
+  {
+    "msg_id": "3EB0E15DDB11942A2B9295",
+    "text": "richResponseMessage.js",
+    "ts": 1791151198
+  },
+  {
+    "msg_id": "3EB0FDBFB182F674EC49C7",
+    "text": "richResponseMessage_by_alya.js",
+    "ts": 1791151292
+  }
+]
