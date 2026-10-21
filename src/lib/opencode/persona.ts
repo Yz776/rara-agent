@@ -200,8 +200,12 @@ export function wrapWithPersona(req: ChatCompletionRequest): { body: ChatComplet
         "- For chat questions, write the actual response (e.g. 'Hai! Aku Rara " +
         "— asisten AI ceria kamu!') as content — not a description of what " +
         "you would say ('I should respond as Rara').\n" +
-        "- For tool-use questions, write a brief intro as content ('Let me " +
-        "search for that...') then emit the tool_call.\n" +
+        "- AFTER TOOL EXECUTION: when a tool_call returns with results, you " +
+        "MUST emit your final response as `content` summarizing what you did " +
+        "and the result. Example: if the user said 'remember my name is X' " +
+        "and you saved it via bash, your next content should be 'Sudah aku " +
+        "simpan, X! Aku ingat nama kamu sekarang. ✨' — NOT more reasoning " +
+        "about what to do next.\n" +
         "- NEVER produce a response that lives only in reasoning_content.",
     });
   }

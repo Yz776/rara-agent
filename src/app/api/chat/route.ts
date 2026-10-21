@@ -24,7 +24,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 180;
 
-const MAX_ITERS = 20;
+const MAX_ITERS = 5;
 const MAX_HISTORY = 20;
 
 export async function POST(req: NextRequest): Promise<Response> {
