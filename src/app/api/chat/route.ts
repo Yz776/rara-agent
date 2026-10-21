@@ -322,8 +322,23 @@ export async function POST(req: NextRequest): Promise<Response> {
             allMessages,
             model,
             (delta) => {
-              if (delta.reasoning) send({ type: 'thinking', text: delta.reasoning, iter });
+              // Convert reasoning_content → content (prevents UI duplication).
+              // opencode.ai free-tier models emit ALL output as reasoning_content
+              // and never produce content deltas. If we send separate `thinking`
+              // + `content` events with the same text, the UI shows the SAME
+              // text TWICE (collapsed thinking section + response bubble).
+              // User feedback: "Kok isi thinking sama kayak respon nya harusnya
+              // kan berbeda" ("Why is the thinking content the same as the
+              // response? They should be different.")
+              //
+              // Fix: when the model emits reasoning_content, send it as a
+              // `content` event (visible in the response bubble). When the
+              // model emits real content (paid API tier), send it as content
+              // too. We NEVER send `thinking` events — there's no separate
+              // thinking section, just the response bubble with the model's
+              // output (whether it's actual content or reasoning-as-content).
               if (delta.content) send({ type: 'content', text: delta.content, iter });
+              else if (delta.reasoning) send({ type: 'content', text: delta.reasoning, iter });
             },
             abortCtrl.signal,
           );
@@ -378,17 +393,21 @@ export async function POST(req: NextRequest): Promise<Response> {
         });
         lastAssistantId = persistedAssistant.id;
 
-        // ── REASONING-ONLY RE-EMIT ───────────────────────────────────────────
-        // If callKrouterStream returned content but never emitted any `content`
-        // SSE events during streaming (because the model emitted everything as
-        // `reasoning_content` and callKrouterStream's reasoning-as-content
-        // fallback kicked in AFTER the stream ended), the chat UI bubble is
-        // EMPTY — the UI only renders content events that fire during
-        // streaming, not the final result.content. Re-emit the fallback
-        // content here so the UI shows SOMETHING as the assistant's answer.
-        if (result.content_from_reasoning_fallback && result.content) {
-          send({ type: 'content', text: result.content, iter });
-        }
+        // ── NO RE-EMIT — prevent thinking/response duplication ──────────────
+        // Previously: when callKrouterStream returned content_from_reasoning_fallback
+        // (model emitted only reasoning_content, no content deltas), we re-emitted
+        // the reasoning-as-content as a `content` SSE event. This caused the UI
+        // to display the SAME text TWICE — once as the collapsed "thinking"
+        // section, once as the assistant bubble. User feedback:
+        //   "Kok isi thinking sama kayak respon nya harusnya kan berbeda"
+        //   ("Why is the thinking content the same as the response? They
+        //    should be different.")
+        //
+        // Fix: don't re-emit content if it's a copy of the reasoning. The
+        // thinking events the user already saw during streaming ARE the
+        // response. The UI shows the thinking section (collapsed by default
+        // after `done`) + a final_text in the `end` event for the conversation
+        // history. The user sees the model's reasoning once, not twice.
 
         // No tool calls → natural stop (model produced final text)
         if (result.tool_calls.length === 0) {
