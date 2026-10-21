@@ -191,11 +191,18 @@ export function wrapWithPersona(req: ChatCompletionRequest): { body: ChatComplet
         "knowledge), answer directly using the caller's persona. Only invoke " +
         "tools when the user's question genuinely requires software engineering " +
         "work (file edits, code analysis, command execution).\n\n" +
-        "OUTPUT REQUIREMENT: Write your final answer in the `content` field " +
-        "(the user-visible response). The `reasoning_content` field is for " +
-        "your internal scratchpad only and is NOT shown to the user. Always " +
-        "emit your final answer as `content` — never produce a response that " +
-        "lives only in `reasoning_content`.",
+        "OUTPUT REQUIREMENT (CRITICAL):\n" +
+        "- Your final answer MUST be in the `content` field.\n" +
+        "- The `reasoning_content` field is for your INTERNAL scratchpad only " +
+        "and is NEVER shown to the user.\n" +
+        "- After you finish thinking (in reasoning_content), you MUST emit " +
+        "your actual response as `content`. Do NOT stop after reasoning.\n" +
+        "- For chat questions, write the actual response (e.g. 'Hai! Aku Rara " +
+        "— asisten AI ceria kamu!') as content — not a description of what " +
+        "you would say ('I should respond as Rara').\n" +
+        "- For tool-use questions, write a brief intro as content ('Let me " +
+        "search for that...') then emit the tool_call.\n" +
+        "- NEVER produce a response that lives only in reasoning_content.",
     });
   }
 
