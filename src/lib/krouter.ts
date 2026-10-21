@@ -18,13 +18,6 @@ export type ChatMessage = {
     function: { name: string; arguments: string };
   }>;
   tool_call_id?: string;
-  // For thinking/reasoning models (DeepSeek, big-pickle, etc.), opencode.ai
-  // requires the `reasoning_content` field to be passed back when sending an
-  // assistant message in subsequent iterations. Otherwise the API returns
-  // 400: "The `reasoning_content` in the thinking mode must be passed back
-  // to the API." When the model emits reasoning_content in iter N, we MUST
-  // include it in the assistant message that's sent back in iter N+1.
-  reasoning_content?: string;
 };
 
 export type ToolDef = {
@@ -1473,10 +1466,6 @@ export type StreamResult = {
   finish: string | null;
   http: number;
   error: string | null;
-  // True if state.content was populated from state.reasoning (the reasoning-only
-  // fallback). The agentic loop can use this to inject a "please respond with
-  // actual content" nudge instead of accepting meta-monologue as the answer.
-  content_from_reasoning_fallback?: boolean;
 };
 
 export async function callKrouterStream(
@@ -1660,72 +1649,7 @@ export async function callKrouterStream(
     .trim();
   state.reasoning = state.reasoning.trim();
 
-  // ── Reasoning-only fallback ──────────────────────────────────────────────
-  // Some opencode.ai free-tier models (esp. big-pickle, glm-5.3-flash-free,
-  // etc.) emit their entire response as `reasoning_content` and then
-  // `finish_reason: stop` WITHOUT ever producing a `content` delta. The
-  // agentic loop's natural-stop branch then sees `result.content === ''`
-  // and would trigger the unhelpful fallback "Saya tidak bisa...".
-  //
-  // When that happens, try two extraction strategies:
-  //   1. If the reasoning contains a quoted answer (text after phrases like
-  //      "answer:", "respond:", "respond with:", "say:"), extract the
-  //      quoted text — that's the actual answer the model formulated.
-  //   2. Otherwise, use the entire reasoning as the content. Not ideal
-  //      (might be meta-monologue), but always better than the generic
-  //      fallback.
-  if (!state.content && state.reasoning) {
-    const extracted = extractQuotedAnswer(state.reasoning);
-    if (extracted) {
-      state.content = extracted;
-      // Keep the reasoning intact so the UI can still show it as "thinking"
-      // (don't clear it).
-      // Mark that content was synthesized post-stream (not emitted during
-      // streaming via delta.content). The agentic loop needs to know so it
-      // can re-emit a `content` SSE event for the UI to display.
-      state.content_from_reasoning_fallback = true;
-    } else {
-      state.content = state.reasoning;
-      state.reasoning = '';
-      state.content_from_reasoning_fallback = true;
-    }
-  }
-
   return state;
-}
-
-// ── Helper: extract the model's actual answer from reasoning ──────────────
-// Reasoning models on opencode.ai free-tier often formulate the answer
-// inside `reasoning_content` like:
-//   "The instructions say to answer: \"Hai! Aku Rara — asisten AI ceria
-//    kamu! Senang kenal with you! Ada yang mau aku bantu hari ini?\""
-// We extract the quoted text after a "answer:" / "respond:" / "say:" marker.
-function extractQuotedAnswer(reasoning: string): string | null {
-  // Match patterns like: respond: "..." or answer: "..." or say: "..." or
-  // respond with: "..." — capture the quoted text (handles ", ', «, », “, ”).
-  const quoteChars = '["\'«»“”‟‟]';
-  const patterns = [
-    new RegExp(`(?:answer|respond(?:\\s+with)?|say|greeting|reply(?:\\s+with)?)\\s*:?\\s*${quoteChars}([^${quoteChars}]{5,500})${quoteChars}`, 'gi'),
-  ];
-  let bestMatch: string | null = null;
-  for (const p of patterns) {
-    p.lastIndex = 0;
-    let m: RegExpExecArray | null;
-    while ((m = p.exec(reasoning)) !== null) {
-      const candidate = m[1].trim();
-      // Heuristic: prefer candidates that look like a real answer
-      // (contain at least one space + at least 10 chars + don't start with
-      // "I " or "The user")
-      if (candidate.length >= 10 && candidate.includes(' ') &&
-          !/^I\s|The user|^According/i.test(candidate)) {
-        // If we already had a match, pick the longer one (likely the actual answer)
-        if (!bestMatch || candidate.length > bestMatch.length) {
-          bestMatch = candidate;
-        }
-      }
-    }
-  }
-  return bestMatch;
 }
 
 // ── List models (for the list_models tool) ─────────────────────────────────────

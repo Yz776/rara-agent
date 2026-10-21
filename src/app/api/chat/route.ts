@@ -124,15 +124,6 @@ export async function POST(req: NextRequest): Promise<Response> {
       } catch { /* ignore */ }
     }
     if (m.toolCallId) msg.tool_call_id = m.toolCallId;
-    // ── Pass back reasoning_content for thinking-mode APIs ───────────────
-    // opencode.ai (and DeepSeek-style APIs) require the reasoning_content
-    // from previous assistant turns to be included when continuing a
-    // thinking-mode conversation. Without it, the API returns 400:
-    //   "The `reasoning_content` in the thinking mode must be passed back
-    //    to the API."
-    if (m.role === 'assistant' && m.reasoningContent) {
-      msg.reasoning_content = m.reasoningContent;
-    }
     clean.push(msg);
   }
 
@@ -322,23 +313,14 @@ export async function POST(req: NextRequest): Promise<Response> {
             allMessages,
             model,
             (delta) => {
-              // Convert reasoning_content → content (prevents UI duplication).
-              // opencode.ai free-tier models emit ALL output as reasoning_content
-              // and never produce content deltas. If we send separate `thinking`
-              // + `content` events with the same text, the UI shows the SAME
-              // text TWICE (collapsed thinking section + response bubble).
-              // User feedback: "Kok isi thinking sama kayak respon nya harusnya
-              // kan berbeda" ("Why is the thinking content the same as the
-              // response? They should be different.")
-              //
-              // Fix: when the model emits reasoning_content, send it as a
-              // `content` event (visible in the response bubble). When the
-              // model emits real content (paid API tier), send it as content
-              // too. We NEVER send `thinking` events — there's no separate
-              // thinking section, just the response bubble with the model's
-              // output (whether it's actual content or reasoning-as-content).
+              // Match kfai-nextjs behavior: send `reasoning` as `thinking`
+              // event (collapsed in UI after `done`), and `content` as the
+              // response bubble. When the model emits both, the user sees
+              // the thinking process + the final answer separately. When the
+              // model emits only reasoning (opencode.ai free-tier limitation),
+              // the user sees the thinking (collapsed) + an empty bubble.
+              if (delta.reasoning) send({ type: 'thinking', text: delta.reasoning, iter });
               if (delta.content) send({ type: 'content', text: delta.content, iter });
-              else if (delta.reasoning) send({ type: 'content', text: delta.reasoning, iter });
             },
             abortCtrl.signal,
           );
@@ -363,22 +345,6 @@ export async function POST(req: NextRequest): Promise<Response> {
             function: { name: tc.name, arguments: JSON.stringify(tc.args) },
           }));
         }
-        // ── Preserve reasoning_content for thinking-mode APIs ─────────────
-        // opencode.ai (and DeepSeek-style APIs) require the `reasoning_content`
-        // field to be passed back when sending an assistant message in
-        // subsequent iterations. Without it, the API returns 400:
-        //   "The `reasoning_content` in the thinking mode must be passed back
-        //    to the API."
-        // callKrouterStream preserves state.reasoning when extractQuotedAnswer
-        // found a quoted answer (it doesn't clear it). When the fallback just
-        // copies reasoning to content (no extracted answer), state.reasoning
-        // is cleared — but result.content has the reasoning text, so we set
-        // reasoning_content to result.content in that case.
-        if (result.reasoning) {
-          assistantMsg.reasoning_content = result.reasoning;
-        } else if (result.content_from_reasoning_fallback && result.content) {
-          assistantMsg.reasoning_content = result.content;
-        }
         allMessages.push(assistantMsg);
 
         const persistedAssistant = await db.message.create({
@@ -388,26 +354,9 @@ export async function POST(req: NextRequest): Promise<Response> {
             role: 'assistant',
             content: result.content || '',
             toolCalls: assistantMsg.tool_calls ? JSON.stringify(assistantMsg.tool_calls) : null,
-            reasoningContent: assistantMsg.reasoning_content || null,
           },
         });
         lastAssistantId = persistedAssistant.id;
-
-        // ── NO RE-EMIT — prevent thinking/response duplication ──────────────
-        // Previously: when callKrouterStream returned content_from_reasoning_fallback
-        // (model emitted only reasoning_content, no content deltas), we re-emitted
-        // the reasoning-as-content as a `content` SSE event. This caused the UI
-        // to display the SAME text TWICE — once as the collapsed "thinking"
-        // section, once as the assistant bubble. User feedback:
-        //   "Kok isi thinking sama kayak respon nya harusnya kan berbeda"
-        //   ("Why is the thinking content the same as the response? They
-        //    should be different.")
-        //
-        // Fix: don't re-emit content if it's a copy of the reasoning. The
-        // thinking events the user already saw during streaming ARE the
-        // response. The UI shows the thinking section (collapsed by default
-        // after `done`) + a final_text in the `end` event for the conversation
-        // history. The user sees the model's reasoning once, not twice.
 
         // No tool calls → natural stop (model produced final text)
         if (result.tool_calls.length === 0) {
