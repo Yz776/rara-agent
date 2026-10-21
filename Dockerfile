@@ -36,11 +36,13 @@ ENV DATABASE_URL=file:/tmp/rara-build-validate.db \
 COPY package.json bun.lock* package-lock.json* ./
 
 # Install deps (use npm — bun is not strictly needed for a Next.js-only build).
-RUN if [ -f bun.lock ]; then \
-      npm install --no-audit --no-fund --omit=optional || npm install --no-audit --no-fund; \
-    else \
-      npm install --no-audit --no-fund; \
-    fi
+# IMPORTANT: do NOT use --omit=optional here. lightningcss (pulled in by
+# @tailwindcss/postcss) ships its native binary as an optional dependency
+# keyed by libc + arch — e.g. `lightningcss-linux-x64-musl` for our alpine
+# image. Skipping optional deps leaves lightningcss without a binary at
+# `next build` time, which crashes Turbopack with
+#   "Cannot find module '../lightningcss.linux-x64-musl.node'".
+RUN npm install --no-audit --no-fund
 
 # Copy the rest of the source.
 COPY . .
