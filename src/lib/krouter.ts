@@ -1,12 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Rara — cheerful sweet girl AI agent. Server-side agentic loop with tool
-// calling. The AI gateway logic (opencode free-tier persona + client) is
-// now BUNDLED INSIDE rara-agent — no external zrouter dependency. All
-// upstream AI calls go directly to https://opencode.ai/zen/v1.
+// Rara — cheerful sweet girl AI agent. Uses a LOCAL Ollama server for AI
+// inference (no external opencode.ai, no persona wrapping, no reasoning-only
+// issues). The local model (gemma3:4b) emits content properly.
 // ─────────────────────────────────────────────────────────────────────────────
-
-import { chatStream, listOpencodeModels, STATIC_MODELS } from "@/lib/opencode/client";
-import type { ChatCompletionRequest } from "@/lib/opencode/persona";
 
 // Type defs for opencode OpenAI-compatible API
 export type ChatMessage = {
@@ -40,13 +36,21 @@ export type ToolCall = {
 };
 
 // ── Config ────────────────────────────────────────────────────────────────────
-// Legacy env vars kept for backward-compat with existing .env files. They are
-// no longer used to reach an external zrouter — rara-agent calls opencode.ai
-// directly. OPENCODE_API_KEY (optional) lets the operator upgrade from
-// "Bearer public" free-tier to a real opencode.ai account.
-const KROUTER_BASE = process.env.KROUTER_BASE || 'http://127.0.0.1:3001';
-const KROUTER_KEY = process.env.KROUTER_INTERNAL_TOKEN || process.env.KROUTER_KEY || '';
-export const DEFAULT_MODEL = 'opencode/deepseek-v4.1-flash-free';
+// Rara now uses a LOCAL Ollama server (http://127.0.0.1:11434) for AI
+// inference instead of opencode.ai free-tier. Ollama provides an
+// OpenAI-compatible API at /v1/chat/completions — no API key needed,
+// no persona wrapping, no reasoning_content issues.
+//
+// The default model is gemma3:4b (Google's Gemma 3 4B) — verified working
+// for Indonesian chat with cheerful persona. To switch models:
+//   1. `ollama pull <model>` on the server
+//   2. Set MODEL env var (e.g. MODEL=llama3.2:3b)
+//
+// The previous opencode.ai integration is REMOVED — it had a fundamental
+// limitation where free-tier models only emit reasoning_content (never
+// content), causing empty responses in the chat UI.
+const OLLAMA_BASE = process.env.OLLAMA_BASE || 'http://127.0.0.1:11434';
+export const DEFAULT_MODEL = process.env.MODEL || 'gemma3:4b';
 
 // Models actually available on opencode.ai's free tier (verified 2026-10-20
 // via GET https://opencode.ai/zen/v1/models). The free-tier catalog rotates
@@ -1457,11 +1461,10 @@ export const TOOLS: ToolDef[] = [
   { type: 'function', function: { name: 'color_palette', description: 'Generate color palette from base hex color. Returns lighter, darker, complementary, analogous, triadic variants.', parameters: { type: 'object', properties: { color: { type: 'string', description: 'Base color in hex (#RRGGBB).' } }, required: ['color'] } } },
 ];
 
-// ── krouter streaming call ─────────────────────────────────────────────────────
-// Calls the bundled opencode client directly (no external zrouter gateway).
-// Parses SSE chunks as they arrive and accumulates reasoning_content + content
-// + tool_calls deltas. The onDelta callback fires once per chunk so the caller
-// can stream progress to the client in real time.
+// ── krouter streaming call (Ollama OpenAI-compatible) ───────────────────────
+// Calls the local Ollama server's OpenAI-compatible /v1/chat/completions
+// endpoint. No persona wrapping, no API key, no reasoning_content issues.
+// The local model (gemma3:4b) emits content properly.
 
 export type StreamResult = {
   reasoning: string;
@@ -1483,46 +1486,52 @@ export async function callKrouterStream(
     messages,
     tools: TOOLS,
     max_tokens: 4096,
-    temperature: 0.4,
+    temperature: 0.7,
     stream: true,
   };
 
-  // The KROUTER_BASE / KROUTER_KEY env vars are kept for backward-compat with
-  // existing .env files, but they are no longer used to reach an external
-  // zrouter. All AI calls now go straight to https://opencode.ai via the
-  // bundled opencode client.
-  void KROUTER_BASE;
-  void KROUTER_KEY;
+  const res = await fetch(`${OLLAMA_BASE}/v1/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: abortSignal,
+  });
 
-  const state: StreamResult = {
-    reasoning: '', content: '', tool_calls: [], finish: null, http: 200, error: null,
-  };
-  let thinkMode: 'detect' | 'thinking' | 'content' = 'detect';
-  let detectBuffer = '';
-  const tcAccum: Record<number, { id: string; name: string; args_str: string }> = {};
-
-  let stream: AsyncGenerator<import("./opencode/persona").ChatCompletionChunk, void, void>;
-  try {
-    stream = chatStream(payload as ChatCompletionRequest, {}, abortSignal);
-  } catch (e: any) {
+  if (!res.ok || !res.body) {
+    let errBody = '';
+    try { errBody = await res.text(); } catch {}
     return {
       reasoning: '', content: '', tool_calls: [], finish: null,
-      http: 0,
-      error: `opencode init: ${e?.message || String(e)}`,
+      http: res.status,
+      error: `ollama HTTP ${res.status}${errBody ? ' — ' + errBody.slice(0, 200) : ''}`,
     };
   }
 
-  try {
-    for await (const j of stream) {
-      // opencode.ai may surface an error object inline — detect and bail out
-      // so the agentic loop doesn't spin for 12 iterations producing nothing.
-      const anyJ = j as unknown as { error?: { message?: string } | string };
-      if (anyJ.error) {
-        const msg = typeof anyJ.error === 'string' ? anyJ.error : (anyJ.error.message ?? JSON.stringify(anyJ.error));
-        state.error = String(msg);
-        state.http = 502;
-        return state;
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  const state: StreamResult = {
+    reasoning: '', content: '', tool_calls: [], finish: null, http: 200, error: null,
+  };
+  const tcAccum: Record<number, { id: string; name: string; args_str: string }> = {};
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+
+    let idx: number;
+    while ((idx = buf.indexOf('\n\n')) !== -1) {
+      const block = buf.slice(0, idx);
+      buf = buf.slice(idx + 2);
+      let dataStr = '';
+      for (const line of block.split('\n')) {
+        if (line.startsWith('data:')) dataStr += line.slice(5);
       }
+      dataStr = dataStr.trim();
+      if (!dataStr || dataStr === '[DONE]') continue;
+      let j: any;
+      try { j = JSON.parse(dataStr); } catch { continue; }
 
       const choice = j.choices?.[0];
       if (!choice) continue;
@@ -1533,112 +1542,23 @@ export async function callKrouterStream(
         onChunk?.({ reasoning: delta.reasoning_content });
       }
       if (delta.content) {
-        let chunk: string = delta.content;
-
-        // ── Think tag detection ──
-        // Models like big-pickle send reasoning as content, ending with '</' + 'think>'.
-        // Two patterns:
-        //   A: answer ... reasoning ... answer  (has opening tag)
-        //   B: reasoning ... answer  (no opening tag, just closing)
-        // We buffer the first 300 chars to detect which pattern, then route accordingly.
-
-        if (thinkMode === 'detect') {
-          detectBuffer += chunk;
-          const ot = '<' + 'think>';
-          const ct = '</' + 'think>';
-
-          // Pattern B: closing tag found in buffer → everything before is reasoning
-          if (detectBuffer.includes(ct)) {
-            const ci = detectBuffer.indexOf(ct);
-            const thinkPart = detectBuffer.slice(0, ci);
-            const rest = detectBuffer.slice(ci + ct.length);
-            if (thinkPart) { state.reasoning += thinkPart; onChunk?.({ reasoning: thinkPart }); }
-            thinkMode = 'content';
-            detectBuffer = '';
-            chunk = rest;
-          }
-          // Pattern A: opening tag found → before is content, after is reasoning
-          else if (detectBuffer.includes(ot)) {
-            const oi = detectBuffer.indexOf(ot);
-            const before = detectBuffer.slice(0, oi);
-            const after = detectBuffer.slice(oi + ot.length);
-            if (before) { state.content += before; onChunk?.({ content: before }); }
-            const ci = after.indexOf(ct);
-            if (ci >= 0) {
-              const tp = after.slice(0, ci);
-              const r = after.slice(ci + ct.length);
-              if (tp) { state.reasoning += tp; onChunk?.({ reasoning: tp }); }
-              if (r) { state.content += r; onChunk?.({ content: r }); }
-              thinkMode = 'content';
-              detectBuffer = '';
-              chunk = '';
-            } else {
-              if (after) { state.reasoning += after; onChunk?.({ reasoning: after }); }
-              thinkMode = 'thinking';
-              detectBuffer = '';
-              chunk = '';
-            }
-          } else if (detectBuffer.length > 300) {
-            // No think tags in the first 300 chars → treat as content.
-            state.content += detectBuffer;
-            onChunk?.({ content: detectBuffer });
-            thinkMode = 'content';
-            detectBuffer = '';
-            chunk = '';
-          } else {
-            // Still buffering — don't emit yet.
-            chunk = '';
-          }
-        } else if (thinkMode === 'thinking') {
-          const ct = '</' + 'think>';
-          const idx2 = chunk.indexOf(ct);
-          if (idx2 >= 0) {
-            const thinkPart = chunk.slice(0, idx2);
-            const rest = chunk.slice(idx2 + ct.length);
-            if (thinkPart) { state.reasoning += thinkPart; onChunk?.({ reasoning: thinkPart }); }
-            thinkMode = 'content';
-            chunk = rest;
-          } else {
-            state.reasoning += chunk;
-            onChunk?.({ reasoning: chunk });
-            chunk = '';
-          }
-        }
-
-        if (chunk) {
-          state.content += chunk;
-          onChunk?.({ content: chunk });
-        }
+        state.content += delta.content;
+        onChunk?.({ content: delta.content });
       }
       if (Array.isArray(delta.tool_calls)) {
         for (const t of delta.tool_calls) {
-          const idx = t.index ?? 0;
-          const e = tcAccum[idx] ?? (tcAccum[idx] = { id: '', name: '', args_str: '' });
-          if (t.id) e.id = t.id;
-          if (t.function?.name) e.name += t.function.name;
-          if (t.function?.arguments) e.args_str += t.function.arguments;
-          onChunk?.({
-            tool_call_started: {
-              id: e.id,
-              name: e.name,
-              args: e.args_str ? (() => { try { return JSON.parse(e.args_str); } catch { return {}; } })() : {},
-            },
-          });
+          const i = t.index ?? 0;
+          if (!tcAccum[i]) tcAccum[i] = { id: '', name: '', args_str: '' };
+          if (t.id) tcAccum[i].id = t.id;
+          if (t.function?.name) tcAccum[i].name += t.function.name;
+          if (t.function?.arguments) tcAccum[i].args_str += t.function.arguments;
+          onChunk?.({ tool_call_started: { id: tcAccum[i].id, name: tcAccum[i].name, args: {} } });
         }
       }
       if (choice.finish_reason) state.finish = choice.finish_reason;
     }
-  } catch (e: any) {
-    if (e?.name === 'AbortError') {
-      // Aborted by the user — return what we have so far.
-      return state;
-    }
-    state.error = `opencode stream: ${e?.message || String(e)}`;
-    state.http = 502;
-    return state;
   }
 
-  // Convert accumulated tool_calls into the rara format.
   for (const idx of Object.keys(tcAccum).sort((a, b) => Number(a) - Number(b))) {
     const e = tcAccum[Number(idx)];
     let args: Record<string, unknown> = {};
@@ -1646,26 +1566,22 @@ export async function callKrouterStream(
     state.tool_calls.push({ id: e.id || `call_${idx}`, name: e.name, args });
   }
 
-  // Cleanup escaped think tags + escape
-  state.content = state.content
-    .replace(/&lt;think&gt;[\s\S]*?&lt;\/think&gt;/g, '')
-    .replace(/&lt;\/think&gt;/g, '')
-    .trim();
+  state.content = state.content.trim();
   state.reasoning = state.reasoning.trim();
 
   return state;
 }
 
-// ── List models (for the list_models tool) ─────────────────────────────────────
-// Fetches the live opencode.ai model catalog (public endpoint), falls back
-// to the static whitelist if the upstream is unreachable.
+// ── List models (queries the local Ollama server) ────────────────────────────
 export async function listKrouterModels(): Promise<string[]> {
   try {
-    return await listOpencodeModels();
-  } catch (e) {
-    // Should not happen — listOpencodeModels already swallows network errors
-    // and returns STATIC_MODELS. But just in case, fall back here too.
-    console.warn('[rara] listKrouterModels fallback:', (e as Error)?.message);
-    return STATIC_MODELS;
+    const res = await fetch(`${OLLAMA_BASE}/api/tags`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const j = await res.json();
+    return (j.models || []).map((m: any) => m.name).filter(Boolean);
+  } catch (e: any) {
+    console.warn('[rara] listKrouterModels fallback:', e?.message);
+    return [DEFAULT_MODEL];
   }
 }
+
