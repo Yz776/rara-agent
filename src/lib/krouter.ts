@@ -50,7 +50,7 @@ export type ToolCall = {
 // limitation where free-tier models only emit reasoning_content (never
 // content), causing empty responses in the chat UI.
 const OLLAMA_BASE = process.env.OLLAMA_BASE || 'http://127.0.0.1:11434';
-export const DEFAULT_MODEL = process.env.MODEL || 'gemma3:4b';
+export const DEFAULT_MODEL = process.env.MODEL || 'qwen3:4b';
 
 // Models actually available on opencode.ai's free tier (verified 2026-10-20
 // via GET https://opencode.ai/zen/v1/models). The free-tier catalog rotates
@@ -1484,10 +1484,9 @@ export async function callKrouterStream(
   const payload = {
     model,
     messages,
-    // NOTE: gemma3:4b (and many small models) don't support native function
-    // calling. We DON'T send `tools` in the payload — instead, the model
-    // outputs tool calls as text: <tool>{"name":"X","args":{...}}</tool>
-    // The chat route parses these via parseToolCallsFromText().
+    // qwen3:4b supports native function calling. Send Rara's tools directly
+    // so the model can call them natively (returns tool_calls in the response).
+    tools: TOOLS,
     max_tokens: 4096,
     temperature: 0.7,
     stream: true,
