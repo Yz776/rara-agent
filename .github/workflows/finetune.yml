@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies (CPU-only)
         run: |
           pip install -q torch --index-url https://download.pytorch.org/whl/cpu
-          pip install -q transformers datasets huggingface_hub peft accelerate sentencepiece
+          pip install -q transformers datasets huggingface_hub peft accelerate sentencepiece bitsandbytes
           df -h
 
       - name: Create training script
@@ -43,8 +43,8 @@ jobs:
           cat > train.py << 'TRAIN_EOF'
           import torch
           import os, json, sys
-          from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer, DataCollatorForSeq2Seq
-          from peft import LoraConfig, get_peft_model, TaskType
+          from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer, DataCollatorForSeq2Seq, BitsAndBytesConfig
+          from peft import LoraConfig, get_peft_model, TaskType, prepare_model_for_kbit_training
           from datasets import load_dataset
 
           MODEL = "Qwen/Qwen2.5-7B-Instruct"
@@ -60,16 +60,29 @@ jobs:
           if tokenizer.pad_token is None:
               tokenizer.pad_token = tokenizer.eos_token
 
-          # Load model (CPU mode, bfloat16 to fit 7B in 16 GB runner RAM).
-          # float32 would need ~28 GB, bfloat16 needs ~14 GB -> leaves ~2 GB
-          # for LoRA params + optimizer state + activations (with grad ckpt).
+          # Load model (CPU mode, 4-bit QLoRA via bitsandbytes).
+          # 7B in float32 needs ~28 GB (won't fit 16 GB runner).
+          # 7B in bfloat16 needs ~14 GB but bf16=True training crashes on
+          # GitHub's CPU (no AVX-512 BF16 instructions).
+          # 4-bit QLoRA: model loads in ~4-5 GB, training math in float32.
+          # This is the canonical way to fit 7B in 16 GB RAM on CPU.
+          bnb_config = BitsAndBytesConfig(
+              load_in_4bit=True,
+              bnb_4bit_quant_type="nf4",
+              bnb_4bit_compute_dtype=torch.float32,  # CPU-safe compute dtype
+              bnb_4bit_use_double_quant=True,
+          )
           model = AutoModelForCausalLM.from_pretrained(
               MODEL,
-              torch_dtype=torch.bfloat16,
+              quantization_config=bnb_config,
               device_map="cpu",
               trust_remote_code=True,
               low_cpu_mem_usage=True,
           )
+
+          # Prepare model for k-bit training: enable gradients on the
+          # non-quantized layers (LoRA adapters) + disable KV cache.
+          model = prepare_model_for_kbit_training(model)
 
           # LoRA config
           lora = LoraConfig(
@@ -141,7 +154,7 @@ jobs:
               seed=42,
               lr_scheduler_type="cosine",
               fp16=False,
-              bf16=True,
+              bf16=False,
               gradient_checkpointing=True,
               gradient_checkpointing_kwargs={"use_reentrant": False},
               dataloader_num_workers=2,
