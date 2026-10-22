@@ -159,19 +159,25 @@ jobs:
         run: |
           python3 -u train.py
 
-      - name: Build llama.cpp
+      - name: Get llama.cpp scripts
+        # llama.cpp's Makefile is deprecated; modern build needs CMake.
+        # We don't actually need the C++ `llama-quantize` binary — the Python
+        # `convert_hf_to_gguf.py` script can do q8_0 quantization in-script
+        # via `--outtype q8_0`. So we just clone for the script.
         run: |
           git clone --depth 1 https://github.com/ggerganov/llama.cpp /tmp/llama.cpp
-          cd /tmp/llama.cpp && make -j$(nproc) 2>&1 | tail -1
-          echo "llama.cpp built"
+          ls /tmp/llama.cpp/convert_hf_to_gguf.py
+          echo "llama.cpp scripts ready"
 
-      - name: Convert to GGUF
+      - name: Convert to GGUF (q8_0 quantized in-script)
+        # q8_0 = 8-bit quantization. Done by convert_hf_to_gguf.py itself,
+        # no separate llama-quantize binary needed.
+        # Output for 0.5B model: ~500 MB (vs 1.98 GB for f32).
         run: |
           cd /tmp/llama.cpp
-          python convert_hf_to_gguf.py $GITHUB_WORKSPACE/rara-model --outtype f32 --outfile /tmp/rara-f32.gguf
-          ./llama-quantize /tmp/rara-f32.gguf /tmp/rara-q4.gguf Q4_K_M
-          ls -lh /tmp/rara-q4.gguf
-          cp /tmp/rara-q4.gguf $GITHUB_WORKSPACE/rara-q4.gguf
+          python convert_hf_to_gguf.py $GITHUB_WORKSPACE/rara-model --outtype q8_0 --outfile /tmp/rara-q8_0.gguf
+          ls -lh /tmp/rara-q8_0.gguf
+          cp /tmp/rara-q8_0.gguf $GITHUB_WORKSPACE/rara-q8_0.gguf
 
       - name: Upload to HuggingFace
         env:
@@ -185,7 +191,7 @@ jobs:
               print('WARNING: HF_TOKEN secret not set! Skipping upload.')
               exit(0)
           create_repo('kangwifi/rara-ai', token=token, exist_ok=True, private=False)
-          upload_file('rara-q4.gguf', 'rara-q4.gguf', 'kangwifi/rara-ai', token=token)
+          upload_file('rara-q8_0.gguf', 'rara-q8_0.gguf', 'kangwifi/rara-ai', token=token)
           print('Uploaded -> huggingface.co/kangwifi/rara-ai')
           "
 
@@ -194,7 +200,7 @@ jobs:
         run: |
           echo "============================================"
           echo "DEPLOY KE SERVER:"
-          echo "docker exec kali ollama pull hf.co/kangwifi/rara-ai:rara-q4.gguf"
-          echo "echo 'MODEL=hf.co/kangwifi/rara-ai:rara-q4.gguf' >> /opt/rara-agent/.env"
+          echo "docker exec kali ollama pull hf.co/kangwifi/rara-ai:rara-q8_0.gguf"
+          echo "echo 'MODEL=hf.co/kangwifi/rara-ai:rara-q8_0.gguf' >> /opt/rara-agent/.env"
           echo "docker exec kali pm2 restart rara-web"
           echo "============================================"
