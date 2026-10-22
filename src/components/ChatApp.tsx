@@ -5,7 +5,6 @@ import {
   listConversations, getConversation, createConversation, deleteConversation,
   postChat, uploadImage, logout, type Conversation, type AuthMe,
 } from "@/lib/api-client";
-import { Rara3D, type RaraMood } from "@/components/Rara3D";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type HistoryMsg = { role: "user" | "assistant"; content: string };
@@ -676,11 +675,7 @@ export function ChatApp({ me, onLogout }: Props) {
                 ☰
               </button>
               <div className="rara-mark-3d" aria-hidden>
-                <Rara3D
-                  mood={streaming ? "talking" : "idle"}
-                  size={44}
-                  showPlatform={false}
-                />
+                <span style={{ fontSize: 28, lineHeight: 1 }}>🌸</span>
               </div>
               <span className="kfai-brand-name">Rara</span>
               <span className="kfai-brand-tag">ceria · manis</span>
@@ -716,7 +711,7 @@ export function ChatApp({ me, onLogout }: Props) {
             {history.length === 0 && !streaming && !loadingConv && (
               <div className="kfai-welcome rara-welcome">
                 <div className="rara-welcome-stage">
-                  <Rara3D mood="happy" size={260} autoRotate />
+                  <span style={{ fontSize: 120, lineHeight: 1 }}>🌸</span>
                 </div>
                 <h1>
                   Rara <span className="kfai-accent">›_</span>

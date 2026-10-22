@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { login, setToken } from "@/lib/api-client";
-import { Rara3D } from "@/components/Rara3D";
 
 type Props = {
   onLoggedIn: () => void;
@@ -70,8 +69,8 @@ export function LoginScreen({ onLoggedIn }: Props) {
     <div className="kfai-login">
       <div className="kfai-login-card" style={{ textAlign: "center" }}>
         <div className="kfai-login-brand" style={{ justifyContent: "center", marginBottom: 28 }}>
-          <div className="rara-mark-3d" aria-hidden style={{ width: 56, height: 56 }}>
-            <Rara3D mood="happy" size={56} showPlatform={false} />
+          <div className="rara-mark-3d" aria-hidden style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 40, lineHeight: 1 }}>🌸</span>
           </div>
           <div>
             <div className="kfai-login-title">Rara</div>

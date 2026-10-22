@@ -3,8 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: false,
-  // Three.js / @react-three/fiber should only run client-side. The component
-  // file (src/components/Rara3D.tsx) starts with "use client" — that's enough.
   // Security headers — applied to all responses
   async headers() {
     return [
@@ -46,9 +44,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Three.js ships untranspiled ESM with optional Node-specific modules. Next.js
-  // needs to transpile it so the browser bundle works.
-  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
 };
 
 export default nextConfig;

@@ -47,7 +47,7 @@ jobs:
           from peft import LoraConfig, get_peft_model, TaskType, prepare_model_for_kbit_training
           from datasets import load_dataset
 
-          MODEL = "Qwen/Qwen2.5-7B-Instruct"
+          MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
           DATA = "training-data/rara_training_v2.jsonl"
           OUT = "rara-model"
           os.makedirs(OUT, exist_ok=True)
@@ -85,10 +85,13 @@ jobs:
           model = prepare_model_for_kbit_training(model)
 
           # LoRA config
+          # Higher LoRA rank (r=32, alpha=64) than 0.5B setup (was r=16/alpha=32).
+          # 1.5B is 3x bigger + native tool calling support, needs more adapter
+          # capacity for both persona + tool-use patterns.
           lora = LoraConfig(
               task_type=TaskType.CAUSAL_LM,
-              r=16,
-              lora_alpha=32,
+              r=32,
+              lora_alpha=64,
               lora_dropout=0.05,
               target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"],
           )
@@ -142,11 +145,11 @@ jobs:
               output_dir="./rara-ckpt",
               per_device_train_batch_size=1,
               gradient_accumulation_steps=4,
-              max_steps=20,
+              max_steps=40,
               learning_rate=2e-4,
-              warmup_steps=2,
+              warmup_steps=4,
               logging_steps=1,
-              save_steps=10,
+              save_steps=20,
               save_total_limit=1,
               report_to="none",
               weight_decay=0.01,
