@@ -42,10 +42,10 @@ export type ToolCall = {
 // "Bearer public" free-tier to a real opencode.ai account.
 const KROUTER_BASE = process.env.KROUTER_BASE || 'http://127.0.0.1:3001';
 const KROUTER_KEY = process.env.KROUTER_INTERNAL_TOKEN || process.env.KROUTER_KEY || '';
-export const DEFAULT_MODEL = 'hf.co/kangwifi/rara-ai:Q8_0';
+export const DEFAULT_MODEL = 'opencode/big-pickle';
 
 export const MODELS_WHITELIST = [
-  'hf.co/kangwifi/rara-ai:Q8_0',
+  'opencode/big-pickle',
   'opencode/claude-sonnet-4',
   'opencode/claude-haiku-4-5',
   'opencode/claude-opus-4',
@@ -750,7 +750,7 @@ export const TOOLS: ToolDef[] = [
       parameters: {
         type: 'object',
         properties: {
-          model: { type: 'string', description: 'Model id, e.g. "hf.co/kangwifi/rara-ai:Q8_0".' },
+          model: { type: 'string', description: 'Model id, e.g. "opencode/big-pickle".' },
           message: { type: 'string', description: 'Single user message.' },
           maxTokens: { type: 'number', description: 'Completion budget. Default 256.' },
         },
@@ -1367,7 +1367,7 @@ export const TOOLS: ToolDef[] = [
           image: { type: 'string', description: 'Image source: sandbox filename (e.g. "uploads/photo.png"), data URL, or HTTP URL.' },
           imageUrl: { type: 'string', description: 'Alternative: HTTP URL of image (if "image" is not provided).' },
           prompt: { type: 'string', description: 'What to analyze about the image. Default: "Describe this image." Example: "Extract all text from this screenshot." or "What objects are in this image?"' },
-          model: { type: 'string', description: 'Vision model to use. Default: hf.co/kangwifi/rara-ai:Q8_0. Options: hf.co/kangwifi/rara-ai:Q8_0, opencode/gpt-5.4, opencode/gpt-5.4-mini, opencode/claude-sonnet-4, opencode/claude-haiku-4-5, opencode/gemini-3.5-flash, opencode/gemini-3.6-flash.' },
+          model: { type: 'string', description: 'Vision model to use. Default: opencode/big-pickle. Options: opencode/big-pickle, opencode/gpt-5.4, opencode/gpt-5.4-mini, opencode/claude-sonnet-4, opencode/claude-haiku-4-5, opencode/gemini-3.5-flash, opencode/gemini-3.6-flash.' },
         },
         required: ['image'],
       },

@@ -2,7 +2,7 @@
  * opencode-client.ts — direct, self-contained client for opencode.ai's free
  * tier. NO zrouter dependency.
  *
- * - Calls http://127.0.0.1:11434/v1/chat/completions (OpenAI-compatible).
+ * - Calls https://opencode.ai/zen/v1/chat/completions (OpenAI-compatible).
  * - Uses `Authorization: Bearer public` for free-tier access.
  * - Wraps every request with the OpenCode persona (system prompt + tool set)
  *   so the upstream free-tier gate accepts the request. The caller's real
@@ -25,7 +25,7 @@ import type {
 import { wrapWithPersona, translateResponse, translateStream } from "./persona";
 import { parseDataLine, streamLines } from "./stream";
 
-const BASE_URL = "http://127.0.0.1:11434";
+const BASE_URL = "https://opencode.ai";
 const PUBLIC_BEARER = "Bearer public";
 const FREE_TIER_KEY = "public"; // the documented free-tier Bearer token value
 
@@ -34,7 +34,7 @@ function isFreeTier(apiKey: string): boolean {
   return !apiKey || apiKey.trim().toLowerCase() === FREE_TIER_KEY;
 }
 
-// Models served by /v1/responses; every other model stays on /chat/completions.
+// Models served by /zen/v1/responses; every other model stays on /chat/completions.
 const RESPONSES_MODELS = new Set([
   "muse-spark-1.2-contributor-free",
   "muse-spark-1.3-contributor-free",
@@ -166,8 +166,8 @@ function responsesEventToChunks(
 
 function buildUrl(targetModel: string, baseUrl: string): string {
   return isResponsesModel(targetModel)
-    ? `${baseUrl}/v1/responses`
-    : `${baseUrl}/v1/chat/completions`;
+    ? `${baseUrl}/zen/v1/responses`
+    : `${baseUrl}/zen/v1/chat/completions`;
 }
 
 function getHeaders(stream: boolean, apiKey: string): Record<string, string> {
