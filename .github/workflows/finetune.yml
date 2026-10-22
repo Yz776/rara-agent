@@ -47,7 +47,7 @@ jobs:
           from peft import LoraConfig, get_peft_model, TaskType
           from datasets import load_dataset
 
-          MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
+          MODEL = "Qwen/Qwen2.5-7B-Instruct"
           DATA = "training-data/rara_training_v2.jsonl"
           OUT = "rara-model"
           os.makedirs(OUT, exist_ok=True)
@@ -60,10 +60,12 @@ jobs:
           if tokenizer.pad_token is None:
               tokenizer.pad_token = tokenizer.eos_token
 
-          # Load model (CPU mode, float32)
+          # Load model (CPU mode, bfloat16 to fit 7B in 16 GB runner RAM).
+          # float32 would need ~28 GB, bfloat16 needs ~14 GB -> leaves ~2 GB
+          # for LoRA params + optimizer state + activations (with grad ckpt).
           model = AutoModelForCausalLM.from_pretrained(
               MODEL,
-              torch_dtype=torch.float32,
+              torch_dtype=torch.bfloat16,
               device_map="cpu",
               trust_remote_code=True,
               low_cpu_mem_usage=True,
@@ -78,6 +80,24 @@ jobs:
               target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"],
           )
           model = get_peft_model(model, lora)
+
+          # Required for gradient checkpointing + PEFT: LoRA adapters need
+          # input tensors to require grad so backward can flow into them.
+          model.enable_input_require_grads()
+
+          # Heartbeat thread: print every 30s during training to keep
+          # GitHub Actions runner alive. 7B step time is 4-8 minutes -
+          # without heartbeat, GitHub may send shutdown signal after
+          # several minutes of no stdout output.
+          import threading, time
+          _hb_stop = threading.Event()
+          def _heartbeat():
+              step = 0
+              while not _hb_stop.is_set():
+                  print(f"heartbeat {step}: still training {time.strftime('%H:%M:%S')}", flush=True)
+                  step += 1
+                  _hb_stop.wait(30)
+          threading.Thread(target=_heartbeat, daemon=True).start()
 
           n_t = sum(p.numel() for p in model.parameters() if p.requires_grad)
           n_a = sum(p.numel() for p in model.parameters())
@@ -99,19 +119,21 @@ jobs:
           ds = ds.map(fmt, remove_columns=ds.column_names)
           print(f"Dataset: {len(ds)} examples")
 
-          # Training (CPU mode)
-          # Penting: 0.5B di 4-core CPU ~5-10 detik/step (vs 162 detik/step
-          # untuk 3B). 30 step = ~3-5 menit total, jauh di bawah batas
-          # 6 jam GitHub Actions runner.
+          # Training (CPU mode, 7B + bf16 + gradient checkpointing)
+          # Penting: 7B di 4-core CPU ~4-8 menit/step (vs 6.58 detik/step
+          # untuk 0.5B, 162 detik/step untuk 3B). 20 step = ~80-160 menit,
+          # dalam batas 6 jam GitHub Actions runner.
+          # gradient_checkpointing=True trade compute for memory (recompute
+          # activations during backward) - necessary to fit 7B in 16 GB RAM.
           args = TrainingArguments(
               output_dir="./rara-ckpt",
               per_device_train_batch_size=1,
               gradient_accumulation_steps=4,
-              max_steps=30,
+              max_steps=20,
               learning_rate=2e-4,
-              warmup_steps=3,
+              warmup_steps=2,
               logging_steps=1,
-              save_steps=15,
+              save_steps=10,
               save_total_limit=1,
               report_to="none",
               weight_decay=0.01,
@@ -119,7 +141,9 @@ jobs:
               seed=42,
               lr_scheduler_type="cosine",
               fp16=False,
-              bf16=False,
+              bf16=True,
+              gradient_checkpointing=True,
+              gradient_checkpointing_kwargs={"use_reentrant": False},
               dataloader_num_workers=2,
               remove_unused_columns=False,
               disable_tqdm=False,
@@ -142,8 +166,9 @@ jobs:
               _trainer_kwargs['tokenizer'] = tokenizer
           trainer = Trainer(**_trainer_kwargs)
 
-          print("Training started (CPU mode)...")
+          print("Training started (CPU mode, 7B + bf16 + grad ckpt)...")
           stats = trainer.train()
+          _hb_stop.set()  # stop heartbeat thread
           print(f"Done! Steps={stats.global_step} Loss={stats.training_loss:.4f}")
 
           # Save merged model
