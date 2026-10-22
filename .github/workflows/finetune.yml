@@ -47,7 +47,7 @@ jobs:
           from peft import LoraConfig, get_peft_model, TaskType
           from datasets import load_dataset
 
-          MODEL = "Qwen/Qwen2.5-3B-Instruct"
+          MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
           DATA = "training-data/rara_training_v2.jsonl"
           OUT = "rara-model"
           os.makedirs(OUT, exist_ok=True)
@@ -100,15 +100,18 @@ jobs:
           print(f"Dataset: {len(ds)} examples")
 
           # Training (CPU mode)
+          # Penting: 0.5B di 4-core CPU ~5-10 detik/step (vs 162 detik/step
+          # untuk 3B). 30 step = ~3-5 menit total, jauh di bawah batas
+          # 6 jam GitHub Actions runner.
           args = TrainingArguments(
               output_dir="./rara-ckpt",
               per_device_train_batch_size=1,
-              gradient_accumulation_steps=8,
-              max_steps=100,
+              gradient_accumulation_steps=4,
+              max_steps=30,
               learning_rate=2e-4,
-              warmup_steps=10,
-              logging_steps=5,
-              save_steps=50,
+              warmup_steps=3,
+              logging_steps=1,
+              save_steps=15,
               save_total_limit=1,
               report_to="none",
               weight_decay=0.01,
@@ -119,6 +122,8 @@ jobs:
               bf16=False,
               dataloader_num_workers=2,
               remove_unused_columns=False,
+              disable_tqdm=False,
+              logging_first_step=True,
           )
 
           collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True)
@@ -149,8 +154,10 @@ jobs:
           TRAIN_EOF
 
       - name: Train (CPU mode)
+        # -u = python unbuffered stdout, biar output keluar real-time
+        # ke log GitHub Actions (cegah false-positive idle runner kill).
         run: |
-          python3 train.py
+          python3 -u train.py
 
       - name: Build llama.cpp
         run: |
