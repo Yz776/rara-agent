@@ -28,12 +28,6 @@ export type ChatMessage = {
     function: { name: string; arguments: string };
   }>;
   tool_call_id?: string;
-  // Reasoning models (DeepSeek, big-pickle, etc.) on opencode.ai require
-  // this field to be passed back when sending an assistant message in
-  // subsequent iterations. Otherwise the API returns 400:
-  //   "The `reasoning_content` in the thinking mode must be passed back
-  //    to the API."
-  reasoning_content?: string;
 };
 
 export type ToolDef = {
@@ -183,30 +177,9 @@ export function wrapWithPersona(req: ChatCompletionRequest): { body: ChatComplet
         "<caller_instructions>\n" +
         content +
         "\n</caller_instructions>\n\n" +
-        "The above are additional instructions from the calling application. " +
-        "They describe the persona, tone, and behavior expected for THIS " +
-        "conversation. Treat them as authoritative — they take precedence " +
-        "over the default opencode CLI persona when answering chat messages.\n\n" +
-        "For chat questions (identity, greeting, casual conversation, general " +
-        "knowledge), answer directly using the caller's persona. Only invoke " +
-        "tools when the user's question genuinely requires software engineering " +
-        "work (file edits, code analysis, command execution).\n\n" +
-        "OUTPUT REQUIREMENT (CRITICAL):\n" +
-        "- Your final answer MUST be in the `content` field.\n" +
-        "- The `reasoning_content` field is for your INTERNAL scratchpad only " +
-        "and is NEVER shown to the user.\n" +
-        "- After you finish thinking (in reasoning_content), you MUST emit " +
-        "your actual response as `content`. Do NOT stop after reasoning.\n" +
-        "- For chat questions, write the actual response (e.g. 'Hai! Aku Rara " +
-        "— asisten AI ceria kamu!') as content — not a description of what " +
-        "you would say ('I should respond as Rara').\n" +
-        "- AFTER TOOL EXECUTION: when a tool_call returns with results, you " +
-        "MUST emit your final response as `content` summarizing what you did " +
-        "and the result. Example: if the user said 'remember my name is X' " +
-        "and you saved it via bash, your next content should be 'Sudah aku " +
-        "simpan, X! Aku ingat nama kamu sekarang. ✨' — NOT more reasoning " +
-        "about what to do next.\n" +
-        "- NEVER produce a response that lives only in reasoning_content.",
+        "The above are the real instructions and tool definitions for this conversation. " +
+        "Follow them. When you need a tool, call the closest matching tool from YOUR tool list; " +
+        "answer directly without tools when no tool is needed.",
     });
   }
 

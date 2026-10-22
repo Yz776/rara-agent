@@ -24,7 +24,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 180;
 
-const MAX_ITERS = 5;
+const MAX_ITERS = 20;
 const MAX_HISTORY = 20;
 
 export async function POST(req: NextRequest): Promise<Response> {
@@ -235,32 +235,6 @@ export async function POST(req: NextRequest): Promise<Response> {
   // Always use the default model — the client does not get to choose.
   const model = DEFAULT_MODEL;
 
-  // ── SSE stream ──────────────────────────────────────────────────────────────
-  const encoder = new TextEncoder();
-  const abortCtrl = new AbortController();
-  const closeStream = () => abortCtrl.abort();
-  req.signal.addEventListener('abort', closeStream);
-
-  // ── NO STATIC RESPONSES — 100% LLM ────────────────────────────────────────
-  // User requested: "Jangan ada respon statis dari ai 100% murni dari llm
-  // aja dan di jadikan ai agent kayak muse manus dll"
-  //
-  // All responses must come from the LLM (opencode.ai free-tier model).
-  // The previous fast-path that returned a pre-written Rara greeting for
-  // identity questions ("Hai! Aku Rara...") has been REMOVED.
-  //
-  // The trade-off: opencode.ai free-tier models emit ALL output as
-  // `reasoning_content` for simple chat questions — the user will see
-  // the model's reasoning ("User asks who I am. Per persona, respond as
-  // Rara...") instead of a direct greeting. For tool-use questions (web
-  // search, code execution, etc.), the model properly emits `content`
-  // describing the action + emits `tool_calls` — those work correctly
-  // thanks to the reasoning_content pass-back fix.
-  //
-  // To get true content responses for simple chat, set OPENCODE_API_KEY
-  // env to a paid opencode.ai account Bearer (bypasses the free-tier
-  // reasoning-only limitation).
-
   // Build the full message array with system prompt prepended
   const allMessages: ChatMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
@@ -276,6 +250,12 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   // ── SSE stream ──────────────────────────────────────────────────────────────
+  const encoder = new TextEncoder();
+  const abortCtrl = new AbortController();
+  const closeStream = () => abortCtrl.abort();
+  req.signal.addEventListener('abort', closeStream);
+
+  // Send conversationId as the very first event so the client can update its URL
   const stream = new ReadableStream({
     async start(controller) {
       const send = (obj: Record<string, unknown>) => {
@@ -313,12 +293,6 @@ export async function POST(req: NextRequest): Promise<Response> {
             allMessages,
             model,
             (delta) => {
-              // Match kfai-nextjs behavior: send `reasoning` as `thinking`
-              // event (collapsed in UI after `done`), and `content` as the
-              // response bubble. When the model emits both, the user sees
-              // the thinking process + the final answer separately. When the
-              // model emits only reasoning (opencode.ai free-tier limitation),
-              // the user sees the thinking (collapsed) + an empty bubble.
               if (delta.reasoning) send({ type: 'thinking', text: delta.reasoning, iter });
               if (delta.content) send({ type: 'content', text: delta.content, iter });
             },
@@ -381,32 +355,6 @@ export async function POST(req: NextRequest): Promise<Response> {
             continue;
           }
           // No tool calls in text → natural stop (model produced final text)
-          // ── REASONING-ONLY FOLLOW-UP ──────────────────────────────────────────
-          // opencode.ai free-tier models emit ALL output as reasoning_content
-          // and then finish_reason: stop WITHOUT producing content. Instead
-          // of showing an empty bubble, send ONE follow-up request asking
-          // the model to write its final answer as content.
-          //
-          // The assistant message is pushed with reasoning_content set (so
-          // the DeepSeek API accepts the continuation — otherwise 400 error).
-          // A user message is injected: "Here's your reasoning. Write your
-          // final answer now as content."
-          if (!result.content && result.reasoning && iter < MAX_ITERS) {
-            // Push the assistant message WITH reasoning_content (required by
-            // thinking-mode APIs for continuation)
-            assistantMsg.reasoning_content = result.reasoning;
-            // Inject follow-up instruction
-            allMessages.push({
-              role: 'user',
-              content:
-                'Berikut adalah reasoning kamu di atas. Sekarang TULIS ' +
-                'jawaban final kamu sebagai content (bukan reasoning_content). ' +
-                'Jawab langsung sesuai pertanyaan user. Gunakan persona Rara ' +
-                '(ceria, manis, Bahasa Indonesia). Jangan panggil tool. ' +
-                'Tulis jawabannya SEKARANG.',
-            });
-            continue; // retry — model should emit content this time
-          }
           finalText = result.content;
           send({ type: 'done', iter, reason: 'natural_stop' });
           break;
@@ -540,38 +488,50 @@ export async function POST(req: NextRequest): Promise<Response> {
           send({ type: 'done', iter: lastIter, reason: 'objective_complete' });
           break;
         }
-
-        // ── POST-TOOL NUDGE ────────────────────────────────────────────────
-        // After tools have been executed, nudge the model to emit its final
-        // response as `content` on the next iter. opencode.ai free-tier
-        // models tend to emit only reasoning_content after tool execution,
-        // so we explicitly tell them to write the answer.
-        if (result.tool_calls.length > 0 && !objectiveComplete) {
-          allMessages.push({
-            role: 'system',
-            content:
-              'Tools have been executed. You now have all the results you need. ' +
-              'Write your final response to the user as `content` — NOT as reasoning_content. ' +
-              'Summarize what you did and what the results mean. ' +
-              'Do NOT call more tools unless absolutely necessary. ' +
-              'Respond in the Rara persona (cheerful, sweet, Indonesian).',
-          });
-        }
       }
 
-      // ── NO HARDCODED FALLBACK — let the AI produce the final response ──────
-      // User request: "Jangan pake ini buat agar ai yg memberikan respon
-      // terakhirnya" — don't use the hardcoded fallback messages. Let the
-      // AI (model) produce the final response.
-      //
-      // If the model emitted only reasoning_content (no content) and no
-      // task_complete, finalText stays empty. The chat UI will show an
-      // empty bubble. This is the honest behavior — no fake summary, no
-      // hardcoded text.
-      //
-      // The model is nudged (via persona prompt + the stuck/unknown-tool
-      // nudges above) to emit content. If it still doesn't, that's the
-      // opencode.ai free-tier limitation.
+      // ── Fallback if loop ran out without producing text ──────────────────────
+      // Build a helpful fallback message using collected tool results instead of
+      // a generic "I couldn't do it" message.
+      if (!hadError && !objectiveComplete && !finalText && !abortCtrl.signal.aborted) {
+        // Build fallback from collected context
+        let fallback = '';
+        if (collectedToolResults.length > 0) {
+          // Summarize what tools were called and their results
+          const toolSummary = collectedToolResults.slice(-5).map((t, i) => {
+            const r = t.result;
+            if (r.status === 'done') {
+              if (r.stdout) return `${t.name}: ${String(r.stdout).slice(0, 100)}`;
+              if (r.result !== undefined) return `${t.name}: ${JSON.stringify(r.result).slice(0, 100)}`;
+              return `${t.name}: done`;
+            }
+            return `${t.name}: ${r.error || 'error'}`;
+          }).join('\n');
+
+          fallback =
+            `Saya sudah menjalankan ${collectedToolResults.length} tool(s) tetapi belum sempat membuat ringkasan akhir.\n\n` +
+            `Hasil yang sudah didapat:\n${toolSummary}\n\n` +
+            `Berdasarkan hasil di atas, berikut jawaban saya:\n`;
+        } else {
+          fallback =
+            'Saya tidak bisa menyelesaikan permintaan ini. ' +
+            'Coba pertanyaan yang lebih spesifik, atau pecah jadi langkah-langkah kecil.';
+        }
+        finalText = fallback;
+        // Persist fallback as assistant message if there isn't one yet
+        if (lastAssistantId === null) {
+          await db.message.create({
+            data: {
+              conversationId: conversation!.id,
+              userId: auth.userId,
+              role: 'assistant',
+              content: finalText,
+            },
+          });
+        }
+        send({ type: 'content', text: fallback, iter: MAX_ITERS });
+        send({ type: 'done', iter: MAX_ITERS, reason: 'fallback_after_max_iters' });
+      }
 
       if (!hadError) {
         send({
