@@ -191,7 +191,7 @@ jobs:
               print('WARNING: HF_TOKEN secret not set! Skipping upload.')
               exit(0)
           create_repo('kangwifi/rara-ai', token=token, exist_ok=True, private=False)
-          upload_file('rara-q8_0.gguf', 'rara-q8_0.gguf', 'kangwifi/rara-ai', token=token)
+          upload_file(path_or_fileobj='rara-q8_0.gguf', path_in_repo='rara-q8_0.gguf', repo_id='kangwifi/rara-ai', token=token)
           print('Uploaded -> huggingface.co/kangwifi/rara-ai')
           "
 
