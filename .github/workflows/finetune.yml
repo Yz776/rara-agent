@@ -181,8 +181,8 @@ jobs:
 
           print("Training started (CPU mode, 7B + bf16 + grad ckpt)...")
           stats = trainer.train()
-          _hb_stop.set()  # stop heartbeat thread
           print(f"Done! Steps={stats.global_step} Loss={stats.training_loss:.4f}")
+          print("Heartbeat still running during merge + dequant + save...")
 
           # Save merged model (dequantized from 4-bit to float16).
           # bitsandbytes 4-bit weights can't be read by convert_hf_to_gguf.py
@@ -218,6 +218,7 @@ jobs:
               model.config.quantization_config = None
           model.save_pretrained(OUT, safe_serialization=True)
           tokenizer.save_pretrained(OUT)
+          _hb_stop.set()  # stop heartbeat thread AFTER save complete
           print(f"Model saved to {OUT} (dequantized to float16)")
           TRAIN_EOF
 
