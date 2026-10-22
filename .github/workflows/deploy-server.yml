@@ -1,0 +1,154 @@
+name: Deploy to rara.ai.id server
+
+# Manual-only workflow: SSHes into the rara.ai.id server (209.50.50.121)
+# and runs the deploy sequence. Password is read from the RARA_PASS
+# repo secret — NEVER paste it in chat. Add it once at:
+#   https://github.com/Yz776/rara-agent/settings/secrets/actions
+#   Name: RARA_PASS
+#   Value: (your root SSH password)
+
+on:
+  workflow_dispatch:
+    inputs:
+      do_pull_model:
+        description: "Pull hf.co/kangwifi/rara-ai:Q8_0 model via Ollama"
+        type: boolean
+        default: true
+      do_rebuild_nextjs:
+        description: "Run bun run build (rebuild Next.js)"
+        type: boolean
+        default: true
+      do_restart_pm2:
+        description: "Restart rara-web via PM2"
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-server
+  cancel-in-progress: false  # don't cancel a deploy mid-flight
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install paramiko
+        run: pip install -q paramiko
+
+      - name: Run deploy via SSH
+        env:
+          RARA_PASS: ${{ secrets.RARA_PASS }}
+          RARA_HOST: "209.50.50.121"
+          RARA_USER: "root"
+          MODEL_TAG: "hf.co/kangwifi/rara-ai:Q8_0"
+          ENV_PATH: "/opt/rara-agent/.env"
+        run: |
+          python3 - <<'PY'
+          import os, sys, paramiko, time
+
+          HOST = os.environ["RARA_HOST"]
+          USER = os.environ["RARA_USER"]
+          PASS = os.environ["RARA_PASS"]
+          MODEL_TAG = os.environ["MODEL_TAG"]
+          ENV_PATH = os.environ["ENV_PATH"]
+          pull_model = "${{ inputs.do_pull_model }}" == "true"
+          rebuild_nextjs = "${{ inputs.do_rebuild_nextjs }}" == "true"
+          restart_pm2 = "${{ inputs.do_restart_pm2 }}" == "true"
+
+          if not PASS:
+              print("ERROR: RARA_PASS secret not set in repo.")
+              print("Add it at: https://github.com/Yz776/rara-agent/settings/secrets/actions")
+              sys.exit(1)
+
+          print(f"Connecting to {USER}@{HOST}...")
+          client = paramiko.SSHClient()
+          client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+          client.connect(hostname=HOST, username=USER, password=PASS, timeout=20)
+          print("Connected.\n")
+
+          def run(cmd, timeout=600):
+              print(f"$ {cmd}")
+              stdin, stdout, stderr = client.exec_command(cmd, timeout=timeout)
+              out = stdout.read().decode("utf-8", "replace")
+              err = stderr.read().decode("utf-8", "replace")
+              code = stdout.channel.recv_exit_status()
+              if out:
+                  print(out.rstrip()[:3000])
+              if err.strip():
+                  print(f"[stderr] {err.rstrip()[:1500]}")
+              print(f"[exit={code}]\n")
+              return code, out, err
+
+          # === Step 1: Upload src/middleware.ts (host whitelist) ===
+          print("=" * 60)
+          print("STEP 1: Upload src/middleware.ts to /opt/rara-agent/src/")
+          print("=" * 60)
+          run(f"mkdir -p $(dirname /opt/rara-agent/src/middleware.ts)")
+          sftp = client.open_sftp()
+          # The checked-out repo has src/middleware.ts at the root
+          local = "src/middleware.ts"
+          remote = "/opt/rara-agent/src/middleware.ts"
+          print(f"SFTP put {local} -> {remote}")
+          sftp.put(local, remote)
+          sftp.close()
+          run(f"ls -la {remote} && head -5 {remote}")
+
+          # === Step 2: Update MODEL in .env ===
+          print("=" * 60)
+          print(f"STEP 2: Update MODEL in {ENV_PATH} -> {MODEL_TAG}")
+          print("=" * 60)
+          run(
+              f"grep -q '^MODEL=' {ENV_PATH} && "
+              f"sed -i 's|^MODEL=.*|MODEL={MODEL_TAG}|' {ENV_PATH} || "
+              f"echo 'MODEL={MODEL_TAG}' >> {ENV_PATH}"
+          )
+          run(f"grep '^MODEL=' {ENV_PATH}")
+
+          # === Step 3 (optional): Pull new model via Ollama ===
+          if pull_model:
+              print("=" * 60)
+              print(f"STEP 3: docker exec kali ollama pull {MODEL_TAG}")
+              print("=" * 60)
+              run(f"docker exec kali ollama pull {MODEL_TAG}", timeout=900)
+              run("docker exec kali ollama list")
+
+          # === Step 4 (optional): Rebuild Next.js ===
+          if rebuild_nextjs:
+              print("=" * 60)
+              print("STEP 4: Rebuild Next.js (bun run build)")
+              print("=" * 60)
+              run(
+                  "cd /opt/rara-agent && "
+                  "NODE_OPTIONS=--max-old-space-size=2048 bun run build 2>&1 | tail -20",
+                  timeout=600,
+              )
+
+          # === Step 5 (optional): Restart rara-web via PM2 ===
+          if restart_pm2:
+              print("=" * 60)
+              print("STEP 5: Restart rara-web via PM2")
+              print("=" * 60)
+              run("docker exec kali pm2 restart rara-web")
+              run("docker exec kali pm2 list")
+
+          # === Step 6: Verify ===
+          print("=" * 60)
+          print("STEP 6: Verify (sleep 5s then curl both domains)")
+          print("=" * 60)
+          run("sleep 5")
+          run("curl -sk -o /dev/null -w 'rara.ai.id       -> http=%{http_code} size=%{size_download}\\n' https://rara.ai.id/")
+          run("curl -sk -o /dev/null -w 'dl.kangwifi.eu.org -> http=%{http_code} size=%{size_download}\\n' https://dl.kangwifi.eu.org/")
+          run("curl -sk https://dl.kangwifi.eu.org/ | head -c 400")
+
+          print("\nDONE.")
+          client.close()
+          PY
