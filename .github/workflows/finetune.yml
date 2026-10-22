@@ -264,8 +264,11 @@ jobs:
               sys.exit(0)
           try:
               create_repo('kangwifi/rara-ai', token=token, exist_ok=True, private=False)
-              upload_file(path_or_fileobj='rara-q8_0.gguf', path_in_repo='rara-q8_0.gguf', repo_id='kangwifi/rara-ai', token=token)
-              print('Uploaded -> huggingface.co/kangwifi/rara-ai')
+              # Upload as q8_0.gguf (lowercase, no prefix) so the standard
+              # Ollama tag :Q8_0 works (hf.co/kangwifi/rara-ai:Q8_0).
+              upload_file(path_or_fileobj='rara-q8_0.gguf', path_in_repo='q8_0.gguf', repo_id='kangwifi/rara-ai', token=token)
+              print('Uploaded -> huggingface.co/kangwifi/rara-ai (as q8_0.gguf)')
+              print('Ollama: ollama pull hf.co/kangwifi/rara-ai:Q8_0')
           except Exception as e:
               print(f'WARNING: HF upload failed: {e}')
               print('Likely causes:')
@@ -283,7 +286,7 @@ jobs:
         run: |
           echo "============================================"
           echo "DEPLOY KE SERVER:"
-          echo "docker exec kali ollama pull hf.co/kangwifi/rara-ai:rara-q8_0.gguf"
-          echo "echo 'MODEL=hf.co/kangwifi/rara-ai:rara-q8_0.gguf' >> /opt/rara-agent/.env"
+          echo "docker exec kali ollama pull hf.co/kangwifi/rara-ai:Q8_0"
+          echo "echo 'MODEL=hf.co/kangwifi/rara-ai:Q8_0' >> /opt/rara-agent/.env"
           echo "docker exec kali pm2 restart rara-web"
           echo "============================================"
