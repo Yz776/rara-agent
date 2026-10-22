@@ -1,0 +1,92 @@
+name: Rename GGUF in HF repo
+
+# Manual-only workflow: takes the existing rara-q8_0.gguf file in
+# kangwifi/rara-ai HF repo and re-uploads it as q8_0.gguf (lowercase,
+# no rara- prefix). This makes the standard Ollama tag :Q8_0 work
+# (Ollama looks for file q8_0.gguf when you do ollama pull hf.co/.../repo:Q8_0).
+#
+# Also uploads rara-q8_0.gguf for backward compat (already-existing
+# references to hf.co/kangwifi/rara-ai:rara-q8_0 keep working).
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: rename-gguf
+  cancel-in-progress: true
+
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install huggingface_hub
+        run: pip install -q huggingface_hub
+
+      - name: Download existing rara-q8_0.gguf from HF + re-upload as q8_0.gguf
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python3 -c "
+          import os, sys, urllib.request
+          from huggingface_hub import upload_file, HfApi
+
+          token = os.environ.get('HF_TOKEN', '')
+          if not token:
+              print('ERROR: HF_TOKEN secret not set!')
+              sys.exit(1)
+
+          REPO = 'kangwifi/rara-ai'
+          SRC = 'rara-q8_0.gguf'           # current file in HF repo
+          DST = 'q8_0.gguf'                 # new name (Ollama :Q8_0 convention)
+          LOCAL = '/tmp/rara-q8_0.gguf'
+
+          # 1. Verify file exists in HF repo
+          api = HfApi(token=token)
+          info = api.repo_info(REPO, repo_type='model', token=token)
+          files = [s.rfilename for s in info.siblings]
+          print(f'Files in HF repo {REPO}: {files}')
+          if SRC not in files:
+              print(f'ERROR: {SRC} not found in HF repo!')
+              print('Run the Fine-tune workflow first to produce the GGUF.')
+              sys.exit(1)
+
+          # 2. Download from HF public URL (no token needed for download,
+          #    but we pass it anyway to avoid rate limits)
+          url = f'https://huggingface.co/{REPO}/resolve/main/{SRC}'
+          print(f'Downloading {url} -> {LOCAL}')
+          req = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}'})
+          with urllib.request.urlopen(req) as r, open(LOCAL, 'wb') as f:
+            total = 0
+            while True:
+              chunk = r.read(8 * 1024 * 1024)  # 8 MB chunks
+              if not chunk: break
+              f.write(chunk)
+              total += len(chunk)
+              print(f'  downloaded {total/1e6:.0f} MB...', flush=True)
+          print(f'Download complete: {total/1e9:.2f} GB')
+
+          # 3. Re-upload under the new name (q8_0.gguf)
+          #    Keep the original rara-q8_0.gguf too for backward compat.
+          print(f'Uploading as {DST} (Ollama :Q8_0 tag will work)')
+          upload_file(
+              path_or_fileobj=LOCAL,
+              path_in_repo=DST,
+              repo_id=REPO,
+              token=token,
+          )
+          print(f'Upload complete: https://huggingface.co/{REPO}/blob/main/{DST}')
+          print()
+          print('=== Ollama pull commands now work: ===')
+          print(f'  ollama pull hf.co/{REPO}:Q8_0          (standard tag, NEW)')
+          print(f'  ollama pull hf.co/{REPO}:rara-q8_0     (legacy tag, kept)')
+          "
