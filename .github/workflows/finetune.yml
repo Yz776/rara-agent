@@ -184,11 +184,41 @@ jobs:
           _hb_stop.set()  # stop heartbeat thread
           print(f"Done! Steps={stats.global_step} Loss={stats.training_loss:.4f}")
 
-          # Save merged model
+          # Save merged model (dequantized from 4-bit to float16).
+          # bitsandbytes 4-bit weights can't be read by convert_hf_to_gguf.py
+          # ("Quant method is not yet supported: 'bitsandbytes'"), so we:
+          #   1. merge LoRA into base
+          #   2. walk the module tree, dequantize every Linear4bit to float16
+          #   3. clear model.config.quantization_config so HF converter
+          #      doesn't try the bnb path.
+          import torch.nn as nn
+          import bitsandbytes as bnb
+
+          def _dequant_recursive(parent_module):
+              for name, child in list(parent_module.named_children()):
+                  if isinstance(child, bnb.nn.Linear4bit) and hasattr(child.weight, 'quant_state'):
+                      dequant_w = bnb.functional.dequantize_4bit(
+                          child.weight.data, child.weight.quant_state
+                      ).to(torch.float16)
+                      new_linear = nn.Linear(
+                          child.in_features, child.out_features,
+                          bias=child.bias is not None,
+                      )
+                      new_linear.weight = nn.Parameter(dequant_w)
+                      if child.bias is not None:
+                          new_linear.bias = nn.Parameter(child.bias.data.to(torch.float16))
+                      setattr(parent_module, name, new_linear)
+                  else:
+                      _dequant_recursive(child)
+
           model = model.merge_and_unload()
-          model.save_pretrained(OUT)
+          _dequant_recursive(model)
+          model = model.to(torch.float16)
+          if hasattr(model, 'config') and hasattr(model.config, 'quantization_config'):
+              model.config.quantization_config = None
+          model.save_pretrained(OUT, safe_serialization=True)
           tokenizer.save_pretrained(OUT)
-          print(f"Model saved to {OUT}")
+          print(f"Model saved to {OUT} (dequantized to float16)")
           TRAIN_EOF
 
       - name: Train (CPU mode)
