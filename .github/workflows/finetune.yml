@@ -180,23 +180,37 @@ jobs:
           cp /tmp/rara-q8_0.gguf $GITHUB_WORKSPACE/rara-q8_0.gguf
 
       - name: Upload to HuggingFace
+        continue-on-error: true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python3 -c "
           from huggingface_hub import create_repo, upload_file
-          import os
+          from huggingface_hub.utils import HfHubHTTPError
+          import os, sys
           token = os.environ.get('HF_TOKEN', '')
           if not token:
               print('WARNING: HF_TOKEN secret not set! Skipping upload.')
-              exit(0)
-          create_repo('kangwifi/rara-ai', token=token, exist_ok=True, private=False)
-          upload_file(path_or_fileobj='rara-q8_0.gguf', path_in_repo='rara-q8_0.gguf', repo_id='kangwifi/rara-ai', token=token)
-          print('Uploaded -> huggingface.co/kangwifi/rara-ai')
+              print('GGUF file is at: rara-q8_0.gguf (artifact, see Actions run page)')
+              sys.exit(0)
+          try:
+              create_repo('kangwifi/rara-ai', token=token, exist_ok=True, private=False)
+              upload_file(path_or_fileobj='rara-q8_0.gguf', path_in_repo='rara-q8_0.gguf', repo_id='kangwifi/rara-ai', token=token)
+              print('Uploaded -> huggingface.co/kangwifi/rara-ai')
+          except Exception as e:
+              print(f'WARNING: HF upload failed: {e}')
+              print('Likely causes:')
+              print('  - HF_TOKEN secret expired or revoked')
+              print('  - Token has no write access to kangwifi/rara-ai')
+              print('  - Token belongs to a different HF account')
+              print('Fix: GitHub repo -> Settings -> Secrets and variables -> Actions -> HF_TOKEN')
+              print('     Set to a HuggingFace access token with WRITE permission.')
+              print('The GGUF file is still built at rara-q8_0.gguf — see workflow artifacts.')
+              sys.exit(0)  # soft-fail: continue to deploy commands
           "
 
       - name: Deploy commands
-        if: success()
+        if: always()
         run: |
           echo "============================================"
           echo "DEPLOY KE SERVER:"
